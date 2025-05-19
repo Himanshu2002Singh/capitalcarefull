@@ -1,0 +1,358 @@
+import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/task/add_task_screen.dart';
+import 'package:capital_care/views/screens/call_details_screen.dart';
+import 'package:capital_care/views/widgets/app_scaffold.dart';
+import 'package:flutter/material.dart';
+
+class LeadDetailsScreen extends StatefulWidget {
+  @override
+  _LeadDetailsScreenState createState() => _LeadDetailsScreenState();
+}
+
+class _LeadDetailsScreenState extends State<LeadDetailsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  final List<HistoryEntry> historyEntries = [
+    HistoryEntry(
+      dateTime: '03-May\n05:22 pm',
+      user: 'Mukund',
+      status: 'Interested',
+      schedule: '13-May-2025 05:21 PM',
+      remark: 'aerea',
+    ),
+    HistoryEntry(
+      dateTime: '03-May\n05:22 pm',
+      user: 'Priyanshu',
+      status: 'Interested',
+      schedule: '13-May-2025 05:21 PM',
+      remark: 'aerea',
+    ),
+    // Add more entries here if needed
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      isFloatingActionButton: true,
+      floatingActionButtonIcon: Icon(Icons.add),
+      floatingActionButtonOnTap: () {
+        if (_tabController.index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddTaskScreen()),
+          );
+        } else {
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => CallDetailsScreen()),
+          // );
+        }
+      },
+      appBar: AppBar(
+        elevation: 0,
+        title: Text("Lead Details"),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.appBarForegroundColor,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(50),
+          child: Container(
+            color: const Color.fromARGB(
+              255,
+              239,
+              238,
+              238,
+            ), // Background for TabBar
+            child: TabBar(
+              dividerColor: Colors.transparent,
+              padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+              controller: _tabController,
+              tabs: const [
+                Tab(text: "DETAILS"),
+                Tab(text: "HISTORY"),
+                Tab(text: "TASK"),
+              ],
+              labelColor: Colors.white, // Text color when selected
+              unselectedLabelColor:
+                  Colors.black, // Text color when not selected
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color.fromARGB(255, 168, 223, 248),
+                    AppColors.primaryColor,
+                  ],
+                  begin: Alignment.topRight,
+                  end: Alignment.topLeft,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ),
+
+      body: TabBarView(
+        controller: _tabController,
+        children: [buildDetailsTab(), buildHistory(), buildTaskTab()],
+      ),
+    );
+  }
+
+  Widget buildDetailsTab() {
+    return SingleChildScrollView(
+      child: Container(
+        color: const Color.fromARGB(255, 239, 238, 238), // B,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              // Main card
+              Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("priyanshu", style: TextStyle(fontSize: 20)),
+                          IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(child: Text("₹ 0.00")),
+                          Expanded(child: Text("03 May 2025")),
+                          Expanded(child: Text("2 Days")),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.email, size: 18),
+                          SizedBox(width: 6),
+                          Text("star6priyanshu@gmail.com"),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.phone, size: 18),
+                          SizedBox(width: 6),
+                          Text("9411619711"),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 18),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text("Not Available, Not Available, India"),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 18),
+                          SizedBox(width: 6),
+                          Text("03 May 2025 17:22"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 20),
+              // Other Details Section
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Other Details",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Divider(),
+                    _buildDetailRow("Assigned To :", "Mukund"),
+                    _buildDetailRow("Added By :", "Mukund"),
+                    _buildDetailRow("Source :", "Internet"),
+                    _buildDetailRow("Reference", ""),
+                    _buildDetailRow("Description", ""),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildHistory() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children:
+              historyEntries.map((entry) {
+                int index = historyEntries.indexOf(entry);
+                bool isLast = index == historyEntries.length - 1;
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 60,
+                      // padding: EdgeInsets.only(top: 12),
+                      child: Text(
+                        entry.dateTime,
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 25,
+                            width: 25,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 203, 202, 202),
+                                width: 3,
+                                style: BorderStyle.solid,
+                              ),
+                            ),
+                          ),
+
+                          Container(
+                            // margin: EdgeInsets.only(left: 15),
+                            width: 2,
+                            height: 100, // adjust this height based on spacing
+                            color: Colors.grey.shade400,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        // margin: EdgeInsets.symmetric(vertical: 10),
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "User : ${entry.user}",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 4),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Status : ",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  TextSpan(
+                                    text: entry.status,
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              "Schedule : ${entry.schedule}",
+                              style: TextStyle(color: Colors.purple),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              "Remark : ${entry.remark}",
+                              style: TextStyle(color: Colors.brown),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTaskTab() {
+    return Center(child: Text("No data found"));
+  }
+
+  Widget _buildDetailRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("$title ", style: TextStyle(color: Colors.blue)),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+}
+
+class HistoryEntry {
+  final String dateTime;
+  final String user;
+  final String status;
+  final String schedule;
+  final String remark;
+
+  HistoryEntry({
+    required this.dateTime,
+    required this.user,
+    required this.status,
+    required this.schedule,
+    required this.remark,
+  });
+}

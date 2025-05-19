@@ -1,0 +1,58 @@
+import 'dart:convert';
+
+import 'package:capital_care/models/add_leads_model.dart';
+import 'package:capital_care/models/get_leads_model.dart';
+import 'package:capital_care/models/update_lead_model.dart';
+import 'package:http/http.dart' as http;
+
+class ApiService {
+  static const String baseUrl = "http://192.168.29.215:5000/api";
+
+  static Future<List<GetLead>> fetchLeads() async {
+    final url = Uri.parse("$baseUrl/leads");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      List jsonData = jsonDecode(response.body);
+      return jsonData.map((e) => GetLead.fromJson(e)).toList();
+    } else {
+      throw Exception("failed to load employees");
+    }
+  }
+
+  static Future<bool> addLead(AddLeads lead) async {
+    final url = Uri.parse("$baseUrl/submit-lead");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(lead.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      print("lead added : ${response.body}");
+      return true;
+    } else {
+      print("failed : ${response.body}");
+      return false;
+    }
+  }
+
+  static Future<bool> updateLead(int id, UpdateLead lead) async {
+    final url = Uri.parse(
+      "$baseUrl/leads/$id",
+    ); // assuming backend uses /leads/:id
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(lead.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      print("Lead updated: ${response.body}");
+      return true;
+    } else {
+      print("Update failed: ${response.body}");
+      return false;
+    }
+  }
+}
