@@ -1,8 +1,10 @@
-const mysql = require('mysql2');
+require("dotenv").config();
+
+const mysql = require("mysql2");
 const db = mysql.createConnection({
-    host : 'localhost',
-    user : 'root',
-    password : ''
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DBUSER || "root",
+  password: process.env.DBPASS || "",
 });
 // db.connect(err => {
 //     if(err) throw err;
@@ -11,11 +13,11 @@ const db = mysql.createConnection({
 //     db.query("CREATE DATABASE IF NOT EXISTS priyanshu", err => {
 //         if(err) throw err;
 //         console.log("database create or exists");
- 
+
 //         db.changeUser({database: "priyanshu"}, err => {
 //             if(err) throw err;
 //             console.log("connected to database priyanshu");
-            
+
 //             callback();
 
 //         });
@@ -25,17 +27,17 @@ const db = mysql.createConnection({
 // module.exports = db;
 
 function initDatabase(callback) {
-  db.connect(err => {
+  db.connect((err) => {
     if (err) throw err;
     console.log("Connected to MySQL");
 
-    db.query("CREATE DATABASE IF NOT EXISTS priyanshu", err => {
+    db.query("CREATE DATABASE IF NOT EXISTS capitalcaredb", (err) => {
       if (err) throw err;
       console.log("Database created or exists");
 
-      db.changeUser({ database: "priyanshu" }, err => {
+      db.changeUser({ database: process.env.DB_NAME }, (err) => {
         if (err) throw err;
-        console.log("Connected to database priyanshu");
+        console.log("Connected to database capitalcaredb");
 
         callback(); // only run create tables after database selected
       });

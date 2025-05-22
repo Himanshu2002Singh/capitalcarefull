@@ -1,25 +1,69 @@
-const {db} = require('../config/db');
+// models/lead.js
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-const createLead = (person_id, name, number, owner, branch, source, priority, status, next_meeting, refrence, description, callback)=> {
-    const sql = 'INSERT INTO leads (person_id, name, number, owner, branch, source, priority, status, next_meeting, refrence, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    db.query(sql, [person_id, name, number, owner, branch, source, priority, status, next_meeting, refrence, description], callback);
-};
+const Lead = sequelize.define(
+  "Lead",
+  {
+    person_id: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    number: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    branch: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    source: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    priority: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    next_meeting: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    refrence: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+  },
+  {
+    tableName: "leads",
+    timestamps: false,
+  }
+);
 
-const updateLead = (
-    id, status, priority, next_meeting, est_budget, remark, callback 
-)=> {
-const sql = `UPDATE leads SET
-status = ?, priority = ?, next_meeting = ?, est_budget = ?, remark = ?
-where id = ?
-`;
+// Create table if not exists
+Lead.sync({ alter: false })
+  .then(() => {
+    console.log("Lead table created");
+  })
+  .catch((error) => {
+    console.error("Error creating Lead table:", error);
+  });
 
-    db.query(sql, [status, priority, next_meeting, est_budget, remark, id], callback);
-};
-
-
-const getAllLeads = (callback) => {
-    const sql = 'SELECT * FROM leads join employees on leads.person_id = employees.id';
-    db.query(sql, callback);
-};
-
-module.exports = {createLead, getAllLeads, updateLead};
+module.exports = Lead;
