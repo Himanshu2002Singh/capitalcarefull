@@ -1,3 +1,4 @@
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  void loginUser(String userName, String password) {
+  void loginUser(String userName, String password) async {
     if (userName.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -25,7 +26,13 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     try {
-      Navigator.push(
+      final user = await ApiService.login(userName, password);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Welcome ${user.ename}!')));
+
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),
       );
@@ -103,8 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           CustomButton(
                             text: "Login",
                             onPressed: () {
-                              String username = userNameController.text;
-                              String password = passwordController.text;
+                              String username = userNameController.text.trim();
+                              String password = passwordController.text.trim();
                               loginUser(username, password);
                             },
                             color: Colors.green,

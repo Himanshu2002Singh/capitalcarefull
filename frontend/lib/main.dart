@@ -1,5 +1,6 @@
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
+import 'package:capital_care/views/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: LoginScreen(),
+      home: SplashScreen(),
     );
   }
 }

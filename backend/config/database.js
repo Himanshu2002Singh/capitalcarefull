@@ -21,10 +21,11 @@ const sequelize = new Sequelize(
     timezone: "+05:30", // IST time zone offset
 
     dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
+      ssl:false
+      //  {
+      //   require: false,
+      //   rejectUnauthorized: false,
+      // },
     },
   }
 );

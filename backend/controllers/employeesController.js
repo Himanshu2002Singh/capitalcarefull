@@ -3,6 +3,9 @@ const XLSX = require("xlsx");
 const nodemailer = require("nodemailer");
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const SECRETE_KEY = process.env.SECRET_KEY;
 
 exports.addEmployee = async (req, res) => {
   const { emp_id, email, username, ename, password } = req.body;
@@ -120,15 +123,15 @@ exports.createuserusingexcel = async (req, res) => {
         phone,
         email,
         username: employeeId,
-        password: hashedPassword,
+        password: password,
       });
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Your login Details for website",
-        text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
-      };
-      await transporter.sendMail(mailOptions);
+      // const mailOptions = {
+      //   from: process.env.EMAIL_USER,
+      //   to: email,
+      //   subject: "Your login Details for website",
+      //   text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
+      // };
+      // await transporter.sendMail(mailOptions);
 
       createdUsers.push({
         employeeId: newUser.employeeId,
@@ -147,5 +150,47 @@ exports.createuserusingexcel = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error creating users", error: error.message });
+  }
+};
+
+exports.loginEmployee = async (req, res) =>{
+  const {username, password} = req.body;
+
+  if(!username || !password){
+    return res.status(400).json({message : "username and password are required fields"});
+  }
+
+  try{
+    const employee = await Employee.findOne({where : {username}});
+
+    if(!employee){
+      return res.status(401).json({message : "Invalid username or password"});
+    }
+
+    // const isPasswordValid = await bcrypt.compare(password, employee.password);
+    
+    // if(!isPasswordValid){
+    //   return res.status(401).json({message : "Invalid username or password"});
+    // }
+
+    if (employee.password !== password) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    const token = jwt.sign(
+      {id : employee.emp_id, username : employee.username},
+      SECRETE_KEY, 
+      {expiresIn : "7d"}
+    );
+
+    return res.status(200).json({message : "login Successfull", token, employee : {
+      emp_id: employee.emp_id,
+        username: employee.username,
+        email: employee.email,
+        ename: employee.ename,
+    }});
+  }catch(e){
+    console.error("login error : ", e);
+    return res.status(500).json({message : "Internal Server Error", error : e.message});
   }
 };

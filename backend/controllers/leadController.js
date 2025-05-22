@@ -30,10 +30,14 @@ exports.updateLead = (req, res) => {
 };
 
 
-exports.getLeads = (req, res)=>{
-    Lead.getAllLeads((err, results)=> {
-        if(err) return res.status(500).json({message : 'database error', error : err});
+exports.getLeads = async (req, res)=>{
+    // Lead.getAllLeads((err, results)=> {
+    //     if(err) return res.status(500).json({message : 'database error', error : err});
 
-        res.status(200).json(results);
-    });
+    //     res.status(200).json(results);
+    // });
+    const lead = await Lead.findAll();
+    console.log("===============>lead ", lead)
+    res.status(200).json(lead);
+    
 };

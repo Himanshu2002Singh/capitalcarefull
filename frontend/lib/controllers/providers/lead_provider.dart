@@ -3,9 +3,9 @@ import 'package:capital_care/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 class LeadProvider with ChangeNotifier {
-  List<GetLead> _leads = [];
+  var _leads = [];
 
-  List<GetLead> get leads => _leads;
+  List get leads => _leads;
 
   Future<void> fetchLeads() async {
     _leads = await ApiService.fetchLeads();

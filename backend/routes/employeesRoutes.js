@@ -13,4 +13,6 @@ router.post(
 
 router.get("/employees", employeeController.getEmployees);
 
+router.post("/login", employeeController.loginEmployee);
+
 module.exports = router;

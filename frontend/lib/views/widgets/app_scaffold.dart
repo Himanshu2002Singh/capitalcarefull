@@ -3,10 +3,12 @@ import 'package:capital_care/views/screens/auto_call_dashboard_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
+import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:capital_care/views/screens/task/task_assigned_by_me.dart';
 import 'package:capital_care/views/screens/task_management/task_management_screen.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppScaffold extends StatelessWidget {
   final appBar;
@@ -149,7 +151,21 @@ class AppScaffold extends StatelessWidget {
             _drawerItem(Icons.security, "App Permission", section: "Policies"),
             _drawerItem(Icons.private_connectivity, "Privacy Policy"),
             _drawerItem(Icons.settings, "Settings"),
-            _drawerItem(Icons.arrow_circle_left_outlined, "Sign Out"),
+            _drawerItem(
+              Icons.arrow_circle_left_outlined,
+              "Sign Out",
+              onTap: () async {
+                final FlutterSecureStorage _secureStorage =
+                    FlutterSecureStorage();
+
+                await _secureStorage.delete(key: "auth_token");
+
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+            ),
           ],
         ],
       ),
