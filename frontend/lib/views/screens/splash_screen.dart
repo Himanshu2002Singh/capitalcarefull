@@ -1,7 +1,9 @@
+import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,8 +22,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkLogin() async {
     final token = await storage.read(key: "auth_token");
-    if (token != null && token.isNotEmpty) {
+    final userId = await storage.read(key: "userId");
+    print("=================================>$userId");
+    if (token != null &&
+        token.isNotEmpty &&
+        userId != null &&
+        userId.isNotEmpty) {
       // Already logged in
+
+      await Provider.of<UserProvider>(
+        context,
+        listen: false,
+      ).fetchUserData(userId);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),

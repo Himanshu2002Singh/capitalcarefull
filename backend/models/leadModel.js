@@ -1,14 +1,20 @@
 // models/lead.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const Employee = require("../models/employeesModel");
+
 
 const Lead = sequelize.define(
   "Lead",
   {
+    lead_id:{
+      type: DataTypes.INTEGER,
+      primaryKey : true,
+      autoIncrement: true,
+    },
     person_id: {
       type: DataTypes.STRING,
-      primaryKey: true,
-      allowNull: false,
+      allowNull: true,
     },
     name: {
       type: DataTypes.STRING,
@@ -20,23 +26,23 @@ const Lead = sequelize.define(
     },
     owner: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     branch: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     source: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     priority: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     status: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     next_meeting: {
       type: DataTypes.DATE,
@@ -50,10 +56,18 @@ const Lead = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    est_budget: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    remark: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     tableName: "leads",
-    timestamps: false,
+    timestamps: true,
   }
 );
 

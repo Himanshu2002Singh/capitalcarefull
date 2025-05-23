@@ -89,9 +89,9 @@ class _LeadCardState extends State<LeadCard> {
                         const Icon(Icons.person),
                         const SizedBox(width: 5),
                         Text(
-                          (widget.lead.ename).length > 15
-                              ? (widget.lead.ename).substring(0, 12) + "..."
-                              : (widget.lead.ename),
+                          (widget.lead.owner).length > 15
+                              ? (widget.lead.owner).substring(0, 12) + "..."
+                              : (widget.lead.owner),
                         ),
                       ],
                     ),

@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/auto_call_dashboard_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
@@ -9,6 +10,7 @@ import 'package:capital_care/views/screens/task_management/task_management_scree
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class AppScaffold extends StatelessWidget {
   final appBar;
@@ -51,6 +53,8 @@ class AppScaffold extends StatelessWidget {
   }
 
   Widget _homeDrawer(BuildContext context) {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -58,12 +62,12 @@ class AppScaffold extends StatelessWidget {
           DrawerHeader(
             decoration: BoxDecoration(color: AppColors.primaryColor),
             child: Column(
-              children: const [
+              children: [
                 SizedBox(height: 10),
                 CircleAvatar(radius: 45, child: Text("U")),
                 SizedBox(height: 5),
                 Text(
-                  "User",
+                  user?.ename ?? "User",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

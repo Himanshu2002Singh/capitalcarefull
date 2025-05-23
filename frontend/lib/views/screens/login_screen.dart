@@ -1,7 +1,9 @@
+import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     try {
       final user = await ApiService.login(userName, password);
+
+      await Provider.of<UserProvider>(
+        context,
+        listen: false,
+      ).fetchUserData(user.empId);
 
       ScaffoldMessenger.of(
         context,

@@ -1,13 +1,19 @@
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:capital_care/views/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async{
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => LeadProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => LeadProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: const MyApp(),
     ),
   );

@@ -5,6 +5,10 @@ import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class LeadDetailsScreen extends StatefulWidget {
+  final lead;
+
+  const LeadDetailsScreen({super.key, required this.lead});
+
   @override
   _LeadDetailsScreenState createState() => _LeadDetailsScreenState();
 }
@@ -132,7 +136,10 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("priyanshu", style: TextStyle(fontSize: 20)),
+                          Text(
+                            widget.lead.name,
+                            style: TextStyle(fontSize: 20),
+                          ),
                           IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
                         ],
                       ),

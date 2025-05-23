@@ -11,7 +11,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class AddLeadScreen extends StatefulWidget {
-  const AddLeadScreen({super.key});
+  String userId;
+  String userName;
+  AddLeadScreen({super.key, required this.userId, required this.userName});
 
   @override
   State<AddLeadScreen> createState() => _AddLeadScreenState();
@@ -71,33 +73,41 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   ];
 
   void handleSubmit() async {
-    AddLeads lead = AddLeads(
-      person_id: 1,
-      name: contactNameController.text,
-      number: contactNumberController.text,
-      owner: ownerController.text,
-      branch: branchController.text,
-      source: sourceController.text,
-      level: levelController.text,
-      status: statusController.text,
-      next_meeting: nextMeetingTimeController.text,
-      refrence: referenceController.text,
-      description: descriptionController.text,
-    );
+    if (contactNameController.text.isEmpty ||
+        contactNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Name and Number can't be null")));
+    } else {
+      AddLeads lead = AddLeads(
+        person_id: widget.userId,
+        name: contactNameController.text,
+        number: contactNumberController.text,
+        owner: ownerController.text,
+        branch: branchController.text,
+        source: sourceController.text,
+        priority: levelController.text,
+        status: statusController.text,
+        next_meeting: nextMeetingTimeController.text,
+        refrence: referenceController.text,
+        description: descriptionController.text,
+      );
 
-    bool success = await ApiService.addLead(lead);
-    Provider.of<LeadProvider>(context, listen: false).addLead();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
-    Navigator.pop(context);
+      bool success = await ApiService.addLead(lead);
+      Provider.of<LeadProvider>(context, listen: false).addLead();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+      Navigator.pop(context);
+    }
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    ownerController.text = "Preassigned owner Name";
+    ownerController.text = widget.userName;
+    levelController.text = "Lower";
   }
 
   @override
@@ -221,7 +231,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               hint: "--Loan Type--",
               options: loanType,
               onChange: (value) {
-                loanTypeController = value;
+                loanTypeController.text = value;
               },
             ),
             SizedBox(height: 10),

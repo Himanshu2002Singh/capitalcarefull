@@ -1,11 +1,11 @@
 class AddLeads {
-  final int person_id;
+  final String person_id;
   final String name;
   final String number;
   final String owner;
   final String branch;
   final String source;
-  final String level;
+  final String priority;
   final String status;
   final String next_meeting;
   final String refrence;
@@ -18,7 +18,7 @@ class AddLeads {
     required this.owner,
     required this.branch,
     required this.source,
-    required this.level,
+    required this.priority,
     required this.status,
     required this.next_meeting,
     required this.refrence,
@@ -32,7 +32,7 @@ class AddLeads {
     "owner" : owner,
     "branch" : branch,
     "source" : source,
-    "level" : level,
+    "priority" : priority,
     "status" : status,
     "next_meeting" : next_meeting,
     "refrence" : refrence,

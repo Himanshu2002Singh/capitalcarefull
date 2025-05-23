@@ -3,17 +3,28 @@ import 'package:capital_care/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 class LeadProvider with ChangeNotifier {
-  var _leads = [];
+  List<GetLead> _leads = [];
+  bool _isLoading = false;
 
-  List get leads => _leads;
+  List<GetLead> get leads => _leads;
+  bool get isLoading => _isLoading;
 
   Future<void> fetchLeads() async {
-    _leads = await ApiService.fetchLeads();
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      _leads = await ApiService.fetchLeads();
+    } catch (e) {
+      print("Error fetching leads: $e");
+      _leads = []; // fallback on error
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void addLead() {
-    fetchLeads();
-    notifyListeners();
+  Future<void> addLead() async {
+    await fetchLeads();
   }
 }

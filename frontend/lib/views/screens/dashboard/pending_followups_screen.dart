@@ -116,14 +116,14 @@ class PendingFollowUpsScreen extends StatelessWidget {
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) =>
-                                                    LeadDetailsScreen(),
-                                          ),
-                                        );
+                                        // Navigator.push(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //     builder:
+                                        //         (context) =>
+                                        //             LeadDetailsScreen(),
+                                        //   ),
+                                        // );
                                       },
                                       icon: Icon(Icons.remove_red_eye),
                                     ),
