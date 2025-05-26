@@ -81,6 +81,22 @@ class ApiService {
       return false;
     }
   }
+  // static Future<bool> editLead(AddLeads lead) async {
+  //   final url = Uri.parse("$baseUrl/leads");
+  //   final response = await http.post(
+  //     url,
+  //     headers: {"Content-Type": "application/json"},
+  //     body: jsonEncode(lead.toJson()),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     print("lead added : ${response.body}");
+  //     return true;
+  //   } else {
+  //     print("failed : ${response.body}");
+  //     return false;
+  //   }
+  // }
 
   static Future<bool> updateLead(int id, UpdateLead lead) async {
     final url = Uri.parse(

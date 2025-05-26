@@ -79,6 +79,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
           MaterialPageRoute(
             builder:
                 (context) => AddLeadScreen(
+                  title: "Add Lead",
                   userId: user?.empId ?? "",
                   userName: user?.ename ?? "",
                 ),

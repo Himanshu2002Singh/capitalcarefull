@@ -9,6 +9,11 @@ class GetLead {
   final String status;
   final String next_meeting;
   final String createdAt;
+  final String est_budget;
+  final String email;
+  final String address;
+  final String refrence;
+  final String loanType;
 
   GetLead({
     required this.lead_id,
@@ -21,6 +26,11 @@ class GetLead {
     required this.status,
     required this.description,
     required this.next_meeting,
+    required this.est_budget,
+    required this.address,
+    required this.email,
+    required this.refrence,
+    required this.loanType,
   });
 
   factory GetLead.fromJson(Map<String, dynamic> json) {
@@ -35,6 +45,11 @@ class GetLead {
       status: json['status'] ?? "Fresh lead",
       description: json['description'] ?? "",
       next_meeting: json['next_meeting'] ?? "",
+      est_budget: json['est_budget'] ?? "",
+      address: json['address'] ?? "",
+      email: json['email'] ?? "",
+      refrence: json['refrence'],
+      loanType: json['loan_type'],
     );
   }
 }

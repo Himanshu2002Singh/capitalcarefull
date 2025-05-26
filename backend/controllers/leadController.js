@@ -2,7 +2,7 @@ const Lead = require('../models/leadModel');
 
 
 exports.addLead = async (req, res) => {
-    const {person_id, name, number, owner, branch, source, priority, status, next_meeting, refrence, description} = req.body;
+    const {person_id, name, number, email, owner, branch, source, priority, status, next_meeting, refrence, description, address, loan_type} = req.body;
 
     if(!name || !number){
         return res.status(400).json({message : 'name and number are required'});
@@ -12,7 +12,8 @@ exports.addLead = async (req, res) => {
         const newLead = await Lead.create({
             person_id, 
             name,
-            number, 
+            number,
+            email, 
             owner, 
             branch,
             source, 
@@ -20,7 +21,9 @@ exports.addLead = async (req, res) => {
             status,
             next_meeting,
             refrence, 
-            description
+            description,
+            address,
+            loan_type
         });
         res.status(200).json({message : "lead added successfully", id : newLead.lead_id});
     }catch(error){

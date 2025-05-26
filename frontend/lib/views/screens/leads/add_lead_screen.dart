@@ -13,7 +13,37 @@ import 'package:provider/provider.dart';
 class AddLeadScreen extends StatefulWidget {
   String userId;
   String userName;
-  AddLeadScreen({super.key, required this.userId, required this.userName});
+  final title;
+  var contactName;
+  var contactNumber;
+  var email;
+  var branch;
+  var source;
+  var priority;
+  var status;
+  var next_meeting;
+  var refrence;
+  var description;
+  var address;
+  var loanType;
+  AddLeadScreen({
+    super.key,
+    required this.title,
+    required this.userId,
+    required this.userName,
+    this.contactName,
+    this.contactNumber,
+    this.email,
+    this.branch,
+    this.source,
+    this.address,
+    this.description,
+    this.next_meeting,
+    this.priority,
+    this.refrence,
+    this.status,
+    this.loanType,
+  });
 
   @override
   State<AddLeadScreen> createState() => _AddLeadScreenState();
@@ -22,6 +52,7 @@ class AddLeadScreen extends StatefulWidget {
 class _AddLeadScreenState extends State<AddLeadScreen> {
   final TextEditingController contactNameController = TextEditingController();
   final TextEditingController contactNumberController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController ownerController = TextEditingController();
   final TextEditingController referenceController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -33,6 +64,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   TextEditingController statusController = TextEditingController();
   TextEditingController nextMeetingTimeController = TextEditingController();
   TextEditingController loanTypeController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
   File? lastSalaryController;
   File? cibilController;
   File? identityController;
@@ -83,6 +115,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         person_id: widget.userId,
         name: contactNameController.text,
         number: contactNumberController.text,
+        email: emailController.text,
         owner: ownerController.text,
         branch: branchController.text,
         source: sourceController.text,
@@ -91,6 +124,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         next_meeting: nextMeetingTimeController.text,
         refrence: referenceController.text,
         description: descriptionController.text,
+        address: addressController.text,
+        loanType: loanTypeController.text,
       );
 
       bool success = await ApiService.addLead(lead);
@@ -108,6 +143,26 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     super.initState();
     ownerController.text = widget.userName;
     levelController.text = "Lower";
+
+    contactNameController.text =
+        widget.contactName == null ? "" : widget.contactName;
+
+    contactNumberController.text =
+        widget.contactNumber == null ? "" : widget.contactNumber;
+    emailController.text = widget.email == null ? "" : widget.email;
+    branchController.text = widget.branch == null ? "" : widget.branch;
+    sourceController.text = widget.source == null ? "" : widget.source;
+    levelController.text = widget.priority == null ? "" : widget.priority;
+    statusController.text = widget.status == null ? "" : widget.status;
+    nextMeetingTimeController.text =
+        widget.next_meeting == null
+            ? ""
+            : (widget.next_meeting).substring(0, 10);
+    referenceController.text = widget.refrence == null ? "" : widget.refrence;
+    descriptionController.text =
+        widget.description == null ? "" : widget.description;
+    addressController.text = widget.address == null ? "" : widget.address;
+    loanTypeController.text = widget.loanType == null ? "" : widget.loanType;
   }
 
   @override
@@ -123,7 +178,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Lead'),
+        title: Text(widget.title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -141,14 +196,18 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             CustomTextField(
               hint: "Contact Name",
               controller: contactNameController,
+              maxLine: 1,
             ),
             SizedBox(height: 12),
             CustomTextField(
               hint: "Contact Number",
               controller: contactNumberController,
               keyboardType: TextInputType.phone,
+              maxLine: 1,
             ),
             const SizedBox(height: 16),
+            CustomTextField(hint: "Email", controller: emailController),
+            const SizedBox(height: 12),
 
             const SectionTitle(title: "Company Other Details"),
             const SizedBox(height: 8),
@@ -163,7 +222,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             const SizedBox(height: 12),
             CustomDropdown(
-              hint: "-- Select Source --",
+              hint:
+                  widget.source == null ? "-- Select Source --" : widget.source,
               options: sourceOptions,
               onChange: (value) {
                 sourceController.text = value;
@@ -171,7 +231,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             const SizedBox(height: 12),
             CustomDropdown(
-              hint: "Lower",
+              hint: widget.priority == null ? "Lower" : widget.priority,
               options: levelOptions,
               onChange: (value) {
                 levelController.text = value;
@@ -179,22 +239,22 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             const SizedBox(height: 12),
             CustomDropdown(
-              hint: "Select Status",
+              hint: widget.status == null ? "Select Status" : widget.status,
               options: statusOptions,
               onChange: (value) {
                 setState(() {
                   statusController.text = value;
-                  // print("=======================>${statusController.text}");
                 });
               },
             ),
             const SizedBox(height: 12),
-            if (statusController.text == "Interested")
+            if (statusController.text != "No Requirement")
               GestureDetector(
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
+
                     firstDate: DateTime(2025),
                     lastDate: DateTime(2026),
                   );
@@ -215,20 +275,27 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                   ),
                 ),
               ),
-            if (statusController.text == "Interested") SizedBox(height: 12),
+            if (statusController.text != "No Requirement") SizedBox(height: 12),
             CustomTextField(hint: "Reference", controller: referenceController),
             const SizedBox(height: 12),
             CustomTextField(
               hint: "Description",
               controller: descriptionController,
             ),
+            const SizedBox(height: 12),
+            CustomTextField(
+              hint: "Address",
+              controller: addressController,
+              maxLine: null,
+            ),
+
             const SizedBox(height: 20),
 
             const SectionTitle(title: "Company Dynamic Questions"),
             const SizedBox(height: 20),
 
             CustomDropdown(
-              hint: "--Loan Type--",
+              hint: widget.loanType == null ? "--Loan Type--" : widget.loanType,
               options: loanType,
               onChange: (value) {
                 loanTypeController.text = value;
@@ -311,11 +378,13 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final keyboardType;
+  final maxLine;
   const CustomTextField({
     super.key,
     required this.hint,
     required this.controller,
     this.keyboardType,
+    this.maxLine,
   });
 
   @override
@@ -323,6 +392,7 @@ class CustomTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      maxLines: maxLine,
       decoration: InputDecoration(
         hintText: hint,
         border: const OutlineInputBorder(),

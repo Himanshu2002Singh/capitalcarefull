@@ -24,6 +24,10 @@ const Lead = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    email: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     owner: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -55,6 +59,14 @@ const Lead = sequelize.define(
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    address: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    loan_type: {
+      type : DataTypes.TEXT,
+      allowNull: null
     },
     est_budget: {
       type: DataTypes.STRING,

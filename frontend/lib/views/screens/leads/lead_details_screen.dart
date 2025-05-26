@@ -1,8 +1,11 @@
+import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/leads/add_lead_screen.dart';
 import 'package:capital_care/views/screens/task/add_task_screen.dart';
 import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LeadDetailsScreen extends StatefulWidget {
   final lead;
@@ -115,6 +118,11 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildDetailsTab() {
+    DateTime d1 = DateTime.parse(widget.lead.next_meeting);
+    DateTime d2 = DateTime.parse(widget.lead.createdAt);
+    final int daysDiff = ((d1).difference(d2).inDays);
+    final user = Provider.of<UserProvider>(context).user;
+
     return SingleChildScrollView(
       child: Container(
         color: const Color.fromARGB(255, 239, 238, 238), // B,
@@ -140,15 +148,52 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             widget.lead.name,
                             style: TextStyle(fontSize: 20),
                           ),
-                          IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => AddLeadScreen(
+                                        title: "Edit Lead",
+                                        userId: user?.empId ?? "",
+                                        userName: user?.ename ?? "",
+                                        contactName: widget.lead.name,
+                                        contactNumber: widget.lead.number,
+                                        email: widget.lead.email,
+                                        // branch: widget.lead.branch,
+                                        source: widget.lead.source,
+                                        priority: widget.lead.priority,
+                                        status: widget.lead.status,
+                                        next_meeting: widget.lead.next_meeting,
+                                        refrence: widget.lead.refrence,
+                                        description: widget.lead.description,
+                                        address: widget.lead.address,
+                                        loanType: widget.lead.loanType,
+                                      ),
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
                         ],
                       ),
                       SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: Text("₹ 0.00")),
-                          Expanded(child: Text("03 May 2025")),
-                          Expanded(child: Text("2 Days")),
+                          Expanded(
+                            child: Text(
+                              widget.lead.est_budget == ""
+                                  ? "\u20B9 0.00"
+                                  : widget.lead.est_budget,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              (widget.lead.next_meeting).substring(0, 10),
+                            ),
+                          ),
+                          Expanded(child: Text("$daysDiff days")),
                         ],
                       ),
                       SizedBox(height: 10),
@@ -156,7 +201,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.email, size: 18),
                           SizedBox(width: 6),
-                          Text("star6priyanshu@gmail.com"),
+                          Text(widget.lead.email),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -164,7 +209,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.phone, size: 18),
                           SizedBox(width: 6),
-                          Text("9411619711"),
+                          Text(widget.lead.number),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -172,9 +217,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.location_on, size: 18),
                           SizedBox(width: 6),
-                          Expanded(
-                            child: Text("Not Available, Not Available, India"),
-                          ),
+                          Expanded(child: Text(widget.lead.email)),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -182,7 +225,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.calendar_today, size: 18),
                           SizedBox(width: 6),
-                          Text("03 May 2025 17:22"),
+                          Text(widget.lead.createdAt),
                         ],
                       ),
                     ],
@@ -210,11 +253,11 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                       ),
                     ),
                     Divider(),
-                    _buildDetailRow("Assigned To :", "Mukund"),
-                    _buildDetailRow("Added By :", "Mukund"),
-                    _buildDetailRow("Source :", "Internet"),
-                    _buildDetailRow("Reference", ""),
-                    _buildDetailRow("Description", ""),
+                    _buildDetailRow("Assigned To :", widget.lead.owner),
+                    _buildDetailRow("Added By :", widget.lead.owner),
+                    _buildDetailRow("Source :", widget.lead.source),
+                    _buildDetailRow("Reference", widget.lead.refrence),
+                    _buildDetailRow("Description", widget.lead.description),
                   ],
                 ),
               ),
