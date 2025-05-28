@@ -54,7 +54,8 @@ class ApiService {
   }
 
   static Future<List<Leads>> fetchLeads() async {
-    final url = Uri.parse("$baseUrl/leads");
+    final emp_id = await secureStorage.read(key: "userId");
+    final url = Uri.parse("$baseUrl/leads/$emp_id");
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

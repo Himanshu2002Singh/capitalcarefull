@@ -56,8 +56,6 @@ exports.updateLead = async (req, res) => {
     }
 };
 
-
-
 exports.getLeads = async (req, res)=>{
     try{
          const lead = await Lead.findAll();
@@ -65,5 +63,19 @@ exports.getLeads = async (req, res)=>{
     }catch(error){
         console.error('Error fetching leads:', error);
         res.status(500).json({ message: 'Database error', error });
+    } 
+};
+
+exports.getLeadsById = async (req, res)=>{
+    const {emp_id} = req.params;
+    try{
+         const lead = await Lead.findAll({
+            where: {person_id : emp_id},
+            order: [['createdAt', 'DESC']],
+         });
+          res.status(200).json(lead);
+    }catch(error){
+        console.error('Error fetching leads:', error);
+        res.status(500).json({ message: 'Database error', error : error });
     } 
 };
