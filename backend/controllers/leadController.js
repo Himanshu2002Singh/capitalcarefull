@@ -33,29 +33,29 @@ exports.addLead = async (req, res) => {
 };
 
 exports.updateLead = async (req, res) => {
-    const {id} = req.params;
-    const {status, priority, next_meeting, est_budget, remark} = req.body;
+    const { id } = req.params;
+    const updateData = req.body;  // Accept any fields from the request body
 
-    if(!id){
+    if (!id) {
         return res.status(400).json({ message: 'Lead ID is required' });
     }
 
-    try{
-        const [updated] = await Lead.update({
-            status, priority, next_meeting, est_budget, remark
-        },{
-            where: {lead_id: id}
+    try {
+        const [updated] = await Lead.update(updateData, {
+            where: { lead_id: id }
         });
-        if(updated === 0){
-            return res.status(404).json({message : "lead not found or no changes made"});
+
+        if (updated === 0) {
+            return res.status(404).json({ message: 'Lead not found or no changes made' });
         }
 
-        res.status(200).json({message: "lead updated successfully"});
-    }catch(error){
+        res.status(200).json({ message: 'Lead updated successfully' });
+    } catch (error) {
         console.error('Error updating lead:', error);
         res.status(500).json({ message: 'Database error', error });
     }
 };
+
 
 
 exports.getLeads = async (req, res)=>{

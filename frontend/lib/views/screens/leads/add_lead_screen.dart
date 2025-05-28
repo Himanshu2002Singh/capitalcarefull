@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:capital_care/controllers/providers/lead_provider.dart';
-import 'package:capital_care/models/add_leads_model.dart';
+import 'package:capital_care/models/history_model.dart';
+import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
@@ -14,6 +14,7 @@ class AddLeadScreen extends StatefulWidget {
   String userId;
   String userName;
   final title;
+  final lead_id;
   var contactName;
   var contactNumber;
   var email;
@@ -31,6 +32,7 @@ class AddLeadScreen extends StatefulWidget {
     required this.title,
     required this.userId,
     required this.userName,
+    this.lead_id,
     this.contactName,
     this.contactNumber,
     this.email,
@@ -100,7 +102,6 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     "User Car Loan",
     "Business Loan",
     "Personal Loan",
-    "Personal Loan",
     "Other",
   ];
 
@@ -111,7 +112,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Name and Number can't be null")));
     } else {
-      AddLeads lead = AddLeads(
+      Leads lead = Leads(
         person_id: widget.userId,
         name: contactNameController.text,
         number: contactNumberController.text,
@@ -128,13 +129,36 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         loanType: loanTypeController.text,
       );
 
-      bool success = await ApiService.addLead(lead);
+      bool success1 =
+          widget.title == "Add Lead"
+              ? await ApiService.addLead(lead)
+              : await ApiService.updateLead(widget.lead_id, lead);
+
       Provider.of<LeadProvider>(context, listen: false).addLead();
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+      ).showSnackBar(SnackBar(content: Text(success1 ? "success" : "Error")));
       Navigator.pop(context);
     }
+  }
+
+  void handleSubmission2() async {
+    List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
+
+    History newHistory = History(
+      lead_id: leads[leads.length - 1].lead_id + 1,
+      owner: ownerController.text,
+      next_meeting: nextMeetingTimeController.text,
+      status: statusController.text,
+    );
+    bool success2 =
+        widget.title == "Add Lead"
+            ? await ApiService.addHistory(newHistory)
+            : true;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(success2 ? "success2" : "Error2")));
   }
 
   @override
@@ -238,44 +262,49 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               },
             ),
             const SizedBox(height: 12),
-            CustomDropdown(
-              hint: widget.status == null ? "Select Status" : widget.status,
-              options: statusOptions,
-              onChange: (value) {
-                setState(() {
-                  statusController.text = value;
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            if (statusController.text != "No Requirement")
-              GestureDetector(
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-
-                    firstDate: DateTime(2025),
-                    lastDate: DateTime(2026),
-                  );
-                  if (pickedDate != null) {
-                    nextMeetingTimeController.text =
-                        pickedDate.toLocal().toString().split(
-                          ' ',
-                        )[0]; // or use DateFormat
-                  }
+            if (widget.title == "Add Lead")
+              CustomDropdown(
+                hint: widget.status == null ? "Select Status" : widget.status,
+                options: statusOptions,
+                onChange: (value) {
+                  setState(() {
+                    statusController.text = value;
+                  });
                 },
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    controller: nextMeetingTimeController,
-                    decoration: InputDecoration(
-                      hintText: 'Select Next Meeting Date',
-                      border: OutlineInputBorder(),
+              ),
+            if (widget.title == "Add Lead") const SizedBox(height: 12),
+
+            if (widget.title == "Add Lead")
+              if (statusController.text != "No Requirement")
+                GestureDetector(
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+
+                      firstDate: DateTime(2025),
+                      lastDate: DateTime(2026),
+                    );
+                    if (pickedDate != null) {
+                      nextMeetingTimeController.text =
+                          pickedDate.toLocal().toString().split(
+                            ' ',
+                          )[0]; // or use DateFormat
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      controller: nextMeetingTimeController,
+                      decoration: InputDecoration(
+                        hintText: 'Select Next Meeting Date',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            if (statusController.text != "No Requirement") SizedBox(height: 12),
+            if (widget.title == "Add Lead")
+              if (statusController.text != "No Requirement")
+                SizedBox(height: 12),
             CustomTextField(hint: "Reference", controller: referenceController),
             const SizedBox(height: 12),
             CustomTextField(
@@ -348,6 +377,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               text: "Add Lead",
               onPressed: () {
                 handleSubmit();
+                handleSubmission2();
               },
             ),
           ],

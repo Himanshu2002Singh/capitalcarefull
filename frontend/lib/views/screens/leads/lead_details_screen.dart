@@ -1,10 +1,13 @@
 import 'package:capital_care/controllers/providers/userprovider.dart';
+import 'package:capital_care/models/history_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/leads/add_lead_screen.dart';
 import 'package:capital_care/views/screens/task/add_task_screen.dart';
 import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class LeadDetailsScreen extends StatefulWidget {
@@ -19,29 +22,18 @@ class LeadDetailsScreen extends StatefulWidget {
 class _LeadDetailsScreenState extends State<LeadDetailsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<HistoryEntry> historyEntries = [
-    HistoryEntry(
-      dateTime: '03-May\n05:22 pm',
-      user: 'Mukund',
-      status: 'Interested',
-      schedule: '13-May-2025 05:21 PM',
-      remark: 'aerea',
-    ),
-    HistoryEntry(
-      dateTime: '03-May\n05:22 pm',
-      user: 'Priyanshu',
-      status: 'Interested',
-      schedule: '13-May-2025 05:21 PM',
-      remark: 'aerea',
-    ),
-    // Add more entries here if needed
-  ];
+  List<History> history = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    fetchHistory();
+  }
+
+  void fetchHistory() async {
+    history = await ApiService.getHistory(widget.lead.lead_id);
+    setState(() {});
   }
 
   @override
@@ -150,7 +142,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                           ),
                           IconButton(
                             onPressed: () {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                   builder:
@@ -158,6 +150,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                                         title: "Edit Lead",
                                         userId: user?.empId ?? "",
                                         userName: user?.ename ?? "",
+                                        lead_id: widget.lead.lead_id,
                                         contactName: widget.lead.name,
                                         contactNumber: widget.lead.number,
                                         email: widget.lead.email,
@@ -185,7 +178,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             child: Text(
                               widget.lead.est_budget == ""
                                   ? "\u20B9 0.00"
-                                  : widget.lead.est_budget,
+                                  : "\u20B9 ${widget.lead.est_budget}",
                             ),
                           ),
                           Expanded(
@@ -225,7 +218,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.calendar_today, size: 18),
                           SizedBox(width: 6),
-                          Text(widget.lead.createdAt),
+                          Text(formatDateTime(widget.lead.createdAt)),
                         ],
                       ),
                     ],
@@ -269,25 +262,32 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildHistory() {
+    // setState(() {});
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           children:
-              historyEntries.map((entry) {
-                int index = historyEntries.indexOf(entry);
-                bool isLast = index == historyEntries.length - 1;
+              history.map((entry) {
+                // int index = history.indexOf(entry);
+                // bool isLast = index == history.length - 1;
+                // print(entry);
 
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
+                      alignment: Alignment.topLeft,
                       width: 60,
                       // padding: EdgeInsets.only(top: 12),
                       child: Text(
-                        entry.dateTime,
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                        textAlign: TextAlign.right,
+                        "${formatDate(entry.createdAt)} \n${formatTime(entry.createdAt)}",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.start,
                       ),
                     ),
                     Padding(
@@ -330,7 +330,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "User : ${entry.user}",
+                              "User : ${entry.owner}",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             SizedBox(height: 4),
@@ -353,7 +353,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             ),
                             SizedBox(height: 2),
                             Text(
-                              "Schedule : ${entry.schedule}",
+                              "Schedule : ${formatDateTime(entry.next_meeting)}",
                               style: TextStyle(color: Colors.purple),
                             ),
                             SizedBox(height: 2),
@@ -391,18 +391,36 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 }
 
-class HistoryEntry {
-  final String dateTime;
-  final String user;
-  final String status;
-  final String schedule;
-  final String remark;
-
-  HistoryEntry({
-    required this.dateTime,
-    required this.user,
-    required this.status,
-    required this.schedule,
-    required this.remark,
-  });
+String formatDate(String dateTimeString) {
+  final dateTime = DateTime.parse(dateTimeString);
+  final formatter = DateFormat('d MMM');
+  return formatter.format(dateTime);
 }
+
+String formatTime(String dateTimeString) {
+  final dateTime = DateTime.parse(dateTimeString);
+  final formatter = DateFormat('hh:mm a');
+  return formatter.format(dateTime);
+}
+
+String formatDateTime(String dateTimeString) {
+  final dateTime = DateTime.parse(dateTimeString);
+  final formatter = DateFormat('d-MMM-yyyy hh:mm a');
+  return formatter.format(dateTime);
+}
+
+// class HistoryEntry {
+//   final String dateTime;
+//   final String user;
+//   final String status;
+//   final String schedule;
+//   final String remark;
+
+//   HistoryEntry({
+//     required this.dateTime,
+//     required this.user,
+//     required this.status,
+//     required this.schedule,
+//     required this.remark,
+//   });
+// }

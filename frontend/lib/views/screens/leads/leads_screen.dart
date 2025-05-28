@@ -25,7 +25,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final leadProvider = Provider.of<LeadProvider>(context);
+    final leadProvider = Provider.of<LeadProvider>(context, listen: true);
     final leads = leadProvider.leads;
     final isLoading = leadProvider.isLoading;
 

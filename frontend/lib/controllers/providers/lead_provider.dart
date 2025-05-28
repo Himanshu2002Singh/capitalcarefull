@@ -1,12 +1,12 @@
-import 'package:capital_care/models/get_leads_model.dart';
+import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 class LeadProvider with ChangeNotifier {
-  List<GetLead> _leads = [];
+  List<Leads> _leads = [];
   bool _isLoading = false;
 
-  List<GetLead> get leads => _leads;
+  List<Leads> get leads => _leads;
   bool get isLoading => _isLoading;
 
   Future<void> fetchLeads() async {
@@ -26,5 +26,6 @@ class LeadProvider with ChangeNotifier {
 
   Future<void> addLead() async {
     await fetchLeads();
+    notifyListeners();
   }
 }

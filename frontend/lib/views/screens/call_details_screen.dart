@@ -1,4 +1,6 @@
-import 'package:capital_care/models/update_lead_model.dart';
+import 'package:capital_care/models/history_model.dart';
+import 'package:capital_care/models/leads_model.dart';
+
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
@@ -27,22 +29,37 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     if (feedbackStatus == null) {
       feedbackStatus = widget.lead.status;
     }
+
     if (priority == null) {
       priority = widget.lead.priority;
     }
-    UpdateLead updateLead = UpdateLead(
+
+    Leads updateLead = Leads(
       status: feedbackStatus!,
       priority: priority!,
-      nextMeeting: nextMeetingController.text,
-      estBudget: budgetController.text,
+      next_meeting: nextMeetingController.text,
+      est_budget: budgetController.text,
       remark: remarkController.text,
     );
-    bool success = await ApiService.updateLead(widget.lead.id, updateLead);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
-    if (success) {
+    History newHistory = History(
+      lead_id: widget.lead.lead_id,
+      owner: widget.lead.owner,
+      next_meeting: nextMeetingController.text,
+      status: feedbackStatus,
+      remark: remarkController.text,
+    );
+
+    bool success1 = await ApiService.updateLead(
+      widget.lead.lead_id,
+      updateLead,
+    );
+    bool success2 = await ApiService.addHistory(newHistory);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success1 && success2 ? "success" : "Error")),
+    );
+    if (success1 && success2) {
       Navigator.pop(context);
     }
   }
