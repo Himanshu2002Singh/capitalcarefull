@@ -16,7 +16,7 @@ const Sidebar = () => {
         <ul className="space-y-1">
           <li>
             <Link
-              to="/add-cold-call"
+              to="/leads"
               className="text-black hover:text-blue-600 text-[15px] flex items-center hover:bg-white rounded px-4 py-3 transition-all"
             >
               <svg
