@@ -125,13 +125,13 @@ exports.createuserusingexcel = async (req, res) => {
         username: employeeId,
         password: password,
       });
-      // const mailOptions = {
-      //   from: process.env.EMAIL_USER,
-      //   to: email,
-      //   subject: "Your login Details for website",
-      //   text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
-      // };
-      // await transporter.sendMail(mailOptions);
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Your login Details for website",
+        text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
+      };
+      await transporter.sendMail(mailOptions);
 
       createdUsers.push({
         employeeId: newUser.employeeId,
@@ -153,22 +153,24 @@ exports.createuserusingexcel = async (req, res) => {
   }
 };
 
-exports.loginEmployee = async (req, res) =>{
-  const {username, password} = req.body;
+exports.loginEmployee = async (req, res) => {
+  const { username, password } = req.body;
 
-  if(!username || !password){
-    return res.status(400).json({message : "username and password are required fields"});
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: "username and password are required fields" });
   }
 
-  try{
-    const employee = await Employee.findOne({where : {username}});
+  try {
+    const employee = await Employee.findOne({ where: { username } });
 
-    if(!employee){
-      return res.status(401).json({message : "Invalid username or password"});
+    if (!employee) {
+      return res.status(401).json({ message: "Invalid username or password" });
     }
 
     // const isPasswordValid = await bcrypt.compare(password, employee.password);
-    
+
     // if(!isPasswordValid){
     //   return res.status(401).json({message : "Invalid username or password"});
     // }
@@ -178,35 +180,41 @@ exports.loginEmployee = async (req, res) =>{
     }
 
     const token = jwt.sign(
-      {id : employee.emp_id, username : employee.username},
-      SECRETE_KEY, 
-      {expiresIn : "7d"}
+      { id: employee.emp_id, username: employee.username },
+      SECRETE_KEY,
+      { expiresIn: "7d" }
     );
 
-    return res.status(200).json({message : "login Successfull", token, employee : {
-      emp_id: employee.emp_id,
+    return res.status(200).json({
+      message: "login Successfull",
+      token,
+      employee: {
+        emp_id: employee.emp_id,
         username: employee.username,
         email: employee.email,
         ename: employee.ename,
-    }});
-  }catch(e){
+      },
+    });
+  } catch (e) {
     console.error("login error : ", e);
-    return res.status(500).json({message : "Internal Server Error", error : e.message});
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: e.message });
   }
 };
 
 exports.getEmployeeById = async (req, res) => {
   const userId = req.params.id;
 
-  try{
+  try {
     const user = await Employee.findByPk(userId);
 
-    if(!user){
-      return res.status(404).json({message : 'User not found'});
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
-  }catch{
+  } catch {
     console.error("Error fetching user by id", error);
-    res.status(500).json({message : 'Server error'});
+    res.status(500).json({ message: "Server error" });
   }
-}
+};
