@@ -31,8 +31,8 @@ const AddUserExcel = ({ handleCloseaddcallExcelModal }) => {
       alert("Users created successfully!");
       handleCloseaddcallExcelModal();
     } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Error creating users. Please try again.");
+      console.log("Error uploading file:", error);
+      // alert("Error creating users. Please try again.");
     }
   };
 

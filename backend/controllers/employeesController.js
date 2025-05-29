@@ -146,7 +146,7 @@ exports.createuserusingexcel = async (req, res) => {
       users: createdUsers,
     });
   } catch (error) {
-    console.error("Error creating users from Excel:", error);
+    console.log("Error creating users from Excel:", error);
     res
       .status(500)
       .json({ message: "Error creating users", error: error.message });

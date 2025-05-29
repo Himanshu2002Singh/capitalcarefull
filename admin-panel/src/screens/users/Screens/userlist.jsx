@@ -166,6 +166,9 @@ const UserList = () => {
                 Phonenumber
               </th>
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
+                Password
+              </th>
+              <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Actions
               </th>
             </tr>
@@ -182,6 +185,10 @@ const UserList = () => {
                 <td className="p-4 text-[15px] text-gray-800">{user.ename}</td>
                 <td className="p-4 text-[15px] text-gray-800">{user.email}</td>
                 <td className="p-4 text-[15px] text-gray-800">{user.phone}</td>
+                <td className="p-4 text-[15px] text-gray-800">
+                  {user.password}
+                </td>
+
                 <td className="p-4">
                   <button className="mr-4" title="Edit">
                     <svg
