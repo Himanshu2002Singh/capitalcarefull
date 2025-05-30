@@ -138,27 +138,30 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(success1 ? "success" : "Error")));
+      handleSubmission2();
       Navigator.pop(context);
     }
   }
 
   void handleSubmission2() async {
     List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
-
-    History newHistory = History(
-      lead_id: leads[leads.length - 1].lead_id + 1,
-      owner: ownerController.text,
-      next_meeting: nextMeetingTimeController.text,
-      status: statusController.text,
-    );
-    bool success2 =
-        widget.title == "Add Lead"
-            ? await ApiService.addHistory(newHistory)
-            : true;
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success2 ? "success2" : "Error2")));
+    if (contactNameController.text.isEmpty ||
+        contactNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Name and Number can't be null")));
+    } else {
+      History newHistory = History(
+        lead_id: leads[0].lead_id + 1,
+        owner: ownerController.text,
+        next_meeting: nextMeetingTimeController.text,
+        status: statusController.text,
+      );
+      bool success2 =
+          widget.title == "Add Lead"
+              ? await ApiService.addHistory(newHistory)
+              : false;
+    }
   }
 
   @override
@@ -179,9 +182,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     levelController.text = widget.priority == null ? "" : widget.priority;
     statusController.text = widget.status == null ? "" : widget.status;
     nextMeetingTimeController.text =
-        widget.next_meeting == null
-            ? ""
-            : (widget.next_meeting).substring(0, 10);
+        widget.next_meeting == null ? "" : widget.next_meeting;
     referenceController.text = widget.refrence == null ? "" : widget.refrence;
     descriptionController.text =
         widget.description == null ? "" : widget.description;
@@ -247,7 +248,9 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             const SizedBox(height: 12),
             CustomDropdown(
               hint:
-                  widget.source == null ? "-- Select Source --" : widget.source,
+                  widget.source == null || widget.source.isEmpty
+                      ? "-- Select Source --"
+                      : widget.source,
               options: sourceOptions,
               onChange: (value) {
                 sourceController.text = value;
@@ -255,7 +258,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             const SizedBox(height: 12),
             CustomDropdown(
-              hint: widget.priority == null ? "Lower" : widget.priority,
+              hint:
+                  widget.priority == null || widget.priority.isEmpty
+                      ? "Lower"
+                      : widget.priority,
               options: levelOptions,
               onChange: (value) {
                 levelController.text = value;
@@ -324,7 +330,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             const SizedBox(height: 20),
 
             CustomDropdown(
-              hint: widget.loanType == null ? "--Loan Type--" : widget.loanType,
+              hint:
+                  widget.loanType == null || widget.loanType.isEmpty
+                      ? "--Loan Type--"
+                      : widget.loanType,
               options: loanType,
               onChange: (value) {
                 loanTypeController.text = value;
@@ -374,10 +383,9 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             SizedBox(height: 20),
             CustomButton(
-              text: "Add Lead",
+              text: widget.title,
               onPressed: () {
                 handleSubmit();
-                handleSubmission2();
               },
             ),
           ],

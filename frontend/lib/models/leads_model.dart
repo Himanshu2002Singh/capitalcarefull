@@ -64,7 +64,7 @@ class Leads {
     return Leads(
       lead_id: json['lead_id'],
       name: json['name'] ?? "",
-      number: json['number'] ?? "1",
+      number: json['number'] ?? "",
       owner: json['owner'] ?? "",
       source: json['source'] ?? "",
       createdAt: json['createdAt'] ?? "",
@@ -75,8 +75,9 @@ class Leads {
       est_budget: json['est_budget'] ?? "",
       address: json['address'] ?? "",
       email: json['email'] ?? "",
-      refrence: json['refrence'],
-      loanType: json['loan_type'],
+      refrence: json['refrence'] ?? "",
+      loanType: json['loan_type'] ?? "",
+      remark: json['remark'] ?? "",
     );
   }
 }

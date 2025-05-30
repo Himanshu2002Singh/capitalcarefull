@@ -110,9 +110,16 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildDetailsTab() {
-    DateTime d1 = DateTime.parse(widget.lead.next_meeting);
-    DateTime d2 = DateTime.parse(widget.lead.createdAt);
-    final int daysDiff = ((d1).difference(d2).inDays);
+    int daysDiff = 0;
+    bool formatError = false;
+    try {
+      DateTime d1 = DateTime.parse(widget.lead.next_meeting);
+      DateTime d2 = DateTime.parse(widget.lead.createdAt);
+      daysDiff = ((d1).difference(d2).inDays) + 1;
+    } catch (e) {
+      daysDiff = 0;
+      formatError = true;
+    }
     final user = Provider.of<UserProvider>(context).user;
 
     return SingleChildScrollView(
@@ -183,10 +190,17 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                           ),
                           Expanded(
                             child: Text(
-                              (widget.lead.next_meeting).substring(0, 10),
+                              formatError
+                                  ? ""
+                                  : (widget.lead.next_meeting).substring(0, 10),
                             ),
                           ),
-                          Expanded(child: Text("$daysDiff days")),
+                          Expanded(
+                            child: Text(
+                              "$daysDiff days",
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 10),
@@ -210,7 +224,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.location_on, size: 18),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.email)),
+                          Expanded(child: Text(widget.lead.address)),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -262,7 +276,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildHistory() {
-    // setState(() {});
+    // print(history[history.length - 1].createdAt);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -271,7 +285,12 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
               history.map((entry) {
                 // int index = history.indexOf(entry);
                 // bool isLast = index == history.length - 1;
-                // print(entry);
+                String nextMeeting;
+                try {
+                  nextMeeting = formatDateTime(entry.next_meeting);
+                } catch (e) {
+                  nextMeeting = "";
+                }
 
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +372,8 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             ),
                             SizedBox(height: 2),
                             Text(
-                              "Schedule : ${formatDateTime(entry.next_meeting)}",
+                              "Schedule : ${nextMeeting}",
+                              // "Schedule : ",
                               style: TextStyle(color: Colors.purple),
                             ),
                             SizedBox(height: 2),
@@ -398,7 +418,7 @@ String formatDate(String dateTimeString) {
 }
 
 String formatTime(String dateTimeString) {
-  final dateTime = DateTime.parse(dateTimeString);
+  final dateTime = DateTime.parse(dateTimeString).toLocal();
   final formatter = DateFormat('hh:mm a');
   return formatter.format(dateTime);
 }

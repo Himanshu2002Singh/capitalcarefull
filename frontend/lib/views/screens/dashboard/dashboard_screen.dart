@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/dashboard/pending_followups_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
@@ -6,6 +7,7 @@ import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:capital_care/views/widgets/dialPadBottomSheet.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
@@ -40,6 +42,16 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // /// The code snippet `Provider.of<LeadProvider>(context, listen: false).fetchLeads();` is calling
+    /// the `fetchLeads()` method from the `LeadProvider` class using the `Provider` package in
+    /// Flutter. This method is likely responsible for fetching lead data from a data source or API.
+    // Provider.of<LeadProvider>(context, listen: false).fetchLeads();
+    // final boxCountList = [
+    //   0,
+    //   0,
+    //   0,
+    //   Provider.of<LeadProvider>(context, listen: true).leads.length,
+    // ];
     return AppScaffold(
       isFloatingActionButton: true,
       floatingActionButtonIcon: Icon(Icons.add),
@@ -101,7 +113,8 @@ class DashboardScreen extends StatelessWidget {
                                   Center(
                                     child: Column(
                                       children: [
-                                        const Text("0"),
+                                        Text("0"),
+                                        // Text("${boxCountList[index]}"),
                                         const SizedBox(height: 10),
                                         Text(boxTextList[index]),
                                       ],

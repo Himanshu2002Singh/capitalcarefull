@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 
@@ -5,6 +6,7 @@ import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CallDetailsScreen extends StatefulWidget {
   final lead;
@@ -33,6 +35,15 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     if (priority == null) {
       priority = widget.lead.priority;
     }
+    if (nextMeetingController.text.isEmpty) {
+      nextMeetingController.text = widget.lead.next_meeting;
+    }
+    if (budgetController.text.isEmpty) {
+      budgetController.text = widget.lead.est_budget;
+    }
+    if (remarkController.text.isEmpty) {
+      remarkController.text = widget.lead.remark;
+    }
 
     Leads updateLead = Leads(
       status: feedbackStatus!,
@@ -55,6 +66,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       updateLead,
     );
     bool success2 = await ApiService.addHistory(newHistory);
+    Provider.of<LeadProvider>(context, listen: false).addLead();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(success1 && success2 ? "success" : "Error")),

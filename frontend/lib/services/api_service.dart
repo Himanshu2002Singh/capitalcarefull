@@ -121,8 +121,6 @@ class ApiService {
   }
 
   static Future<List<History>> getHistory(int id) async {
-    // print("==========================================> historycalled");
-
     final url = Uri.parse("$baseUrl/histories/$id");
 
     final response = await http.get(url);
@@ -132,6 +130,7 @@ class ApiService {
 
       final List historyList =
           jsonData['history']; // Extract the 'history' list
+      // print(historyList[5]);
 
       return historyList.map((e) => History.fromJson(e)).toList();
     } else {
