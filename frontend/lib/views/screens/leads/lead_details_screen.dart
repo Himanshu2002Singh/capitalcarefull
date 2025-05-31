@@ -53,10 +53,12 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
             MaterialPageRoute(builder: (context) => AddTaskScreen()),
           );
         } else {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => CallDetailsScreen()),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CallDetailsScreen(lead: widget.lead),
+            ),
+          );
         }
       },
       appBar: AppBar(
@@ -276,118 +278,123 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildHistory() {
-    // print(history[history.length - 1].createdAt);
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children:
-              history.map((entry) {
-                // int index = history.indexOf(entry);
-                // bool isLast = index == history.length - 1;
-                String nextMeeting;
-                try {
-                  nextMeeting = formatDateTime(entry.next_meeting);
-                } catch (e) {
-                  nextMeeting = "";
-                }
+    return RefreshIndicator(
+      onRefresh: () async {
+        fetchHistory(); // Fetch latest data
+        await Duration(seconds: 1);
+      },
+      child: SingleChildScrollView(
+        physics:
+            AlwaysScrollableScrollPhysics(), // Add this to enable scroll even if not full screen
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children:
+                history.map((entry) {
+                  String nextMeeting;
+                  try {
+                    nextMeeting = formatDateTime(entry.next_meeting);
+                  } catch (e) {
+                    nextMeeting = "";
+                  }
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      alignment: Alignment.topLeft,
-                      width: 60,
-                      // padding: EdgeInsets.only(top: 12),
-                      child: Text(
-                        "${formatDate(entry.createdAt)} \n${formatTime(entry.createdAt)}",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.start,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 25,
-                            width: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color.fromARGB(255, 203, 202, 202),
-                                width: 3,
-                                style: BorderStyle.solid,
-                              ),
-                            ),
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        alignment: Alignment.topLeft,
+                        width: 60,
+                        child: Text(
+                          "${formatDate(entry.createdAt)} \n${formatTime(entry.createdAt)}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
                           ),
-
-                          Container(
-                            // margin: EdgeInsets.only(left: 15),
-                            width: 2,
-                            height: 100, // adjust this height based on spacing
-                            color: Colors.grey.shade400,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Container(
-                        // margin: EdgeInsets.symmetric(vertical: 10),
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(10),
+                          textAlign: TextAlign.start,
                         ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "User : ${entry.owner}",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 4),
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: "Status : ",
-                                    style: TextStyle(color: Colors.black),
+                            Container(
+                              height: 25,
+                              width: 25,
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    203,
+                                    202,
+                                    202,
                                   ),
-                                  TextSpan(
-                                    text: entry.status,
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                                  width: 3,
+                                  style: BorderStyle.solid,
+                                ),
                               ),
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              "Schedule : ${nextMeeting}",
-                              // "Schedule : ",
-                              style: TextStyle(color: Colors.purple),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              "Remark : ${entry.remark}",
-                              style: TextStyle(color: Colors.brown),
+                            Container(
+                              width: 2,
+                              height: 100,
+                              color: Colors.grey.shade400,
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                );
-              }).toList(),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "User : ${entry.owner}",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 4),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Status : ",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    TextSpan(
+                                      text: entry.status,
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                "Schedule : ${nextMeeting}",
+                                style: TextStyle(color: Colors.purple),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                "Remark : ${entry.remark}",
+                                style: TextStyle(color: Colors.brown),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+          ),
         ),
       ),
     );

@@ -9,9 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   DashboardScreen({super.key});
 
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
   final boxColorList = [
     Colors.red,
     Colors.blueGrey,
@@ -39,19 +44,38 @@ class DashboardScreen extends StatelessWidget {
     PendingFollowUpsScreen(title: "Today FollowUps Detail"),
     LeadsScreen(),
   ];
+  // var tomorrowLeads;
+  // List leads = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Provider.of<LeadProvider>(context, listen: false).fetchLeads();
+    //   print("fetchleads called");
+    // });
+    // // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // leads = Provider.of<LeadProvider>(context, listen: false).leads;
+    // });
+    // final now = DateTime.now();
+    // final tomorrowDate = DateTime(now.year, now.month, now.day + 1);
+
+    // tomorrowLeads = leads.where((lead) {
+    //   if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
+    //     return false;
+    //   } else {
+    //     final leadDate = DateTime.parse(lead.next_meeting);
+    //     return leadDate.year == tomorrowDate.year &&
+    //         leadDate.month == tomorrowDate.month &&
+    //         leadDate.day == tomorrowDate.day;
+    //   }
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // /// The code snippet `Provider.of<LeadProvider>(context, listen: false).fetchLeads();` is calling
-    /// the `fetchLeads()` method from the `LeadProvider` class using the `Provider` package in
-    /// Flutter. This method is likely responsible for fetching lead data from a data source or API.
-    // Provider.of<LeadProvider>(context, listen: false).fetchLeads();
-    // final boxCountList = [
-    //   0,
-    //   0,
-    //   0,
-    //   Provider.of<LeadProvider>(context, listen: true).leads.length,
-    // ];
+    final boxCountList = [0, 0, 0, 0];
     return AppScaffold(
       isFloatingActionButton: true,
       floatingActionButtonIcon: Icon(Icons.add),
@@ -113,8 +137,8 @@ class DashboardScreen extends StatelessWidget {
                                   Center(
                                     child: Column(
                                       children: [
-                                        Text("0"),
-                                        // Text("${boxCountList[index]}"),
+                                        // Text("0"),
+                                        Text("${boxCountList[index]}"),
                                         const SizedBox(height: 10),
                                         Text(boxTextList[index]),
                                       ],

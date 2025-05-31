@@ -1,4 +1,8 @@
+import 'dart:ffi';
+
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/controllers/providers/userprovider.dart';
+import 'package:capital_care/models/employee_model.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 
@@ -10,7 +14,8 @@ import 'package:provider/provider.dart';
 
 class CallDetailsScreen extends StatefulWidget {
   final lead;
-  CallDetailsScreen({super.key, required this.lead});
+  final number;
+  CallDetailsScreen({super.key, this.lead, this.number});
 
   @override
   State<CallDetailsScreen> createState() => _CallDetailsScreenState();
@@ -21,11 +26,16 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
 
   String? priority;
 
+  String? source;
+
   final TextEditingController nextMeetingController = TextEditingController();
 
   final TextEditingController budgetController = TextEditingController();
 
   final TextEditingController remarkController = TextEditingController();
+  final TextEditingController contactNameController = TextEditingController();
+
+  final TextEditingController descriptionController = TextEditingController();
 
   void handleSubmission() async {
     if (feedbackStatus == null) {
@@ -76,6 +86,49 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     }
   }
 
+  void addLeadSubmisstion() async {
+    if (contactNameController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("fill contact name")));
+      return;
+    }
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    Leads newLead = Leads(
+      name: contactNameController.text,
+      number: widget.number,
+      person_id: user?.empId,
+      owner: user?.ename,
+      source: source,
+      description: descriptionController.text,
+      status: feedbackStatus,
+      next_meeting: nextMeetingController.text,
+      remark: remarkController.text,
+      est_budget: budgetController.text,
+    );
+    bool success = await ApiService.addLead(newLead);
+    Provider.of<LeadProvider>(context, listen: false).addLead();
+    updateHistory(user?.ename);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(success ? "Success" : "error")));
+
+    if (success) Navigator.pop(context);
+  }
+
+  void updateHistory(ename) async {
+    List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
+
+    History newHistory = History(
+      lead_id: leads[0].lead_id + 1,
+      owner: ename,
+      next_meeting: nextMeetingController.text,
+      status: feedbackStatus,
+      remark: remarkController.text,
+    );
+    await ApiService.addHistory(newHistory);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -118,11 +171,13 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.lead.number,
+                        widget.lead == null
+                            ? widget.number
+                            : widget.lead.number,
                         style: TextStyle(fontSize: 20, color: Colors.black54),
                       ),
                       Text(
-                        widget.lead.name,
+                        widget.lead == null ? "" : widget.lead.name,
                         style: TextStyle(fontSize: 16, color: Colors.black54),
                       ),
                       const Text(
@@ -213,14 +268,60 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
 
               /// Remark
               buildTextField(controller: remarkController, hint: 'Remark'),
+              SizedBox(height: 10),
 
-              const SizedBox(height: 20),
+              if (widget.lead == null)
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Contact Details",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      buildTextField(
+                        controller: contactNameController,
+                        hint: "Contact Name",
+                      ),
+                      buildDropdown(
+                        value: source,
+                        hint: "--Select Source--",
+                        items: [
+                          "Internet",
+                          "Newspaper",
+                          "Website",
+                          "Refrence",
+                          "Bulk excel",
+                        ],
+                        onChanged: (value) {
+                          source = value;
+                          setState(() {});
+                        },
+                      ),
+                      buildTextField(
+                        controller: descriptionController,
+                        hint: "Description",
+                      ),
+                    ],
+                  ),
+                ),
+
+              SizedBox(height: 20),
 
               /// Submit Button
               CustomButton(
                 text: "SUBMIT",
                 onPressed: () {
-                  handleSubmission();
+                  if (widget.lead == null) {
+                    addLeadSubmisstion();
+                  } else {
+                    handleSubmission();
+                  }
                 },
               ),
 
