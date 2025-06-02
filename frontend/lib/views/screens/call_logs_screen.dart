@@ -1,32 +1,31 @@
+import 'package:capital_care/models/calls_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
-class CallLogsScreen extends StatelessWidget {
-  final List<CallLogEntry> callLogs = [
-    CallLogEntry(
-      name: 'John Doe',
-      number: '+91 9876543210',
-      time: '10:30 AM',
-      status: 'Missed',
-      priority: 'High',
-    ),
-    CallLogEntry(
-      name: 'Alice Smith',
-      number: '+91 9123456780',
-      time: '9:15 AM',
-      status: 'Received',
-      priority: 'Normal',
-    ),
-    CallLogEntry(
-      name: 'Bob Johnson',
-      number: '+91 8000123456',
-      time: 'Yesterday',
-      status: 'Dialed',
-      priority: 'Low',
-    ),
-    // Add more entries as needed
-  ];
+class CallLogsScreen extends StatefulWidget {
+  @override
+  State<CallLogsScreen> createState() => _CallLogsScreenState();
+}
+
+class _CallLogsScreenState extends State<CallLogsScreen> {
+  List<Calls> callLogs = [];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchCallLogs();
+  }
+
+  void fetchCallLogs() async {
+    final storage = FlutterSecureStorage();
+    final userId = await storage.read(key: "userId");
+    callLogs = await ApiService.getCalls(userId!);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +49,11 @@ class CallLogsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Number: ${call.number}'),
-                  Text('Time: ${call.time}'),
-                  Text('Status: ${call.status}'),
+                  Text('Time: ${formatDateTime(call.createdAt)}'),
+                  // Text('Status: ${call.status}'),
                 ],
               ),
-              trailing: PriorityChip(priority: call.priority),
+              // trailing: PriorityChip(priority: call.priority),
             ),
           );
         },
@@ -63,46 +62,11 @@ class CallLogsScreen extends StatelessWidget {
   }
 }
 
-class CallLogEntry {
-  final String name;
-  final String number;
-  final String time;
-  final String status;
-  final String priority;
-
-  CallLogEntry({
-    required this.name,
-    required this.number,
-    required this.time,
-    required this.status,
-    required this.priority,
-  });
-}
-
-class PriorityChip extends StatelessWidget {
-  final String priority;
-
-  const PriorityChip({required this.priority});
-
-  Color get color {
-    switch (priority.toLowerCase()) {
-      case 'high':
-        return Colors.redAccent;
-      case 'normal':
-        return Colors.orange;
-      case 'low':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+String formatDateTime(String dateTimeString) {
+  if (dateTimeString.isEmpty || dateTimeString == null) {
+    return "";
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      label: Text(priority),
-      backgroundColor: color.withOpacity(0.2),
-      labelStyle: TextStyle(color: color, fontWeight: FontWeight.bold),
-    );
-  }
+  final dateTime = DateTime.parse(dateTimeString).toLocal();
+  final formatter = DateFormat('d MMM yyyy hh:mm a');
+  return formatter.format(dateTime);
 }

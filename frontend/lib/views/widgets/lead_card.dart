@@ -1,7 +1,10 @@
+import 'package:capital_care/models/calls_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,6 +23,21 @@ class _LeadCardState extends State<LeadCard> {
 
   List<String> assignLeadOptions = ["User1", "User2", "User3"];
   List<String> filteredUsers = [];
+
+  void submitCall() async {
+    final storage = FlutterSecureStorage();
+    final userId = await storage.read(key: "userId");
+    Calls call = Calls(
+      lead_id: widget.lead.lead_id,
+      emp_id: userId,
+      name: widget.lead.name,
+      number: widget.lead.number,
+    );
+    bool success = await ApiService.addCalls(call);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +241,8 @@ class _LeadCardState extends State<LeadCard> {
           ),
         );
       });
+
+      submitCall();
     } else {
       print("CALL_PHONE permission denied");
     }

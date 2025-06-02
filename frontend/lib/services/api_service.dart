@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:capital_care/constants/server_url.dart';
+import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/models/employee_model.dart';
@@ -135,6 +136,35 @@ class ApiService {
       return historyList.map((e) => History.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load history");
+    }
+  }
+
+  static Future<bool> addCalls(Calls call) async {
+    final url = Uri.parse("$baseUrl/calls");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(call.toJson()),
+    );
+    if (response.statusCode == 200) {
+      print("call added : ${response.body}");
+      return true;
+    } else {
+      print("failed : ${response.body}");
+      return false;
+    }
+  }
+
+  static Future<List<Calls>> getCalls(String id) async {
+    final url = Uri.parse("$baseUrl/calls/$id");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+      final List callList = jsonData['calls'];
+      return callList.map((e) => Calls.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load Calls");
     }
   }
 }

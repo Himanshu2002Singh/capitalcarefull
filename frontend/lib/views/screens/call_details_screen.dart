@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
+import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/models/employee_model.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
@@ -108,7 +109,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     );
     bool success = await ApiService.addLead(newLead);
     Provider.of<LeadProvider>(context, listen: false).addLead();
-    updateHistory(user?.ename);
+    updateHistory(user?.ename, user?.empId);
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(success ? "Success" : "error")));
@@ -116,7 +117,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     if (success) Navigator.pop(context);
   }
 
-  void updateHistory(ename) async {
+  void updateHistory(ename, emp_id) async {
     List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
 
     History newHistory = History(
@@ -127,6 +128,14 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       remark: remarkController.text,
     );
     await ApiService.addHistory(newHistory);
+
+    Calls call = Calls(
+      lead_id: leads[0].lead_id + 1,
+      emp_id: emp_id,
+      name: contactNameController.text,
+      number: widget.number,
+    );
+    await ApiService.addCalls(call);
   }
 
   @override
