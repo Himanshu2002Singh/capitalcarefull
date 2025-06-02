@@ -125,13 +125,13 @@ exports.createuserusingexcel = async (req, res) => {
         username: employeeId,
         password: password,
       });
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Your login Details for website",
-        text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
-      };
-      await transporter.sendMail(mailOptions);
+      // const mailOptions = {
+      //   from: process.env.EMAIL_USER,
+      //   to: email,
+      //   subject: "Your login Details for website",
+      //   text: `Your employee ID is: ${employeeId}\nYour temporary password is: ${password}\nPlease change your password after first login.`,
+      // };
+      // await transporter.sendMail(mailOptions);
 
       createdUsers.push({
         employeeId: newUser.employeeId,
