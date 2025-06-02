@@ -92,7 +92,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     "No Requirement",
     "Follow up",
     "Document Rejected",
-    "Documents Summited",
+    "Documents Submitted",
     "Loan Section",
     "Loan Disbursement",
   ];

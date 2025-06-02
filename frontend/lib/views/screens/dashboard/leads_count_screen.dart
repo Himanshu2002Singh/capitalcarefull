@@ -3,41 +3,13 @@ import 'package:capital_care/views/screens/leads/lead_details_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class PendingFollowUpsScreen extends StatelessWidget {
+class LeadsCountScreen extends StatelessWidget {
   final title;
-  PendingFollowUpsScreen({super.key, required this.title});
-  final List<FollowUp> followUps = [
-    FollowUp(
-      dateTime: '10 May 2025\n02:00 pm',
-      name: 'Deol',
-      number: '9717758933',
-      caller: 'Pradeep',
-      lastCall: '',
-    ),
-    FollowUp(
-      dateTime: '10 May 2025\n01:30 pm',
-      name: 'pk',
-      number: '9995816744',
-      caller: 'Pradeep',
-      lastCall: 'call back',
-    ),
-    FollowUp(
-      dateTime: '07 May 2025\n04:49 pm',
-      name: 'afe',
-      number: '5467890435',
-      caller: 'Mukund',
-      lastCall: 'asfadsf',
-    ),
-    FollowUp(
-      dateTime: '05 May 2025\n05:09 pm',
-      name: 'ram',
-      number: '9999977888',
-      caller: 'Pradeep',
-      lastCall: 'hhhhhh',
-    ),
-  ];
-
+  final leads;
+  LeadsCountScreen({super.key, required this.title, required this.leads});
+  
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -48,18 +20,22 @@ class PendingFollowUpsScreen extends StatelessWidget {
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 10),
-          Text(
-            'Total FollowUps - ${followUps.length}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              'Total FollowUps - ${leads.length}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
-              itemCount: followUps.length,
+              itemCount: leads.length,
               itemBuilder: (context, index) {
-                final f = followUps[index];
+                final f = leads[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -87,7 +63,7 @@ class PendingFollowUpsScreen extends StatelessWidget {
                           ),
                           child: Center(
                             child: Text(
-                              f.dateTime,
+                              "${formatDateTime(f.next_meeting)}",
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -106,6 +82,7 @@ class PendingFollowUpsScreen extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
+                                        // "",
                                         f.name,
                                         style: const TextStyle(
                                           color: Colors.blue,
@@ -116,14 +93,14 @@ class PendingFollowUpsScreen extends StatelessWidget {
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder:
-                                        //         (context) =>
-                                        //             LeadDetailsScreen(),
-                                        //   ),
-                                        // );
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    LeadDetailsScreen(lead: f),
+                                          ),
+                                        );
                                       },
                                       icon: Icon(Icons.remove_red_eye),
                                     ),
@@ -153,7 +130,7 @@ class PendingFollowUpsScreen extends StatelessWidget {
                                       color: Colors.blue,
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(f.caller),
+                                    Text(f.owner),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
@@ -161,7 +138,13 @@ class PendingFollowUpsScreen extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.call, color: Colors.blue),
                                     const SizedBox(width: 8),
-                                    Text("Last call:- ${f.lastCall}"),
+                                    Flexible(
+                                      child: Text(
+                                        "Last call:- ${f.status}",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -181,18 +164,11 @@ class PendingFollowUpsScreen extends StatelessWidget {
   }
 }
 
-class FollowUp {
-  final String dateTime;
-  final String name;
-  final String number;
-  final String caller;
-  final String lastCall;
-
-  FollowUp({
-    required this.dateTime,
-    required this.name,
-    required this.number,
-    required this.caller,
-    required this.lastCall,
-  });
+String formatDateTime(String dateTimeString) {
+  if (dateTimeString.isEmpty || dateTimeString == null) {
+    return "";
+  }
+  final dateTime = DateTime.parse(dateTimeString);
+  final formatter = DateFormat('d MMM yyyy hh:mm a');
+  return formatter.format(dateTime);
 }

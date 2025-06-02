@@ -1,6 +1,6 @@
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/theme/appcolors.dart';
-import 'package:capital_care/views/screens/dashboard/pending_followups_screen.dart';
+import 'package:capital_care/views/screens/dashboard/leads_count_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
@@ -32,50 +32,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   final boxTextList = [
-    "Pending FollowUps",
+    "Document Submitted",
     "Tomorrow FollowUps",
     "Today FollowUps",
     "Total Leads",
   ];
 
-  final boxNavigationList = [
-    PendingFollowUpsScreen(title: "Pending FollowUps"),
-    PendingFollowUpsScreen(title: "Tomorrow FollowUps Detail"),
-    PendingFollowUpsScreen(title: "Today FollowUps Detail"),
-    LeadsScreen(),
-  ];
-  // var tomorrowLeads;
-  // List leads = [];
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Provider.of<LeadProvider>(context, listen: false).fetchLeads();
-    //   print("fetchleads called");
-    // });
-    // // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // leads = Provider.of<LeadProvider>(context, listen: false).leads;
-    // });
-    // final now = DateTime.now();
-    // final tomorrowDate = DateTime(now.year, now.month, now.day + 1);
 
-    // tomorrowLeads = leads.where((lead) {
-    //   if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
-    //     return false;
-    //   } else {
-    //     final leadDate = DateTime.parse(lead.next_meeting);
-    //     return leadDate.year == tomorrowDate.year &&
-    //         leadDate.month == tomorrowDate.month &&
-    //         leadDate.day == tomorrowDate.day;
-    //   }
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<LeadProvider>(context, listen: false).fetchLeads();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final boxCountList = [0, 0, 0, 0];
+    final leadProvider = Provider.of<LeadProvider>(context);
+    final leads = leadProvider.leads;
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    final tomorrowLeads =
+        leads.where((lead) {
+          if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
+            return false;
+          }
+          final leadDate = DateTime.parse(lead.next_meeting);
+          return leadDate.year == tomorrow.year &&
+              leadDate.month == tomorrow.month &&
+              leadDate.day == tomorrow.day;
+        }).toList();
+
+    final todayLeads =
+        leads.where((lead) {
+          if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
+            return false;
+          }
+          final leadDate = DateTime.parse(lead.next_meeting);
+          return leadDate.year == now.year &&
+              leadDate.month == now.month &&
+              leadDate.day == now.day;
+        }).toList();
+
+    final documentSubmitedLeads =
+        leads.where((leads) {
+          if (leads.status == "Documents Submitted") {
+            return true;
+          } else {
+            return false;
+          }
+        }).toList();
+
+    final boxCountList = [
+      documentSubmitedLeads.length,
+      tomorrowLeads.length,
+      todayLeads.length,
+      leads.length,
+    ];
     return AppScaffold(
       isFloatingActionButton: true,
       floatingActionButtonIcon: Icon(Icons.add),
@@ -110,7 +126,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => boxNavigationList[index],
+                                builder: (context) {
+                                  if (index == 3) {
+                                    return LeadsScreen();
+                                  } else if (index == 0) {
+                                    return LeadsCountScreen(
+                                      title: "Document Submitted",
+                                      leads: documentSubmitedLeads,
+                                    );
+                                  } else if (index == 1) {
+                                    return LeadsCountScreen(
+                                      title: "Tomorrow Leads",
+                                      leads: tomorrowLeads,
+                                    );
+                                  } else {
+                                    return LeadsCountScreen(
+                                      title: "Today Leads",
+                                      leads: todayLeads,
+                                    );
+                                  }
+                                },
                               ),
                             ),
                         child: Container(
