@@ -1,5 +1,6 @@
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/attendance_screen.dart';
 import 'package:capital_care/views/screens/auto_call_dashboard_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
@@ -84,6 +85,15 @@ class AppScaffold extends StatelessWidget {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => DashboardScreen()),
+                  ),
+            ),
+            _drawerItem(
+              Icons.present_to_all_outlined,
+              "Attendance",
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Attendancescreen()),
                   ),
             ),
             _drawerItem(

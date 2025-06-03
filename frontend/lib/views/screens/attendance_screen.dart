@@ -1,0 +1,552 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:capital_care/constants/server_url.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class Location {
+  final String name;
+  final double latitude;
+  final double longitude;
+
+  Location({
+    required this.name,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'latitude': latitude,
+    'longitude': longitude,
+  };
+
+  factory Location.fromJson(Map<String, dynamic> json) => Location(
+    name: json['name'],
+    latitude: json['latitude'],
+    longitude: json['longitude'],
+  );
+}
+
+class Attendancescreen extends StatefulWidget {
+  const Attendancescreen({Key? key}) : super(key: key);
+
+  @override
+  State<Attendancescreen> createState() => _AttendancescreenState();
+}
+
+class _AttendancescreenState extends State<Attendancescreen> {
+  Timer? locationCheckTimer;
+  Map<DateTime, Duration> outsideLocationPeriods = {};
+  Duration calculateTotalOutsideTime() {
+    Duration totalDuration = Duration.zero;
+
+    outsideLocationPeriods.forEach((startTime, duration) {
+      totalDuration += duration;
+    });
+
+    return totalDuration;
+  }
+
+  final List<Location> allowedLocations = [
+    Location(name: 'Office', latitude: 28.583967, longitude: 77.313246),
+  ];
+
+  String attendanceStatus = 'Attendance not marked';
+  bool isAttendanceStarted = false;
+  int? attendanceId;
+  bool isLoading = false;
+  bool isAttendanceMarked = false;
+  // Location? selectedLocation;
+  DateTime now = DateTime.now();
+  TextEditingController _reasonController = TextEditingController();
+  bool isLate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAttendance();
+    _startPeriodicLocationCheck();
+    // selectedLocation = allowedLocations[0];
+  }
+
+  void _startPeriodicLocationCheck() {
+    locationCheckTimer = Timer.periodic(Duration(minutes: 30), (timer) {
+      if (isAttendanceStarted) {
+        _checkCurrentLocation();
+      }
+    });
+  }
+
+  Future<void> _checkCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    double distanceInMeters = Geolocator.distanceBetween(
+      28.583967,
+      77.313246,
+      position.latitude,
+      position.longitude,
+    );
+
+    if (distanceInMeters > 100) {
+      // Record the time when user is found outside
+      outsideLocationPeriods[DateTime.now()] = Duration.zero;
+    }
+  }
+
+  Future<void> _initializeAttendance() async {
+    await _loadAttendanceState();
+
+    await _checkAttendanceStatus();
+    await _checkAndResetAttendanceForNewDay();
+  }
+
+  Future<void> _checkAttendanceStatus() async {
+    setState(() => isLoading = true);
+    try {
+      final storage = FlutterSecureStorage();
+      final token = await storage.read(key: "auth_token");
+
+      final response = await http.get(
+        Uri.parse('${ServerUrl}/checkattendance'),
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        print('her===>e');
+        final responseData = jsonDecode(response.body);
+        bool alreadyMarked = responseData['alreadyMarked'] ?? false;
+        print('alreadyMarked $alreadyMarked');
+
+        setState(() {
+          if (alreadyMarked) {
+            attendanceStatus = 'Attendance already completed for today.';
+            isAttendanceStarted = true;
+            isAttendanceMarked = true;
+          }
+          print(attendanceStatus);
+        });
+      }
+    } catch (e) {
+      setState(() => attendanceStatus = 'Error checking attendance status.');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+  // 'duration': calculateTotalOutsideTime().inMinutes
+
+  Future<void> _checkAndResetAttendanceForNewDay() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? lastMarkedDate = prefs.getString('attendanceDate');
+    print('lastMarkedDate $lastMarkedDate');
+    String currentDate = DateTime.now().toIso8601String().split('T')[0];
+    if (lastMarkedDate == null || lastMarkedDate != currentDate) {
+      await _resetAttendanceState();
+    }
+  }
+
+  Future<void> _resetAttendanceState() async {
+    print('here reset');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAttendanceStarted', false);
+    await prefs.remove('attendanceId');
+    await prefs.remove('attendanceDate');
+    await prefs.remove('attendancelocationname');
+    setState(() {
+      isAttendanceStarted = false;
+      attendanceId = null;
+      attendanceStatus = 'Attendance not marked';
+      // selectedLocation = null;
+    });
+  }
+
+  Future<void> _loadAttendanceState() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? locationName = "office";
+    setState(() {
+      isAttendanceStarted = prefs.getBool('isAttendanceStarted') ?? false;
+      attendanceId = prefs.getInt('attendanceId');
+      // if (locationName != null) {
+      //   selectedLocation = allowedLocations[0];
+      // }
+      print('heher load attendance');
+      attendanceStatus =
+          isAttendanceStarted
+              ? 'Attendance is in progress!'
+              : 'Attendance not marked.';
+    });
+  }
+
+  Future<void> _saveAttendanceState(
+    bool started,
+    int? id,
+    Location? location,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAttendanceStarted', started);
+    if (location != null) {
+      await prefs.setString('attendancelocationname', "office");
+    } else {
+      await prefs.remove('attendancelocationname');
+    }
+    if (id != null) {
+      await prefs.setInt('attendanceId', id);
+    } else {
+      await prefs.remove('attendanceId');
+    }
+    await prefs.setString(
+      'attendanceDate',
+      DateTime.now().toIso8601String().split('T')[0],
+    );
+  }
+
+  Future<void> _checkLocationAndMarkAttendance() async {
+    // if (selectedLocation == null) {
+    //   setState(() => attendanceStatus = 'Please select a location first.');
+    //   return;
+    // }
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() => attendanceStatus = 'Location services are disabled.');
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() => attendanceStatus = 'Location permissions are denied.');
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      setState(
+        () => attendanceStatus = 'Location permissions are permanently denied.',
+      );
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    double distanceInMeters = Geolocator.distanceBetween(
+      28.583967,
+      77.313246,
+      position.latitude,
+      position.longitude,
+    );
+
+    if (distanceInMeters <= 20) {
+      if (!isAttendanceStarted) {
+        await _markAttendanceStart();
+      } else {
+        await _markAttendanceClose();
+      }
+    } else {
+      setState(() {
+        attendanceStatus = 'You are not within 20 meters of office.';
+      });
+    }
+  }
+
+  Future<void> _markAttendanceStart() async {
+    setState(() => isLoading = true);
+    try {
+      final storage = FlutterSecureStorage();
+      final token = await storage.read(key: "auth_token");
+      // String token = await TokenManager.getToken() ?? '';
+      final response = await http.post(
+        Uri.parse('${ServerUrl}/markattendance'),
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'locationName': "office",
+          'isLate': isLate,
+          'remark': _reasonController.text,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        setState(() {
+          attendanceStatus = 'Attendance started successfully!';
+          isAttendanceStarted = true;
+          attendanceId = responseData['attendance']['id'];
+        });
+        print("=========== $attendanceId");
+        await _saveAttendanceState(
+          true,
+          attendanceId,
+          Location(name: 'Office', latitude: 28.583967, longitude: 77.313246),
+        );
+      } else if (response.statusCode == 400) {
+        setState(() => attendanceStatus = 'Attendance already marked today.');
+      } else {
+        setState(
+          () =>
+              attendanceStatus = 'Failed to start attendance. Try again later.',
+        );
+      }
+    } catch (e) {
+      setState(
+        () => attendanceStatus = 'An error occurred while marking attendance.',
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _markAttendanceClose() async {
+    print("$attendanceId, $attendanceStatus");
+    if (attendanceId == null) {
+      setState(() => attendanceStatus = 'No attendance record found to close.');
+      return;
+    }
+    setState(() => isLoading = true);
+    try {
+      final storage = FlutterSecureStorage();
+      final token = await storage.read(key: "auth_token");
+
+      final response = await http.put(
+        Uri.parse('${ServerUrl}/closeattendance/$attendanceId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'locationName': "office"}),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          attendanceStatus = 'Attendance closed successfully!';
+          isAttendanceStarted = false;
+          attendanceId = null;
+        });
+        await _saveAttendanceState(false, null, null);
+      } else {
+        setState(
+          () =>
+              attendanceStatus = 'Failed to close attendance. Try again later.',
+        );
+      }
+    } catch (e) {
+      setState(
+        () => attendanceStatus = 'An error occurred while closing attendance.',
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void dispose() {
+    locationCheckTimer?.cancel();
+    super.dispose();
+  }
+
+  void _customDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text(
+                    "You are Late",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Please provide a reason",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _reasonController,
+                    maxLines: 3,
+                    onChanged: (_) => setState(() {}), // Refresh on input
+                    decoration: InputDecoration(
+                      hintText: "Enter your reason...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      contentPadding: EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed:
+                      _reasonController.text.trim().length >= 5
+                          ? () {
+                            isLate = true;
+                            _checkLocationAndMarkAttendance();
+                            Navigator.of(context).pop();
+                          }
+                          : null, // disabled if text too short
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey.shade400,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text("Submit"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Attendance'), backgroundColor: Colors.teal),
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.teal, Colors.teal.shade200],
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Ensure that you are at least 20 meters \n  within the specified location.',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20),
+                  Icon(Icons.location_on, size: 100, color: Colors.white),
+                  SizedBox(height: 30),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child:
+                        isLoading
+                            ? CircularProgressIndicator()
+                            : Text(
+                              attendanceStatus,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                  ),
+                  SizedBox(height: 40),
+                  // if (!isAttendanceMarked)
+                  //   Card(
+                  //     child: Padding(
+                  //       padding: EdgeInsets.all(16),
+                  //       child: Column(
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: [
+                  //           Text(
+                  //             'Select Location',
+                  //             style: TextStyle(
+                  //               fontSize: 18,
+                  //               fontWeight: FontWeight.bold,
+                  //             ),
+                  //           ),
+                  //           SizedBox(height: 16),
+                  //           ...allowedLocations.map(
+                  //             (location) => RadioListTile<Location>(
+                  //               title: Text(location.name),
+                  //               // subtitle: Text(
+                  //               //     'Lat: ${location.latitude}\nLng: ${location.longitude}'),
+                  //               value: location,
+                  //               groupValue: selectedLocation,
+                  //               onChanged:
+                  //                   isAttendanceStarted
+                  //                       ? null
+                  //                       : (Location? value) {
+                  //                         setState(() {
+                  //                           selectedLocation = value;
+                  //                         });
+                  //                       },
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  if (!isAttendanceMarked)
+                    ElevatedButton(
+                      onPressed:
+                          isLoading
+                              ? null
+                              : (now.hour >= 10 &&
+                                  now.minute > 10 &&
+                                  !isAttendanceStarted)
+                              ? _customDialog
+                              : _checkLocationAndMarkAttendance,
+                      child: Text(
+                        isAttendanceStarted
+                            ? 'Close Attendance'
+                            : 'Mark Attendance',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 15,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

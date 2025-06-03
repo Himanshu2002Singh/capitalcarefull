@@ -8,6 +8,7 @@ const leadRoutes = require("./routes/leadRoutes");
 const employeeRoutes = require("./routes/employeesRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 const callsRoutes = require("./routes/callsRoutes");
+const attendanceRoutes = require("./routes/attendance_routes");
 // const { initDatabase } = require("./config/db");
 // initDatabase(() => {
 //   require("./migrations/createTableEmployee");
@@ -25,6 +26,7 @@ app.use("/api", leadRoutes);
 app.use("/api", employeeRoutes);
 app.use("/api", historyRoutes);
 app.use("/api", callsRoutes);
+app.use("/api", attendanceRoutes);
 
 app.get("/", (req, res) => {
   res.json("testing hello from backned");
