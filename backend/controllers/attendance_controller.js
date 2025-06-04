@@ -36,62 +36,62 @@ const markattendance = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-const closeattendance = async (req, res) => {
-  const userId = req.user.id;
-  const { id } = req.params;
-  const { locationName } = req.body;
-  console.log(locationName, "=========?");
-  try {
-    const attendance = await Attendance.findByPk(id);
-    if (!attendance) {
-      return res.status(404).json({ message: "Attendance not found." });
-    }
+// const closeattendance = async (req, res) => {
+//   const userId = req.user.id;
+//   const { id } = req.params;
+//   const { locationName } = req.body;
+//   console.log(locationName, "=========?");
+//   try {
+//     const attendance = await Attendance.findByPk(id);
+//     if (!attendance) {
+//       return res.status(404).json({ message: "Attendance not found." });
+//     }
 
-    if (attendance.endTime) {
-      return res.status(400).json({ message: "Attendance already closed." });
-    }
-    if (attendance.attendancesite != locationName) {
-      return res
-        .status(400)
-        .json({ message: "Attendance location doesn't match." });
-    }
+//     if (attendance.endTime) {
+//       return res.status(400).json({ message: "Attendance already closed." });
+//     }
+//     if (attendance.attendancesite != locationName) {
+//       return res
+//         .status(400)
+//         .json({ message: "Attendance location doesn't match." });
+//     }
 
-    // Set the end time in IST
-    const endTimeIST = moment().tz("Asia/Kolkata").toDate();
-    attendance.endTime = endTimeIST;
+//     // Set the end time in IST
+//     const endTimeIST = moment().tz("Asia/Kolkata").toDate();
+//     attendance.endTime = endTimeIST;
 
-    // Calculate the attendance duration
-    // const start = moment(attendance.startTime).tz("Asia/Kolkata");
-    // const end = moment(endTimeIST).tz("Asia/Kolkata");
-    // const duration = moment.duration(end.diff(start)).asHours(); // Duration in hours
+//     // Calculate the attendance duration
+//     // const start = moment(attendance.startTime).tz("Asia/Kolkata");
+//     // const end = moment(endTimeIST).tz("Asia/Kolkata");
+//     // const duration = moment.duration(end.diff(start)).asHours(); // Duration in hours
 
-    // Check if start time is between 6:00 AM and 9:45 AM IST
-    // const isMarkedEarly = start.isBetween(
-    //   moment().tz("Asia/Kolkata").startOf("day").add(6, "hours"),
-    //   moment()
-    //     .tz("Asia/Kolkata")
-    //     .startOf("day")
-    //     .add(9, "hours")
-    //     .add(45, "minutes"),
-    //   null,
-    //   "[)"
-    // );
+//     // Check if start time is between 6:00 AM and 9:45 AM IST
+//     // const isMarkedEarly = start.isBetween(
+//     //   moment().tz("Asia/Kolkata").startOf("day").add(6, "hours"),
+//     //   moment()
+//     //     .tz("Asia/Kolkata")
+//     //     .startOf("day")
+//     //     .add(9, "hours")
+//     //     .add(45, "minutes"),
+//     //   null,
+//     //   "[)"
+//     // );
 
-    // Check if duration is at least 8 hours and 30 minutes
-    // const isFullDay = duration >= 8.5 && isMarkedEarly;
+//     // Check if duration is at least 8 hours and 30 minutes
+//     // const isFullDay = duration >= 8.5 && isMarkedEarly;
 
-    // Set attendance status
-    attendance.status =  "Full Day" ;
+//     // Set attendance status
+//     attendance.status =  "Full Day" ;
 
-    // Save the updated attendance
-    await attendance.save();
+//     // Save the updated attendance
+//     await attendance.save();
 
-    res.status(200).json(attendance);
-  } catch (error) {
-    console.log("Error closing attendance:", error);
-    res.status(500).json({ message: "Server error", error });
-  }
-};
+//     res.status(200).json(attendance);
+//   } catch (error) {
+//     console.log("Error closing attendance:", error);
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
 const checkattendance = async (req, res) => {
   const userId = req.user.id;
   const currentDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
@@ -127,7 +127,7 @@ const myattendance = async (req, res) => {
     const userId = req.user.id; // Assuming user ID is attached to the request
     const attendanceRecords = await Attendance.findAll({
       where: { userId },
-      attributes: ["date", "status"], // Fetch only necessary fields
+      attributes: ["date", "status", "isLate"], // Fetch only necessary fields
     });
 
     if (!attendanceRecords || attendanceRecords.length === 0) {
@@ -138,6 +138,7 @@ const myattendance = async (req, res) => {
     const formattedData = attendanceRecords.map((record) => ({
       date: moment(record.date).format("YYYY-MM-DD"),
       status: record.status,
+      isLate : record.isLate
     }));
     console.log(formattedData, "=========?");
     res.status(200).json({ success: true, data: formattedData });
@@ -261,7 +262,7 @@ schedule.scheduleJob(
 
 module.exports = {
   markattendance,
-  closeattendance,
+  // closeattendance,
   checkattendance,
   myattendance,
   getcompleteuserdetailsattendance,

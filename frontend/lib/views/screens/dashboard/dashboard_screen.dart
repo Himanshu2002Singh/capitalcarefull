@@ -32,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   final boxTextList = [
-    "Document Submitted",
+    "File Login",
     "Tomorrow FollowUps",
     "Today FollowUps",
     "Total Leads",

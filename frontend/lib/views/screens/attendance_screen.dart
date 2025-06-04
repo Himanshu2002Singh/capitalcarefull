@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:capital_care/constants/server_url.dart';
+import 'package:capital_care/views/screens/my_attendance_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
@@ -40,24 +41,7 @@ class Attendancescreen extends StatefulWidget {
 }
 
 class _AttendancescreenState extends State<Attendancescreen> {
-  Timer? locationCheckTimer;
-  Map<DateTime, Duration> outsideLocationPeriods = {};
-  Duration calculateTotalOutsideTime() {
-    Duration totalDuration = Duration.zero;
-
-    outsideLocationPeriods.forEach((startTime, duration) {
-      totalDuration += duration;
-    });
-
-    return totalDuration;
-  }
-
-  final List<Location> allowedLocations = [
-    Location(name: 'Office', latitude: 28.583967, longitude: 77.313246),
-  ];
-
   String attendanceStatus = 'Attendance not marked';
-  bool isAttendanceStarted = false;
   int? attendanceId;
   bool isLoading = false;
   bool isAttendanceMarked = false;
@@ -70,34 +54,6 @@ class _AttendancescreenState extends State<Attendancescreen> {
   void initState() {
     super.initState();
     _initializeAttendance();
-    _startPeriodicLocationCheck();
-    // selectedLocation = allowedLocations[0];
-  }
-
-  void _startPeriodicLocationCheck() {
-    locationCheckTimer = Timer.periodic(Duration(minutes: 30), (timer) {
-      if (isAttendanceStarted) {
-        _checkCurrentLocation();
-      }
-    });
-  }
-
-  Future<void> _checkCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    double distanceInMeters = Geolocator.distanceBetween(
-      28.583967,
-      77.313246,
-      position.latitude,
-      position.longitude,
-    );
-
-    if (distanceInMeters > 100) {
-      // Record the time when user is found outside
-      outsideLocationPeriods[DateTime.now()] = Duration.zero;
-    }
   }
 
   Future<void> _initializeAttendance() async {
@@ -121,7 +77,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
         },
       );
       if (response.statusCode == 200) {
-        print('her===>e');
+        // print('her===>e');
         final responseData = jsonDecode(response.body);
         bool alreadyMarked = responseData['alreadyMarked'] ?? false;
         print('alreadyMarked $alreadyMarked');
@@ -129,7 +85,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
         setState(() {
           if (alreadyMarked) {
             attendanceStatus = 'Attendance already completed for today.';
-            isAttendanceStarted = true;
+            // isAttendanceStarted = true;
             isAttendanceMarked = true;
           }
           print(attendanceStatus);
@@ -141,7 +97,6 @@ class _AttendancescreenState extends State<Attendancescreen> {
       setState(() => isLoading = false);
     }
   }
-  // 'duration': calculateTotalOutsideTime().inMinutes
 
   Future<void> _checkAndResetAttendanceForNewDay() async {
     final prefs = await SharedPreferences.getInstance();
@@ -156,52 +111,38 @@ class _AttendancescreenState extends State<Attendancescreen> {
   Future<void> _resetAttendanceState() async {
     print('here reset');
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isAttendanceStarted', false);
+
     await prefs.remove('attendanceId');
     await prefs.remove('attendanceDate');
-    await prefs.remove('attendancelocationname');
+
     setState(() {
-      isAttendanceStarted = false;
       attendanceId = null;
       attendanceStatus = 'Attendance not marked';
-      // selectedLocation = null;
     });
   }
 
   Future<void> _loadAttendanceState() async {
     final prefs = await SharedPreferences.getInstance();
-    String? locationName = "office";
+
     setState(() {
-      isAttendanceStarted = prefs.getBool('isAttendanceStarted') ?? false;
       attendanceId = prefs.getInt('attendanceId');
-      // if (locationName != null) {
-      //   selectedLocation = allowedLocations[0];
-      // }
-      print('heher load attendance');
+      isAttendanceMarked = prefs.getBool('isAttendanceMarked') ?? false;
       attendanceStatus =
-          isAttendanceStarted
-              ? 'Attendance is in progress!'
+          isAttendanceMarked
+              ? 'Attendance Already Marked'
               : 'Attendance not marked.';
     });
   }
 
-  Future<void> _saveAttendanceState(
-    bool started,
-    int? id,
-    Location? location,
-  ) async {
+  Future<void> _saveAttendanceState(int? id, bool marked) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isAttendanceStarted', started);
-    if (location != null) {
-      await prefs.setString('attendancelocationname', "office");
-    } else {
-      await prefs.remove('attendancelocationname');
-    }
+    await prefs.setBool('isAttendanceMarked', marked);
     if (id != null) {
       await prefs.setInt('attendanceId', id);
     } else {
       await prefs.remove('attendanceId');
     }
+
     await prefs.setString(
       'attendanceDate',
       DateTime.now().toIso8601String().split('T')[0],
@@ -209,11 +150,6 @@ class _AttendancescreenState extends State<Attendancescreen> {
   }
 
   Future<void> _checkLocationAndMarkAttendance() async {
-    // if (selectedLocation == null) {
-    //   setState(() => attendanceStatus = 'Please select a location first.');
-    //   return;
-    // }
-
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() => attendanceStatus = 'Location services are disabled.');
@@ -248,11 +184,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
     );
 
     if (distanceInMeters <= 20) {
-      if (!isAttendanceStarted) {
-        await _markAttendanceStart();
-      } else {
-        await _markAttendanceClose();
-      }
+      await _markAttendanceStart();
     } else {
       setState(() {
         attendanceStatus = 'You are not within 20 meters of office.';
@@ -265,32 +197,30 @@ class _AttendancescreenState extends State<Attendancescreen> {
     try {
       final storage = FlutterSecureStorage();
       final token = await storage.read(key: "auth_token");
-      // String token = await TokenManager.getToken() ?? '';
+
       final response = await http.post(
         Uri.parse('${ServerUrl}/markattendance'),
         headers: {
           'Content-Type': 'application/json',
           'authorization': 'Bearer $token',
         },
+
         body: jsonEncode({
           'locationName': "office",
           'isLate': isLate,
           'remark': _reasonController.text,
         }),
       );
+
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         setState(() {
           attendanceStatus = 'Attendance started successfully!';
-          isAttendanceStarted = true;
+          isAttendanceMarked = true;
           attendanceId = responseData['attendance']['id'];
         });
         print("=========== $attendanceId");
-        await _saveAttendanceState(
-          true,
-          attendanceId,
-          Location(name: 'Office', latitude: 28.583967, longitude: 77.313246),
-        );
+        await _saveAttendanceState(attendanceId, isAttendanceMarked);
       } else if (response.statusCode == 400) {
         setState(() => attendanceStatus = 'Attendance already marked today.');
       } else {
@@ -308,49 +238,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
     }
   }
 
-  Future<void> _markAttendanceClose() async {
-    print("$attendanceId, $attendanceStatus");
-    if (attendanceId == null) {
-      setState(() => attendanceStatus = 'No attendance record found to close.');
-      return;
-    }
-    setState(() => isLoading = true);
-    try {
-      final storage = FlutterSecureStorage();
-      final token = await storage.read(key: "auth_token");
-
-      final response = await http.put(
-        Uri.parse('${ServerUrl}/closeattendance/$attendanceId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
-        body: jsonEncode({'locationName': "office"}),
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          attendanceStatus = 'Attendance closed successfully!';
-          isAttendanceStarted = false;
-          attendanceId = null;
-        });
-        await _saveAttendanceState(false, null, null);
-      } else {
-        setState(
-          () =>
-              attendanceStatus = 'Failed to close attendance. Try again later.',
-        );
-      }
-    } catch (e) {
-      setState(
-        () => attendanceStatus = 'An error occurred while closing attendance.',
-      );
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-
   void dispose() {
-    locationCheckTimer?.cancel();
     super.dispose();
   }
 
@@ -435,7 +323,28 @@ class _AttendancescreenState extends State<Attendancescreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Attendance'), backgroundColor: Colors.teal),
+      appBar: AppBar(
+        title: Text('Attendance'),
+        backgroundColor: Colors.teal,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.teal,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyAttendanceScreen()),
+                );
+              },
+              child: Text("My report"),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Container(
           height: MediaQuery.of(context).size.height,
@@ -478,56 +387,17 @@ class _AttendancescreenState extends State<Attendancescreen> {
                             ),
                   ),
                   SizedBox(height: 40),
-                  // if (!isAttendanceMarked)
-                  //   Card(
-                  //     child: Padding(
-                  //       padding: EdgeInsets.all(16),
-                  //       child: Column(
-                  //         crossAxisAlignment: CrossAxisAlignment.start,
-                  //         children: [
-                  //           Text(
-                  //             'Select Location',
-                  //             style: TextStyle(
-                  //               fontSize: 18,
-                  //               fontWeight: FontWeight.bold,
-                  //             ),
-                  //           ),
-                  //           SizedBox(height: 16),
-                  //           ...allowedLocations.map(
-                  //             (location) => RadioListTile<Location>(
-                  //               title: Text(location.name),
-                  //               // subtitle: Text(
-                  //               //     'Lat: ${location.latitude}\nLng: ${location.longitude}'),
-                  //               value: location,
-                  //               groupValue: selectedLocation,
-                  //               onChanged:
-                  //                   isAttendanceStarted
-                  //                       ? null
-                  //                       : (Location? value) {
-                  //                         setState(() {
-                  //                           selectedLocation = value;
-                  //                         });
-                  //                       },
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
+
                   if (!isAttendanceMarked)
                     ElevatedButton(
                       onPressed:
                           isLoading
                               ? null
-                              : (now.hour >= 10 &&
-                                  now.minute > 10 &&
-                                  !isAttendanceStarted)
+                              : (now.hour >= 10 && now.minute > 10)
                               ? _customDialog
                               : _checkLocationAndMarkAttendance,
                       child: Text(
-                        isAttendanceStarted
-                            ? 'Close Attendance'
-                            : 'Mark Attendance',
+                        'Mark Attendance',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(

@@ -9,11 +9,11 @@ router.post(
   attendancecontroller.markattendance
 );
 
-router.put(
-  "/closeattendance/:id",
-  auth.isAuthenticated,
-  attendancecontroller.closeattendance
-);
+// router.put(
+//   "/closeattendance/:id",
+//   auth.isAuthenticated,
+//   attendancecontroller.closeattendance
+// );
 
 router.get(
   "/checkattendance",

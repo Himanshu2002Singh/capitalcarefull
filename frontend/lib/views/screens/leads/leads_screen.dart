@@ -26,6 +26,11 @@ class _LeadsScreenState extends State<LeadsScreen> {
     "User Car Loan",
     "Business Loan",
     "Personal Loan",
+    "DOD",
+    "CC/OD",
+    "CGTMSME",
+    "Mutual Fund",
+    "Insurance",
     "Other",
   ];
   String selectedStatusItem = "All";
@@ -36,7 +41,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
     "No Requirement",
     "Follow up",
     "Document Rejected",
-    "Documents Summited",
+    "File Login",
     "Loan Section",
     "Loan Disbursement",
   ];

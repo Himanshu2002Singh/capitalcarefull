@@ -6,6 +6,7 @@ import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
+import 'package:capital_care/views/screens/my_attendance_screen.dart';
 import 'package:capital_care/views/screens/task/task_assigned_by_me.dart';
 import 'package:capital_care/views/screens/task_management/task_management_screen.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
@@ -118,9 +119,29 @@ class AppScaffold extends StatelessWidget {
               },
             ),
             _drawerItem(
+              Icons.history,
+              "Call Logs",
+              section: "Tracking",
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CallLogsScreen()),
+                  ),
+            ),
+            _drawerItem(
+              Icons.calendar_month,
+              "My Attendance",
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyAttendanceScreen(),
+                    ),
+                  ),
+            ),
+            _drawerItem(
               Icons.add_to_photos,
               "Add Task",
-              section: "Task Management",
               onTap: () {
                 Navigator.push(
                   context,
@@ -141,15 +162,7 @@ class AppScaffold extends StatelessWidget {
                     ),
                   ),
             ),
-            _drawerItem(
-              Icons.history,
-              "Call Logs",
-              onTap:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CallLogsScreen()),
-                  ),
-            ),
+
             _drawerItem(
               Icons.error_outline,
               "Performance Report",
