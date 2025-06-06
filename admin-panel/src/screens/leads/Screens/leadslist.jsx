@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import AddLead from "../addlead";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LeadsList = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -14,22 +15,103 @@ const LeadsList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [personNames, setPersonNames] = useState({});
+  const [employees, setEmployees] = useState([]);
   const itemsPerPage = 50;
   const navigate = useNavigate();
 
   const fetchUsers = async (page, search = "") => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/leads`);
-      if (response.status == 200) {
-        setUsers(response.data);
-        setTotalPages(response.data.pagination.totalPages);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+  setIsLoading(true);
+  try {
+    const response = await axios.get(`${API_URL}/leads`);
+    if (response.status === 200) {
+      const leads = response.data;
+
+      // Set leads
+      setUsers(leads);
+
+      // Fetch person names in parallel
+      const nameMap = {};
+      await Promise.all(
+        leads.map(async (lead) => {
+          if (lead.person_id) {
+            try {
+              const personRes = await axios.get(`${API_URL}/employees/${lead.person_id}`);
+              if (personRes.status === 200) {
+                nameMap[lead.person_id] = personRes.data.ename;
+              }
+            } catch (err) {
+              nameMap[lead.person_id] = "N/A";
+              console.error("Error fetching person name for ID:", lead.person_id, err);
+            }
+          }
+        })
+      );
+      setPersonNames(nameMap);
+
+      // Total pages (if pagination is available)
+      setTotalPages(leads.pagination?.totalPages || 0);
     }
-    setIsLoading(false);
-  };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+  setIsLoading(false);
+};
+
+useEffect(() => {
+  axios.get(`${API_URL}/employees`)
+    .then(res => {
+      // Ensure res.data is an array
+      // const employeeList = Array.isArray(res.data) ? res.data : res.data.employees;
+      setEmployees(res.data.employees || []); // Fallback to empty array
+    })
+    .catch(err => {
+      console.error("Error fetching employees", err);
+      setEmployees([]); // Avoid map crash
+    });
+}, []);
+
+
+console.log(employees);
+
+const handleAssignPerson = async (leadId, selectedPersonId) => {
+  try {
+    await axios.put(`${API_URL}/leads/${leadId}`, { person_id: selectedPersonId });
+    toast.success("Assigned successfully!");
+    window.location.reload();
+
+    const emp = employees.find(emp => emp.emp_id === +selectedPersonId);
+    if (emp) {
+      setPersonNames(prev => ({
+        ...prev,
+        [selectedPersonId]: emp.ename
+      }));
+    }
+
+    setUsers(prev =>
+      prev.map(u =>
+        u.lead_id === leadId ? { ...u, person_id: +selectedPersonId } : u
+      )
+    );
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to assign");
+  }
+};
+
+
+  // const getNameById = async(id)=>{
+  //   try{
+  //     const response = await axios.get(`${API_URL}/employees/${id}`);
+  //     if(response.status == 200){
+  //       return response.data.ename;
+  //     }
+  //   }catch(e){
+  //     console.error("error fetching name:", e);
+  //     return "none";
+  //   }
+  // }
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -39,16 +121,16 @@ const LeadsList = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [currentPage, searchTerm]);
 
-  const handleDeleteUser = async (userId, employeeId) => {
+  const handleDeleteUser = async (leadId) => {
     try {
-      await toast.promise(axios.delete(`${API_URL}/delete/user/${userId}`), {
+      await toast.promise(axios.delete(`${API_URL}/delete-lead/${leadId}`), {
         pending: "Deleting user...",
-        success: `EmployeeId ${employeeId} deleted successfully!`,
+        success: `Lead Id ${leadId} deleted successfully!`,
         error: "Error deleting user. Please try again.",
       });
 
       // Update UI by filtering out the deleted user
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      setUsers((prevUsers) => prevUsers.filter((user) => user.lead_id !== leadId));
     } catch (error) {
       console.error("Error deleting user:", error);
     }
@@ -101,7 +183,7 @@ const LeadsList = () => {
 
       {isFormModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          {" "}
+          {""}
           <div className=" p-6 rounded w-1/3">
             <AddLead
               handleCloseaddcallformModal={handleCloseaddcallformModal}
@@ -163,6 +245,9 @@ const LeadsList = () => {
                 Phonenumber
               </th>
               <th className="p-4 text-left text-xs font-semibold text-gray-800">
+                Assigned to 
+              </th>
+              <th className="p-4 text-left text-xs font-semibold text-gray-800">
                 Actions
               </th>
             </tr>
@@ -173,7 +258,7 @@ const LeadsList = () => {
               <tr
                 key={user.lead_id}
                 className="hover:bg-gray-50"
-                onClick={() => navigate(`/userdetail/${user.lead_id}`)}
+                // onClick={() => navigate(`/userdetail/${user.lead_id}`)}
               >
                 <td className="p-4 text-[15px] text-gray-800">
                   {user.lead_id}
@@ -181,6 +266,25 @@ const LeadsList = () => {
                 <td className="p-4 text-[15px] text-gray-800">{user.name}</td>
                 {/* <td className="p-4 text-[15px] text-gray-800">{user.email}</td> */}
                 <td className="p-4 text-[15px] text-gray-800">{user.number}</td>
+                <td className="p-4 text-[15px] text-gray-800" onClick={e => e.stopPropagation()}>
+  {personNames[user.person_id] ? (
+    personNames[user.person_id]
+  ) : (
+    <select
+      value={user.person_id || ""}
+      onChange={e => handleAssignPerson(user.lead_id, e.target.value)}
+      className="border px-2 py-1 rounded text-sm"
+    >
+      <option value="" disabled>Select Employee</option>
+      {employees.map((emp) => (
+        <option key={emp.emp_id} value={emp.emp_id}>
+          {emp.emp_id} ─ {emp.ename}
+        </option>
+      ))}
+    </select>
+  )}
+</td>
+
                 <td className="p-4">
                   <button className="mr-4" title="Edit">
                     <svg
@@ -199,7 +303,7 @@ const LeadsList = () => {
                     </svg>
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.id, user.employeeId)}
+                    onClick={() => handleDeleteUser(user.lead_id)}
                     className="mr-4"
                     title="Delete"
                   >
@@ -218,6 +322,11 @@ const LeadsList = () => {
                       />
                     </svg>
                   </button>
+                  <button onClick={() => navigate(`/lead-details/${user.lead_id}`)}
+                  className="mr4 text-red-600"
+                  title="Delete"> 
+                  <FaEye/>
+                   </button>
                 </td>
               </tr>
             ))}

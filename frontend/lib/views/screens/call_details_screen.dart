@@ -11,6 +11,7 @@ import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 class CallDetailsScreen extends StatefulWidget {
@@ -39,6 +40,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   final TextEditingController descriptionController = TextEditingController();
 
   void handleSubmission() async {
+    updateCall();
     if (feedbackStatus == null) {
       feedbackStatus = widget.lead.status;
     }
@@ -87,7 +89,36 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     }
   }
 
-  void addLeadSubmisstion() async {
+  void updateCall() async {
+    print("==================================> update call called");
+    final storage = FlutterSecureStorage();
+    final userId = await storage.read(key: "userId");
+
+    if (userId == null) {
+      print("User ID not found");
+      return;
+    }
+
+    List<Calls> callList = await ApiService.getCalls(userId);
+
+    if (callList.isEmpty) {
+      print("No calls found for this user");
+      return;
+    }
+
+    Calls newCall = Calls(remark: remarkController.text);
+
+    bool success = await ApiService.updateCall(newCall, callList[0].call_id);
+
+    print(
+      success
+          ? "=================> Call updated successfully"
+          : "Failed to update call",
+    );
+  }
+
+  void addLeadSubmission() async {
+    updateCall();
     if (contactNameController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -331,7 +362,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                 text: "SUBMIT",
                 onPressed: () {
                   if (widget.lead == null) {
-                    addLeadSubmisstion();
+                    addLeadSubmission();
                   } else {
                     handleSubmission();
                   }

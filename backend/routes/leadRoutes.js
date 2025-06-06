@@ -6,5 +6,7 @@ router.post('/submit-lead', leadController.addLead);
 router.get('/leads', leadController.getLeads);
 router.get('/leads/:emp_id', leadController.getLeadsById);
 router.put('/leads/:id', leadController.updateLead);
+router.delete('/delete-lead/:id', leadController.deleteLead);
+router.get('/getLead/:id', leadController.getLeadDetails);
 
 module.exports = router;

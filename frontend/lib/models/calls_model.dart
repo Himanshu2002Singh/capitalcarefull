@@ -4,6 +4,7 @@ class Calls {
   final emp_id;
   final name;
   final number;
+  final remark;
   final createdAt;
 
   Calls({
@@ -12,6 +13,7 @@ class Calls {
     this.emp_id,
     this.name,
     this.number,
+    this.remark,
     this.createdAt,
   });
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class Calls {
     if (emp_id != null) json["emp_id"] = emp_id;
     if (name != null) json["name"] = name;
     if (number != null) json["number"] = number;
+    if (remark != null) json["remark"] = remark;
     return json;
   }
 
@@ -30,6 +33,7 @@ class Calls {
       emp_id: json['emp_id'],
       name: json['name'],
       number: json['number'],
+      remark: json['remark'],
       createdAt: json['createdAt'],
     );
   }

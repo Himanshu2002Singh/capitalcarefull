@@ -167,4 +167,22 @@ class ApiService {
       throw Exception("Failed to load Calls");
     }
   }
+
+  static Future<bool> updateCall(Calls call, int callId) async {
+    final url = Uri.parse("$baseUrl/updateCall/$callId");
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(call.toJson()),
+    );
+    if (response.statusCode == 200) {
+      print("Call updated: ${response.body}");
+      return true;
+    } else {
+      print(
+        "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
+      );
+      return false;
+    }
+  }
 }

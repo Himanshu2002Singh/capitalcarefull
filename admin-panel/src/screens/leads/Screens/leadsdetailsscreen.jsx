@@ -7,7 +7,9 @@ import * as XLSX from "xlsx";
 const UserDetailScreen = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [lead, setLead] = useState(null);
   const [calls, setCalls] = useState([]);
+  const [personNames, setPersonNames] = useState({});
   const [categorizedCalls, setCategorizedCalls] = useState({});
   const [search, setSearch] = useState(""); // For search functionality
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,47 +17,99 @@ const UserDetailScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const downloadexcel = () => {
-    // Convert calls data to sheet
-    const filteredCalls = calls.map(
-      ({ createdAt, updatedAt, id, assignedto, calldate, ...rest }) => rest
-    );
-    const ws = XLSX.utils.json_to_sheet(filteredCalls);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Calls");
+  const filteredCalls = calls.map((call) => ({
+    "Called By": personNames[call.emp_id] || "N/A",
+    "Employee ID": call.emp_id || "N/A",
+    "Lead ID": call.lead_id || "N/A",
+    "Name": lead?.name || "N/A", // from lead state
+    "Phone": call.number || "N/A",
+    "Remark": call.remark || "N/A",
+    "Created At": new Date(call.createdAt).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }),
+  }));
 
-    // Trigger Excel download
-    XLSX.writeFile(wb, "calls_data.xlsx");
-  };
+  const ws = XLSX.utils.json_to_sheet(filteredCalls);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Calls");
+  XLSX.writeFile(wb, "calls_data.xlsx");
+};
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  const fetchCallDetails = async (page, search = "") => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/${id}/userdetails?page=${page}&limit=${itemsPerPage}&search=${search}`
-      );
-      setCalls(response.data.calls);
-      setUser(response.data.user);
-      setCategorizedCalls(response.data.categorizedCalls);
-      setTotalPages(response.data.pagination.totalPages);
-    } catch (error) {
-      console.error("Error fetching call details:", error);
-    }
-  };
+  // const fetchCallDetails = async (page, search = "") => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${API_URL}/${id}/userdetails?page=${page}&limit=${itemsPerPage}&search=${search}`
+  //     );
+  //     setCalls(response.data.calls);
+  //     setUser(response.data.user);
+  //     setCategorizedCalls(response.data.categorizedCalls);
+  //     setTotalPages(response.data.pagination.totalPages);
+  //   } catch (error) {
+  //     console.error("Error fetching call details:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchCallDetails(currentPage, search);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, search]);
+  const fetchLeadDetails = async ()=>{
+    try{
+      const response = await axios.get(`${API_URL}/getLead/${id}`);
+      setLead(response.data);
+      
+    }catch(error){
+      console.error("Error fetching lead details: ", error);
+    }
+  }
+
+  const fetchCallDetails = async()=>{
+    try{
+      const response = await axios.get(`${API_URL}/callsByLeadId/${id}`);
+      const calls = response.data.calls;
+      setCalls(response.data.calls);
+      const nameMap = {};
+      await Promise.all(
+        calls.map(async (call) => {
+          if (call.emp_id) {
+            try {
+              const personRes = await axios.get(`${API_URL}/employees/${call.emp_id}`);
+              if (personRes.status === 200) {
+                nameMap[call.emp_id] = personRes.data.ename;
+              }
+            } catch (err) {
+              nameMap[call.emp_id] = "N/A";
+              console.error("Error fetching person name for ID:", call.emp_id, err);
+            }
+          }
+        }));
+        setPersonNames(nameMap);
+    }catch(error){
+      console.error("error fetching calls: ", error);
+    }
+  }
+
+  useEffect(()=>{
+    fetchLeadDetails();
+    fetchCallDetails();
+  },[]
+  );
+
+  // useEffect(() => {
+    
+  //   const delayDebounceFn = setTimeout(() => {
+      
+  //     fetchCallDetails(currentPage, search);
+  //   }, 500);
+  //   return () => clearTimeout(delayDebounceFn);
+  // }, [currentPage, search]);
 
   // Filter calls based on search input
 
   return (
     <div style={{ padding: "20px" }}>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">User Details</h1>
+        <h1 className="text-2xl font-bold">Lead Details</h1>
         <button
           onClick={downloadexcel}
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -63,61 +117,78 @@ const UserDetailScreen = () => {
           Download Excel
         </button>
       </div>
-      {user ? (
+      {lead ? (
         <div className="border rounded p-4 mb-6 bg-gray-100">
           <p>
-            <strong>Name:</strong> {user.name}
+            <strong>Name:</strong> {lead.name}
           </p>
           <p>
-            <strong>Email:</strong> {user.email}
+            <strong>Email:</strong> {lead.email}
           </p>
           <p>
-            <strong>Phone:</strong> {user.phone}
+            <strong>Phone:</strong> {lead.number}
           </p>
           <p>
-            <strong>Role:</strong> {user.role}
+            <strong>Assigned to :</strong> {lead.person_id}-{lead.owner}
           </p>
           <p>
-            <strong>Points:</strong> {user.points}
+            <strong>Status:</strong> {lead.status}
           </p>
+          <p>
+            <strong>Source:</strong> {lead.source}
+          </p>
+          <p>
+            <strong>Priority:</strong> {lead.priority}
+          </p>
+          <p>
+  <strong>Next Meeting:</strong>{" "}
+  {new Date(lead.next_meeting).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}
+</p>
+          <p>
+            <strong>Loan Type:</strong> {lead.loan_type}
+          </p>
+          <p>
+            <strong>Estimated Budget:</strong> {lead.est_budget}
+          </p>
+          <p>
+            <strong>Refrence:</strong> {lead.refrence}
+          </p>
+           <p>
+            <strong>Remark:</strong> {lead.remark}
+          </p> 
+           <p>
+  <strong>Created At:</strong>{" "}
+  {new Date(lead.createdAt).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}
+</p>
+           <p>
+            <strong>Address:</strong> {lead.address}
+          </p>  
+           <p>
+            <strong>Description:</strong> {lead.description}
+          </p>       
         </div>
       ) : (
-        <p>Loading user details...</p>
+        <p>Loading Lead details...</p>
       )}
 
       <h2 className="text-xl font-bold mb-4">Call Details</h2>
-      {categorizedCalls.total ? (
+      {calls.length ? (
         <div className="border rounded p-4 mb-6 bg-gray-100">
           <p>
-            <strong>Total Calls:</strong> {categorizedCalls.total}
-          </p>
-          <p>
-            <strong>Interested:</strong> {categorizedCalls.interested}
-          </p>
-          <p>
-            <strong>Not Interested:</strong> {categorizedCalls.notInterested}
-          </p>
-          <p>
-            <strong>Future:</strong> {categorizedCalls.future}
-          </p>
-          <p>
-            <strong>Remaining Calls:</strong> {categorizedCalls.uncompleted}
-          </p>
-          <p>
-            {/* <strong>Uncompleted:</strong> {categorizedCalls.uncompleted} */}
-          </p>
-          <p>
-            <strong>Wrong numbers:</strong> {categorizedCalls.wrongnumber}
-          </p>
-          <p>
-            <strong>Not connected:</strong> {categorizedCalls.noconnect}
+            <strong>Total Calls:</strong> {calls.length}
           </p>
         </div>
       ) : (
-        <p>Loading call details...</p>
+        <p>No related calls found</p>
       )}
 
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <input
           type="text"
           placeholder="Search calls..."
@@ -125,26 +196,27 @@ const UserDetailScreen = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </div>
+      </div> */}
 
       <h3 className="text-lg font-bold mb-2">All Calls</h3>
       <table className="table-auto w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-200">
-            <th className="border border-gray-300 px-4 py-2">Name</th>
+            <th className="border border-gray-300 px-4 py-2">Called By</th>
             <th className="border border-gray-300 px-4 py-2">Phone</th>
+            <th className="border border-gray-300 px-4 py-2">Remark</th>
             {/* <th className="border border-gray-300 px-4 py-2">Call date</th> */}
 
-            <th className="border border-gray-300 px-4 py-2">Call Duration</th>
+            <th className="border border-gray-300 px-4 py-2">Date-Time</th>
 
-            <th className="border border-gray-300 px-4 py-2">Status</th>
+            {/* <th className="border border-gray-300 px-4 py-2">Status</th>
             <th className="border border-gray-300 px-4 py-2">Project Name</th>
             <th className="border border-gray-300 px-4 py-2">Call Remark</th>
             <th className="border border-gray-300 px-4 py-2">
               Site Visit Remark
             </th>
 
-            <th className="border border-gray-300 px-4 py-2">Site Visit</th>
+            <th className="border border-gray-300 px-4 py-2">Site Visit</th> */}
           </tr>
         </thead>
         <tbody>
@@ -152,10 +224,10 @@ const UserDetailScreen = () => {
             calls.map((call, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="border border-gray-300 px-4 py-2">
-                  {call.name || "N/A"}
+                  {personNames[call.emp_id] || "N/A"}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
-                  {call.phone}
+                  {call.number}
                 </td>
 
                 {/* call duration */}
@@ -174,27 +246,16 @@ const UserDetailScreen = () => {
                   {call.isverified ? "Yes" : "No"}
                 </td> */}
                 <td className="border border-gray-300 px-4 py-2">
-                  {(() => {
-                    const durationInSeconds = call.callduration;
-                    if (durationInSeconds === null) {
-                      return "";
-                    } else if (durationInSeconds < 60) {
-                      return `${durationInSeconds} seconds`;
-                    } else if (durationInSeconds < 3600) {
-                      const minutes = Math.floor(durationInSeconds / 60);
-                      const seconds = durationInSeconds % 60;
-                      return `${minutes} minutes ${seconds} seconds`;
-                    } else {
-                      const hours = Math.floor(durationInSeconds / 3600);
-                      const minutes = Math.floor(
-                        (durationInSeconds % 3600) / 60
-                      );
-                      return `${hours} hours ${minutes} minutes`;
-                    }
-                  })()}
+                  {call.remark}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {new Date(call.createdAt).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })}
                 </td>
 
-                <td
+                {/* <td
                   className={`${
                     call.status === "interested"
                       ? "bg-green-200"
@@ -221,7 +282,7 @@ const UserDetailScreen = () => {
                   } border border-gray-300 px-4 py-2`}
                 >
                   {call.isverified ? "Yes" : "No"}
-                </td>
+                </td> */}
               </tr>
             ))
           ) : (

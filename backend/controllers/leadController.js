@@ -79,3 +79,34 @@ exports.getLeadsById = async (req, res)=>{
         res.status(500).json({ message: 'Database error', error : error });
     } 
 };
+
+exports.deleteLead = async (req, res)=> {
+    const{id} = req.params;
+    try{
+        const deleted = Lead.destroy({where:{lead_id : id}});
+        if (deleted) {
+      res.status(200).json({ message: 'Lead deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Lead not found' });
+    }
+    }catch(error){
+        console.error('Error deleting lead:', err);
+    res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getLeadDetails = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const lead = await Lead.findByPk(id); // find by primary key
+
+        if (!lead) {
+            return res.status(404).json({ message: "Lead not found" });
+        }
+
+        return res.status(200).json(lead);
+    } catch (error) {
+        console.error("Error fetching lead details:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};

@@ -21,6 +21,9 @@ const Calls = sequelize.define(
         number : {
             type: DataTypes.STRING,
         },
+        remark : {
+            type : DataTypes.STRING,
+        }
     },
     {
         tableName : "calls",
