@@ -9,11 +9,11 @@ router.post(
   attendancecontroller.markattendance
 );
 
-// router.put(
-//   "/closeattendance/:id",
-//   auth.isAuthenticated,
-//   attendancecontroller.closeattendance
-// );
+router.put(
+  "/closeattendance/:id",
+  auth.isAuthenticated,
+  attendancecontroller.closeattendance
+);
 
 router.get(
   "/checkattendance",
@@ -31,5 +31,7 @@ router.get(
   "/:id/attendancedetails",
   attendancecontroller.getcompleteuserdetailsattendance
 );
+
+router.get("/monthlyattendance/:month", attendancecontroller.getMonthlyAttendance);
 
 module.exports = router;

@@ -13,18 +13,18 @@ const Attendance = sequelize.define("Attendance", {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  status: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+  // status: {
+  //   type: DataTypes.STRING,
+  //   allowNull: true,
+  // },
   date: {
     type: DataTypes.DATEONLY,
     allowNull: false,
   },
-  attendancesite: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
+  // attendancesite: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
   isLate: {
     type: DataTypes.BOOLEAN,
     allowNull: false

@@ -7,31 +7,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
-class Location {
-  final String name;
-  final double latitude;
-  final double longitude;
+// class Location {
+//   final String name;
+//   final double latitude;
+//   final double longitude;
 
-  Location({
-    required this.name,
-    required this.latitude,
-    required this.longitude,
-  });
+//   Location({
+//     required this.name,
+//     required this.latitude,
+//     required this.longitude,
+//   });
 
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'latitude': latitude,
-    'longitude': longitude,
-  };
+//   Map<String, dynamic> toJson() => {
+//     'name': name,
+//     'latitude': latitude,
+//     'longitude': longitude,
+//   };
 
-  factory Location.fromJson(Map<String, dynamic> json) => Location(
-    name: json['name'],
-    latitude: json['latitude'],
-    longitude: json['longitude'],
-  );
-}
+//   factory Location.fromJson(Map<String, dynamic> json) => Location(
+//     name: json['name'],
+//     latitude: json['latitude'],
+//     longitude: json['longitude'],
+//   );
+// }
 
 class Attendancescreen extends StatefulWidget {
   const Attendancescreen({Key? key}) : super(key: key);
@@ -45,10 +45,13 @@ class _AttendancescreenState extends State<Attendancescreen> {
   int? attendanceId;
   bool isLoading = false;
   bool isAttendanceMarked = false;
+  bool isAttendanceClosed = false;
   // Location? selectedLocation;
   DateTime now = DateTime.now();
   TextEditingController _reasonController = TextEditingController();
   bool isLate = false;
+  final storage = FlutterSecureStorage();
+  var token;
 
   @override
   void initState() {
@@ -57,18 +60,13 @@ class _AttendancescreenState extends State<Attendancescreen> {
   }
 
   Future<void> _initializeAttendance() async {
-    await _loadAttendanceState();
+    // await _loadAttendanceState();
 
-    await _checkAttendanceStatus();
-    await _checkAndResetAttendanceForNewDay();
-  }
+    // await _checkAttendanceStatus();
+    // await _checkAndResetAttendanceForNewDay();
 
-  Future<void> _checkAttendanceStatus() async {
-    setState(() => isLoading = true);
     try {
-      final storage = FlutterSecureStorage();
-      final token = await storage.read(key: "auth_token");
-
+      token = await storage.read(key: "auth_token");
       final response = await http.get(
         Uri.parse('${ServerUrl}/checkattendance'),
         headers: {
@@ -77,82 +75,149 @@ class _AttendancescreenState extends State<Attendancescreen> {
         },
       );
       if (response.statusCode == 200) {
-        // print('her===>e');
         final responseData = jsonDecode(response.body);
-        bool alreadyMarked = responseData['alreadyMarked'] ?? false;
-        print('alreadyMarked $alreadyMarked');
-
+        isAttendanceMarked = responseData['alreadyMarked'] ?? false;
+        isAttendanceClosed = responseData['closed'] ?? false;
         setState(() {
-          if (alreadyMarked) {
-            attendanceStatus = 'Attendance already completed for today.';
-            // isAttendanceStarted = true;
-            isAttendanceMarked = true;
+          if (isAttendanceMarked && isAttendanceClosed) {
+            attendanceStatus = "Attendance is already marked and closed";
+          } else if (isAttendanceMarked) {
+            attendanceStatus = "Attendance is marked but not closed";
+            attendanceId = responseData['attendance']['id'];
           }
-          print(attendanceStatus);
         });
+      } else {
+        print("error fetching attendance details=> ${response}");
       }
-    } catch (e) {
-      setState(() => attendanceStatus = 'Error checking attendance status.');
+    } catch (error) {
+      print("error fetching attendance status => ${error}");
+    }
+  }
+
+  Future<void> _closeAttendance() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http.put(
+        Uri.parse("${ServerUrl}/closeattendance/${attendanceId}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print(responseData);
+        setState(() {
+          attendanceStatus = "Attendance closed Successfully";
+          isAttendanceClosed = true;
+        });
+      } else {
+        print("someting went wrong ${response}");
+      }
+    } catch (error) {
+      setState(() {
+        attendanceStatus = "An error occurred while marking attendance";
+        print("error in close attendance => ${error}");
+      });
     } finally {
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  Future<void> _checkAndResetAttendanceForNewDay() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? lastMarkedDate = prefs.getString('attendanceDate');
-    print('lastMarkedDate $lastMarkedDate');
-    String currentDate = DateTime.now().toIso8601String().split('T')[0];
-    if (lastMarkedDate == null || lastMarkedDate != currentDate) {
-      await _resetAttendanceState();
-    }
-  }
+  // Future<void> _checkAttendanceStatus() async {
+  //   setState(() => isLoading = true);
+  //   try {
+  //     final storage = FlutterSecureStorage();
+  //     final token = await storage.read(key: "auth_token");
 
-  Future<void> _resetAttendanceState() async {
-    print('here reset');
-    final prefs = await SharedPreferences.getInstance();
+  //     final response = await http.get(
+  //       Uri.parse('${ServerUrl}/checkattendance'),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'authorization': 'Bearer $token',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       // print('her===>e');
+  //       final responseData = jsonDecode(response.body);
+  //       bool alreadyMarked = responseData['alreadyMarked'] ?? false;
+  //       print('alreadyMarked $alreadyMarked');
 
-    await prefs.remove('attendanceId');
-    await prefs.remove('attendanceDate');
+  //       setState(() {
+  //         if (alreadyMarked) {
+  //           attendanceStatus = 'Attendance already completed for today.';
+  //           // isAttendanceStarted = true;
+  //           isAttendanceMarked = true;
+  //         }
+  //         print(attendanceStatus);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     setState(() => attendanceStatus = 'Error checking attendance status.');
+  //   } finally {
+  //     setState(() => isLoading = false);
+  //   }
+  // }
 
-    setState(() {
-      attendanceId = null;
-      attendanceStatus = 'Attendance not marked';
-    });
-  }
+  // Future<void> _checkAndResetAttendanceForNewDay() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   String? lastMarkedDate = prefs.getString('attendanceDate');
+  //   print('lastMarkedDate $lastMarkedDate');
+  //   String currentDate = DateTime.now().toIso8601String().split('T')[0];
+  //   if (lastMarkedDate == null || lastMarkedDate != currentDate) {
+  //     await _resetAttendanceState();
+  //   }
+  // }
 
-  Future<void> _loadAttendanceState() async {
-    final prefs = await SharedPreferences.getInstance();
+  // Future<void> _resetAttendanceState() async {
+  //   print('here reset');
+  //   final prefs = await SharedPreferences.getInstance();
 
-    setState(() {
-      attendanceId = prefs.getInt('attendanceId');
-      isAttendanceMarked = prefs.getBool('isAttendanceMarked') ?? false;
-      attendanceStatus =
-          isAttendanceMarked
-              ? 'Attendance Already Marked'
-              : 'Attendance not marked.';
-    });
-  }
+  //   await prefs.remove('attendanceId');
+  //   await prefs.remove('attendanceDate');
 
-  Future<void> _saveAttendanceState(int? id, bool marked) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isAttendanceMarked', marked);
-    if (id != null) {
-      await prefs.setInt('attendanceId', id);
-    } else {
-      await prefs.remove('attendanceId');
-    }
+  //   setState(() {
+  //     attendanceId = null;
+  //     attendanceStatus = 'Attendance not marked';
+  //   });
+  // }
 
-    await prefs.setString(
-      'attendanceDate',
-      DateTime.now().toIso8601String().split('T')[0],
-    );
-  }
+  // Future<void> _loadAttendanceState() async {
+  //   final prefs = await SharedPreferences.getInstance();
+
+  //   setState(() {
+  //     attendanceId = prefs.getInt('attendanceId');
+  //     isAttendanceMarked = prefs.getBool('isAttendanceMarked') ?? false;
+  //     attendanceStatus =
+  //         isAttendanceMarked
+  //             ? 'Attendance Already Marked'
+  //             : 'Attendance not marked.';
+  //   });
+  // }
+
+  // Future<void> _saveAttendanceState(int? id, bool marked) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setBool('isAttendanceMarked', marked);
+  //   if (id != null) {
+  //     await prefs.setInt('attendanceId', id);
+  //   } else {
+  //     await prefs.remove('attendanceId');
+  //   }
+
+  //   await prefs.setString(
+  //     'attendanceDate',
+  //     DateTime.now().toIso8601String().split('T')[0],
+  //   );
+  // }
 
   Future<void> _checkLocationAndMarkAttendance() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      setState(() => attendanceStatus = 'Location services are disabled.');
+      setState(() => attendanceStatus = 'Device location is Disabled');
       return;
     }
 
@@ -167,7 +232,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
 
     if (permission == LocationPermission.deniedForever) {
       setState(
-        () => attendanceStatus = 'Location permissions are permanently denied.',
+        () => attendanceStatus = 'Location permissions are permanently denied',
       );
       return;
     }
@@ -195,8 +260,8 @@ class _AttendancescreenState extends State<Attendancescreen> {
   Future<void> _markAttendanceStart() async {
     setState(() => isLoading = true);
     try {
-      final storage = FlutterSecureStorage();
-      final token = await storage.read(key: "auth_token");
+      // final storage = FlutterSecureStorage();
+      // final token = await storage.read(key: "auth_token");
 
       final response = await http.post(
         Uri.parse('${ServerUrl}/markattendance'),
@@ -206,7 +271,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
         },
 
         body: jsonEncode({
-          'locationName': "office",
+          // 'locationName': "office",
           'isLate': isLate,
           'remark': _reasonController.text,
         }),
@@ -220,7 +285,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
           attendanceId = responseData['attendance']['id'];
         });
         print("=========== $attendanceId");
-        await _saveAttendanceState(attendanceId, isAttendanceMarked);
+        // await _saveAttendanceState(attendanceId, isAttendanceMarked);
       } else if (response.statusCode == 400) {
         setState(() => attendanceStatus = 'Attendance already marked today.');
       } else {
@@ -231,7 +296,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
       }
     } catch (e) {
       setState(
-        () => attendanceStatus = 'An error occurred while marking attendance.',
+        () => attendanceStatus = 'An error occurred while marking attendance',
       );
     } finally {
       setState(() => isLoading = false);
@@ -240,6 +305,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
 
   void dispose() {
     super.dispose();
+    _reasonController.dispose();
   }
 
   void _customDialog() {
@@ -388,16 +454,22 @@ class _AttendancescreenState extends State<Attendancescreen> {
                   ),
                   SizedBox(height: 40),
 
-                  if (!isAttendanceMarked)
+                  // isme onpressed closed ke lia shi krna h kr lena jb closed ka bna lo..............................
+                  if (isAttendanceMarked == false ||
+                      isAttendanceClosed == false)
                     ElevatedButton(
                       onPressed:
                           isLoading
                               ? null
+                              : isAttendanceMarked
+                              ? _closeAttendance
                               : (now.hour >= 10 && now.minute > 10)
                               ? _customDialog
                               : _checkLocationAndMarkAttendance,
                       child: Text(
-                        'Mark Attendance',
+                        isAttendanceMarked
+                            ? "Close Attendance"
+                            : 'Mark Attendance',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(

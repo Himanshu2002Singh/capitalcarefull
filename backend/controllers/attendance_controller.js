@@ -4,11 +4,12 @@ const moment = require("moment-timezone");
 const { read } = require("xlsx");
 const User = require("../models/employeesModel");
 const schedule = require("node-schedule");
+const { json } = require("body-parser");
 
 const markattendance = async (req, res) => {
   const userId1 = req.user.id;
-  const { locationName, isLate, remark } = req.body;
-  console.log(locationName, "=========?");
+  const { isLate, remark } = req.body;
+  // console.log(locationName, "=========?");
   try {
     const todayIST = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
     const existingAttendance = await Attendance.findOne({
@@ -24,7 +25,7 @@ const markattendance = async (req, res) => {
     // Mark attendance with the current timestamp in IST
     const attendance = await Attendance.create({
       userId : userId1,
-      attendancesite: locationName,
+      // attendancesite: locationName,
       startTime: moment().tz("Asia/Kolkata").toDate(),
       date: todayIST,
       isLate,
@@ -36,62 +37,62 @@ const markattendance = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-// const closeattendance = async (req, res) => {
-//   const userId = req.user.id;
-//   const { id } = req.params;
-//   const { locationName } = req.body;
-//   console.log(locationName, "=========?");
-//   try {
-//     const attendance = await Attendance.findByPk(id);
-//     if (!attendance) {
-//       return res.status(404).json({ message: "Attendance not found." });
-//     }
+const closeattendance = async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  // const { locationName } = req.body;
+  // console.log(locationName, "=========?");
+  try {
+    const attendance = await Attendance.findByPk(id);
+    if (!attendance) {
+      return res.status(404).json({ message: "Attendance not found." });
+    }
 
-//     if (attendance.endTime) {
-//       return res.status(400).json({ message: "Attendance already closed." });
-//     }
-//     if (attendance.attendancesite != locationName) {
-//       return res
-//         .status(400)
-//         .json({ message: "Attendance location doesn't match." });
-//     }
+    if (attendance.endTime) {
+      return res.status(400).json({ message: "Attendance already closed." });
+    }
+    // if (attendance.attendancesite != locationName) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Attendance location doesn't match." });
+    // }
 
-//     // Set the end time in IST
-//     const endTimeIST = moment().tz("Asia/Kolkata").toDate();
-//     attendance.endTime = endTimeIST;
+    // Set the end time in IST
+    const endTimeIST = moment().tz("Asia/Kolkata").toDate();
+    attendance.endTime = endTimeIST;
 
-//     // Calculate the attendance duration
-//     // const start = moment(attendance.startTime).tz("Asia/Kolkata");
-//     // const end = moment(endTimeIST).tz("Asia/Kolkata");
-//     // const duration = moment.duration(end.diff(start)).asHours(); // Duration in hours
+    // Calculate the attendance duration
+    // const start = moment(attendance.startTime).tz("Asia/Kolkata");
+    // const end = moment(endTimeIST).tz("Asia/Kolkata");
+    // const duration = moment.duration(end.diff(start)).asHours(); // Duration in hours
 
-//     // Check if start time is between 6:00 AM and 9:45 AM IST
-//     // const isMarkedEarly = start.isBetween(
-//     //   moment().tz("Asia/Kolkata").startOf("day").add(6, "hours"),
-//     //   moment()
-//     //     .tz("Asia/Kolkata")
-//     //     .startOf("day")
-//     //     .add(9, "hours")
-//     //     .add(45, "minutes"),
-//     //   null,
-//     //   "[)"
-//     // );
+    // Check if start time is between 6:00 AM and 9:45 AM IST
+    // const isMarkedEarly = start.isBetween(
+    //   moment().tz("Asia/Kolkata").startOf("day").add(6, "hours"),
+    //   moment()
+    //     .tz("Asia/Kolkata")
+    //     .startOf("day")
+    //     .add(9, "hours")
+    //     .add(45, "minutes"),
+    //   null,
+    //   "[)"
+    // );
 
-//     // Check if duration is at least 8 hours and 30 minutes
-//     // const isFullDay = duration >= 8.5 && isMarkedEarly;
+    // Check if duration is at least 8 hours and 30 minutes
+    // const isFullDay = duration >= 8.5 && isMarkedEarly;
 
-//     // Set attendance status
-//     attendance.status =  "Full Day" ;
+    // Set attendance status
+    // attendance.status =  "Full Day" ;
 
-//     // Save the updated attendance
-//     await attendance.save();
+    // Save the updated attendance
+    await attendance.save();
 
-//     res.status(200).json(attendance);
-//   } catch (error) {
-//     console.log("Error closing attendance:", error);
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
+    res.status(200).json({message: "Attendance closed successfully", attendance});
+  } catch (error) {
+    console.log("Error closing attendance:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
 const checkattendance = async (req, res) => {
   const userId = req.user.id;
   const currentDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
@@ -108,17 +109,18 @@ const checkattendance = async (req, res) => {
     });
     console.log(attendance, currentDate, "=========?");
     if (attendance) {
-      if (attendance.status) {
-        return res.status(200).json({ alreadyMarked: true });
-      }
-      return res.status(200).json({ alreadyMarked: false });
+      if(attendance.endTime==null){
+        return res.status(200).json({ alreadyMarked: true, closed: false, attendance });
+      }else{
+        return res.status(200).json({ alreadyMarked: true, closed: true });
+      } 
     } else {
-      return res.status(200).json({ alreadyMarked: false });
+      return res.status(200).json({ alreadyMarked: false, closed: false });
     }
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Server error checking attendance." });
+      .json({ message: "Server error checking attendance.", error});
   }
 };
 
@@ -127,7 +129,7 @@ const myattendance = async (req, res) => {
     const userId = req.user.id; // Assuming user ID is attached to the request
     const attendanceRecords = await Attendance.findAll({
       where: { userId },
-      attributes: ["date", "status", "isLate"], // Fetch only necessary fields
+      attributes: ["date", "isLate"], // Fetch only necessary fields
     });
 
     if (!attendanceRecords || attendanceRecords.length === 0) {
@@ -137,7 +139,6 @@ const myattendance = async (req, res) => {
     // Format response to send dates and statuses
     const formattedData = attendanceRecords.map((record) => ({
       date: moment(record.date).format("YYYY-MM-DD"),
-      status: record.status,
       isLate : record.isLate
     }));
     console.log(formattedData, "=========?");
@@ -253,6 +254,33 @@ const autoCloseAttendances = async () => {
   }
 };
 
+const getMonthlyAttendance = async (req, res) => {
+  try {
+    const { month } = req.params; // Example: 2025-06
+    if (!month || !moment(month, "YYYY-MM", true).isValid()) {
+      return res.status(400).json({ message: "Invalid or missing month parameter." });
+    }
+
+    const startDate = moment(month, "YYYY-MM").startOf("month").format("YYYY-MM-DD");
+    const endDate = moment(month, "YYYY-MM").endOf("month").format("YYYY-MM-DD");
+
+    const attendanceRecords = await Attendance.findAll({
+      where: {
+        date: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+      order: [["date", "ASC"]],
+    });
+
+    return res.status(200).json({ attendance: attendanceRecords });
+  } catch (error) {
+    console.error("Error fetching monthly attendance:", error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 schedule.scheduleJob(
   { hour: 20, minute: 0, dayOfWeek: [0, 1, 3, 4, 5, 6] },
   () => {
@@ -262,8 +290,9 @@ schedule.scheduleJob(
 
 module.exports = {
   markattendance,
-  // closeattendance,
+  closeattendance,
   checkattendance,
   myattendance,
   getcompleteuserdetailsattendance,
+  getMonthlyAttendance
 };

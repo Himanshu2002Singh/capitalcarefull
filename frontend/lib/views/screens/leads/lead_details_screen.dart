@@ -436,18 +436,3 @@ String formatDateTime(String dateTimeString) {
   return formatter.format(dateTime);
 }
 
-// class HistoryEntry {
-//   final String dateTime;
-//   final String user;
-//   final String status;
-//   final String schedule;
-//   final String remark;
-
-//   HistoryEntry({
-//     required this.dateTime,
-//     required this.user,
-//     required this.status,
-//     required this.schedule,
-//     required this.remark,
-//   });
-// }
