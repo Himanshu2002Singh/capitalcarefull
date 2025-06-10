@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 
 const LeadDetailScreen = () => {
   const { id } = useParams();
+
   const [user, setUser] = useState(null);
   const [lead, setLead] = useState(null);
   const [calls, setCalls] = useState([]);
@@ -17,25 +18,88 @@ const LeadDetailScreen = () => {
   const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 50;
 
-  const downloadexcel = () => {
-    const filteredCalls = calls.map((call) => ({
-      "Called By": personNames[call.emp_id] || "N/A",
-      "Employee ID": call.emp_id || "N/A",
-      "Lead ID": call.lead_id || "N/A",
-      "Name": lead?.name || "N/A",
-      "Phone": call.number || "N/A",
-      "Remark": call.remark || "N/A",
-      "Created At": new Date(call.createdAt).toLocaleString("en-IN", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
-    }));
+const downloadexcel = () => {
+  // Prepare calls data
+  const callsData = calls.map((call) => ({
+    "Called By": personNames[call.emp_id] || "N/A",
+    "Employee ID": call.emp_id || "N/A",
+    "Lead ID": call.lead_id || "N/A",
+    "Name": lead?.name || "N/A",
+    "Phone": call.number || "N/A",
+    "Remark": call.remark || "N/A",
+    "Created At": new Date(call.createdAt).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }),
+  }));
 
-    const ws = XLSX.utils.json_to_sheet(filteredCalls);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Calls");
-    XLSX.writeFile(wb, "calls_data.xlsx");
-  };
+  // Prepare history data
+  const historyData = histories.map((item) => ({
+    "Updated By": item.owner || "N/A",
+    "Next Meeting": item.next_meeting 
+      ? new Date(item.next_meeting).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "N/A",
+    "Status": item.status || "N/A",
+    "Remark": item.remark || "N/A",
+    "Updated At": item.createdAt
+      ? new Date(item.createdAt).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "N/A",
+  }));
+
+  // Create workbook with multiple sheets
+  const wb = XLSX.utils.book_new();
+  
+  // Add calls sheet
+  const callsWs = XLSX.utils.json_to_sheet(callsData);
+  XLSX.utils.book_append_sheet(wb, callsWs, "Calls");
+  
+  // Add history sheet
+  const historyWs = XLSX.utils.json_to_sheet(historyData);
+  XLSX.utils.book_append_sheet(wb, historyWs, "History");
+
+  // Add lead details sheet
+  const leadDetailsData = [{
+    "Lead ID": lead?.lead_id || "N/A",
+    "Name": lead?.name || "N/A",
+    "Email": lead?.email || "N/A",
+    "Phone": lead?.number || "N/A",
+    "Assigned To": `${lead?.person_id || "N/A"}-${lead?.owner || "N/A"}`,
+    "Status": lead?.status || "N/A",
+    "Source": lead?.source || "N/A",
+    "Priority": lead?.priority || "N/A",
+    "Next Meeting": lead?.next_meeting 
+      ? new Date(lead.next_meeting).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "N/A",
+    "Loan Type": lead?.loan_type || "N/A",
+    "Estimated Budget": lead?.est_budget || "N/A",
+    "Reference": lead?.refrence || "N/A",
+    "Address": lead?.address || "N/A",
+    "Description": lead?.description || "N/A",
+    "Created At": lead?.createdAt
+      ? new Date(lead.createdAt).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "N/A",
+  }];
+  const leadWs = XLSX.utils.json_to_sheet(leadDetailsData);
+  XLSX.utils.book_append_sheet(wb, leadWs, "Lead Details");
+
+  // Generate file name with lead name and current date
+  const fileName = `Lead_${lead?.name || 'Details'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  
+  // Download the file
+  XLSX.writeFile(wb, fileName);
+};
 
   const fetchLeadDetails = async () => {
     try {

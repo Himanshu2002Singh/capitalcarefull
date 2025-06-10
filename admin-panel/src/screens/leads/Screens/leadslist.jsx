@@ -258,7 +258,7 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
               <tr
                 key={user.lead_id}
                 className="hover:bg-gray-50"
-                // onClick={() => navigate(`/userdetail/${user.lead_id}`)}
+                // onClick={() => navigate(`/lead-details/${user.lead_id}`)}
               >
                 <td className="p-4 text-[15px] text-gray-800">
                   {user.lead_id}

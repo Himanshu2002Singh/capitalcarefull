@@ -172,6 +172,11 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                                         description: widget.lead.description,
                                         address: widget.lead.address,
                                         loanType: widget.lead.loanType,
+                                        dob: widget.lead.dob,
+                                        loanAmount: widget.lead.est_budget,
+                                        loanTerm: widget.lead.loan_term,
+                                        employmentType:
+                                            widget.lead.employment_type,
                                       ),
                                 ),
                               );
@@ -237,6 +242,51 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                           Text(formatDateTime(widget.lead.createdAt)),
                         ],
                       ),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_month_rounded, size: 18),
+                          Text(
+                            " DOB : ",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(child: Text(widget.lead.dob)),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            "Loan Type :",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(child: Text(widget.lead.loanType)),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            "Loan Term :",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(child: Text(widget.lead.loan_term)),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            "Employment Type :",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(child: Text(widget.lead.employment_type)),
+                        ],
+                      ),
+                      SizedBox(height: 6),
                     ],
                   ),
                 ),
@@ -435,4 +485,3 @@ String formatDateTime(String dateTimeString) {
   final formatter = DateFormat('d-MMM-yyyy hh:mm a');
   return formatter.format(dateTime);
 }
-

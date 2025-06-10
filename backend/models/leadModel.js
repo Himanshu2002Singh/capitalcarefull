@@ -32,6 +32,9 @@ const Lead = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    dob :{
+      type: DataTypes.DATEONLY
+    },
     branch: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -51,6 +54,12 @@ const Lead = sequelize.define(
     next_meeting: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    employment_type: {
+      type: DataTypes.STRING,
+    },
+    loan_term: {
+      type: DataTypes.STRING
     },
     refrence: {
       type: DataTypes.STRING,

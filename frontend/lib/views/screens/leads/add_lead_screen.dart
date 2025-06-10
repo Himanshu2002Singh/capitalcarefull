@@ -27,6 +27,10 @@ class AddLeadScreen extends StatefulWidget {
   var description;
   var address;
   var loanType;
+  var dob;
+  var loanAmount;
+  var employmentType;
+  var loanTerm;
   AddLeadScreen({
     super.key,
     required this.title,
@@ -45,6 +49,10 @@ class AddLeadScreen extends StatefulWidget {
     this.refrence,
     this.status,
     this.loanType,
+    this.dob,
+    this.loanAmount,
+    this.employmentType,
+    this.loanTerm,
   });
 
   @override
@@ -67,6 +75,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   TextEditingController nextMeetingTimeController = TextEditingController();
   TextEditingController loanTypeController = TextEditingController();
   TextEditingController addressController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+  TextEditingController loanAmountController = TextEditingController();
+  TextEditingController employmentTypeController = TextEditingController();
+  TextEditingController LoanTermController = TextEditingController();
   File? lastSalaryController;
   File? cibilController;
   File? identityController;
@@ -109,6 +121,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     "Insurance",
     "Other",
   ];
+  List<String> employmentType = ["Self Employed", "Salary Person"];
+  List<String> loanTerm = ["Monthly", "Yearly"];
 
   void handleSubmit() async {
     if (contactNameController.text.isEmpty ||
@@ -132,6 +146,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         description: descriptionController.text,
         address: addressController.text,
         loanType: loanTypeController.text,
+        dob: dobController.text,
+        employment_type: employmentTypeController.text,
+        loan_term: LoanTermController.text,
+        est_budget: loanAmountController.text,
       );
 
       bool success1 =
@@ -193,6 +211,12 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         widget.description == null ? "" : widget.description;
     addressController.text = widget.address == null ? "" : widget.address;
     loanTypeController.text = widget.loanType == null ? "" : widget.loanType;
+    dobController.text = widget.dob == null ? "" : widget.dob;
+    loanAmountController.text =
+        widget.loanAmount == null ? "" : widget.loanAmount;
+    LoanTermController.text = widget.loanTerm == null ? "" : widget.loanTerm;
+    employmentTypeController.text =
+        widget.employmentType == null ? "" : widget.employmentType;
   }
 
   @override
@@ -334,6 +358,61 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             const SectionTitle(title: "Company Dynamic Questions"),
             const SizedBox(height: 20),
 
+            GestureDetector(
+              onTap: () async {
+                DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                );
+                if (pickedDate != null) {
+                  dobController.text =
+                      pickedDate.toLocal().toString().split(
+                        ' ',
+                      )[0]; // or use DateFormat
+                }
+              },
+              child: AbsorbPointer(
+                child: TextFormField(
+                  controller: dobController,
+                  decoration: InputDecoration(
+                    hintText: 'Select Date of Birth',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              hint: "Enter loan Amount",
+              controller: loanAmountController,
+              maxLine: 1,
+            ),
+            const SizedBox(height: 16),
+            CustomDropdown(
+              hint:
+                  widget.employmentType == null
+                      ? "Employment Type"
+                      : widget.employmentType,
+              options: employmentType,
+              onChange: (value) {
+                setState(() {
+                  employmentTypeController.text = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            CustomDropdown(
+              hint: widget.loanTerm == null ? "Loan Term" : widget.loanTerm,
+              options: loanTerm,
+              onChange: (value) {
+                setState(() {
+                  LoanTermController.text = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
             CustomDropdown(
               hint:
                   widget.loanType == null || widget.loanType.isEmpty

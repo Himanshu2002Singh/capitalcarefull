@@ -1,264 +1,249 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import API_URL from "../../../config";
-import * as XLSX from "xlsx";
 
 const UserDetailScreen = () => {
-  const { id } = useParams();
-  const [user, setUser] = useState(null);
+  const { emp_id } = useParams();
+  const [employee, setEmployee] = useState(null);
+  const [leads, setLeads] = useState([]);
   const [calls, setCalls] = useState([]);
-  const [categorizedCalls, setCategorizedCalls] = useState({});
-  const [search, setSearch] = useState(""); // For search functionality
-  const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 50;
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Toggle states
+  const [showLeads, setShowLeads] = useState(true);
+  const [showCalls, setShowCalls] = useState(true);
+  
+  // Pagination states
+  const [leadsPage, setLeadsPage] = useState(1);
+  const [callsPage, setCallsPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const downloadexcel = () => {
-    // Convert calls data to sheet
-    const filteredCalls = calls.map(
-      ({ createdAt, updatedAt, id, assignedto, calldate, ...rest }) => rest
-    );
-    const ws = XLSX.utils.json_to_sheet(filteredCalls);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Calls");
-
-    // Trigger Excel download
-    XLSX.writeFile(wb, "calls_data.xlsx");
-  };
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-
-  const fetchCallDetails = async (page, search = "") => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/${id}/userdetails?page=${page}&limit=${itemsPerPage}&search=${search}`
-      );
-      setCalls(response.data.calls);
-      setUser(response.data.user);
-      setCategorizedCalls(response.data.categorizedCalls);
-      setTotalPages(response.data.pagination.totalPages);
-    } catch (error) {
-      console.error("Error fetching call details:", error);
-    }
-  };
-
+  // Fetch employee details
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchCallDetails(currentPage, search);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, search]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch employee data
+        const empResponse = await axios.get(`${API_URL}/employees/${emp_id}`);
+        setEmployee(empResponse.data);
+        
+        // Fetch leads associated with this employee
+        const leadsResponse = await axios.get(`${API_URL}/leads/${emp_id}`);
+        setLeads(leadsResponse.data);
+        
+        // Fetch calls associated with this employee
+        const callsResponse = await axios.get(`${API_URL}/calls/${emp_id}`);
+        setCalls(callsResponse.data.calls);
+        
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-  // Filter calls based on search input
+    fetchData();
+  }, [emp_id]);
+
+  // Calculate paginated data
+  const paginatedLeads = leads.slice(
+    (leadsPage - 1) * itemsPerPage,
+    leadsPage * itemsPerPage
+  );
+
+  const paginatedCalls = calls.slice(
+    (callsPage - 1) * itemsPerPage,
+    callsPage * itemsPerPage
+  );
+
+  const totalLeadsPages = Math.ceil(leads.length / itemsPerPage);
+  const totalCallsPages = Math.ceil(calls.length / itemsPerPage);
+
+  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+  if (!employee) return <div className="text-center py-8">Employee not found</div>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">User Details</h1>
-        <button
-          onClick={downloadexcel}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Download Excel
-        </button>
-      </div>
-      {user ? (
-        <div className="border rounded p-4 mb-6 bg-gray-100">
-          <p>
-            <strong>Name:</strong> {user.name}
-          </p>
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
-          <p>
-            <strong>Phone:</strong> {user.phone}
-          </p>
-          <p>
-            <strong>Role:</strong> {user.role}
-          </p>
-          <p>
-            <strong>Points:</strong> {user.points}
-          </p>
+    <div className="container mx-auto px-4 py-8">
+      {/* Profile Section */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-100">
+            <img 
+              alt="Profile" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-800">{employee.ename}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <p className="text-gray-600">Employee ID</p>
+                <p className="font-medium">{employee.emp_id}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Phone Number</p>
+                <p className="font-medium">{employee.phone}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Email</p>
+                <p className="font-medium">{employee.email}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Password</p>
+                <p className="font-medium">{employee.password}</p>
+              </div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <p>Loading user details...</p>
-      )}
-
-      <h2 className="text-xl font-bold mb-4">Call Details</h2>
-      {categorizedCalls.total ? (
-        <div className="border rounded p-4 mb-6 bg-gray-100">
-          <p>
-            <strong>Total Calls:</strong> {categorizedCalls.total}
-          </p>
-          <p>
-            <strong>Interested:</strong> {categorizedCalls.interested}
-          </p>
-          <p>
-            <strong>Not Interested:</strong> {categorizedCalls.notInterested}
-          </p>
-          <p>
-            <strong>Future:</strong> {categorizedCalls.future}
-          </p>
-          <p>
-            <strong>Remaining Calls:</strong> {categorizedCalls.uncompleted}
-          </p>
-          <p>
-            {/* <strong>Uncompleted:</strong> {categorizedCalls.uncompleted} */}
-          </p>
-          <p>
-            <strong>Wrong numbers:</strong> {categorizedCalls.wrongnumber}
-          </p>
-          <p>
-            <strong>Not connected:</strong> {categorizedCalls.noconnect}
-          </p>
-        </div>
-      ) : (
-        <p>Loading call details...</p>
-      )}
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search calls..."
-          className="border p-2 rounded w-full"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
       </div>
 
-      <h3 className="text-lg font-bold mb-2">All Calls</h3>
-      <table className="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border border-gray-300 px-4 py-2">Name</th>
-            <th className="border border-gray-300 px-4 py-2">Phone</th>
-            {/* <th className="border border-gray-300 px-4 py-2">Call date</th> */}
-
-            <th className="border border-gray-300 px-4 py-2">Call Duration</th>
-
-            <th className="border border-gray-300 px-4 py-2">Status</th>
-            <th className="border border-gray-300 px-4 py-2">Project Name</th>
-            <th className="border border-gray-300 px-4 py-2">Call Remark</th>
-            <th className="border border-gray-300 px-4 py-2">
-              Site Visit Remark
-            </th>
-
-            <th className="border border-gray-300 px-4 py-2">Site Visit</th>
-          </tr>
-        </thead>
-        <tbody>
-          {calls.length > 0 ? (
-            calls.map((call, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">
-                  {call.name || "N/A"}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {call.phone}
-                </td>
-
-                {/* call duration */}
-                {/* <td
-                  className={`${
-                    call.isverified ? "bg-green-500" : ""
-                  } border border-gray-300 px-4 py-2`}
-                >
-                  {call.isverified ? "Yes" : "No"}
-                </td>
-                <td
-                  className={`${
-                    call.isverified ? "bg-green-500" : ""
-                  } border border-gray-300 px-4 py-2`}
-                >
-                  {call.isverified ? "Yes" : "No"}
-                </td> */}
-                <td className="border border-gray-300 px-4 py-2">
-                  {(() => {
-                    const durationInSeconds = call.callduration;
-                    if (durationInSeconds === null) {
-                      return "";
-                    } else if (durationInSeconds < 60) {
-                      return `${durationInSeconds} seconds`;
-                    } else if (durationInSeconds < 3600) {
-                      const minutes = Math.floor(durationInSeconds / 60);
-                      const seconds = durationInSeconds % 60;
-                      return `${minutes} minutes ${seconds} seconds`;
-                    } else {
-                      const hours = Math.floor(durationInSeconds / 3600);
-                      const minutes = Math.floor(
-                        (durationInSeconds % 3600) / 60
-                      );
-                      return `${hours} hours ${minutes} minutes`;
-                    }
-                  })()}
-                </td>
-
-                <td
-                  className={`${
-                    call.status === "interested"
-                      ? "bg-green-200"
-                      : call.status === "future"
-                      ? "bg-yellow-200"
-                      : ""
-                  } border border-gray-300 px-4 py-2`}
-                >
-                  {call.status}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {call.projectname}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {call.callremark || "--"}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {call.sitevisiteremark || "--"}
-                </td>
-
-                <td
-                  className={`${
-                    call.isverified ? "bg-green-500" : ""
-                  } border border-gray-300 px-4 py-2`}
-                >
-                  {call.isverified ? "Yes" : "No"}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan="4"
-                className="text-center border border-gray-300 px-4 py-2"
-              >
-                No calls found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      {isLoading && (
-        <div className="flex justify-center mt-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      {/* Leads Section */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Associated Leads</h2>
+          <button 
+            onClick={() => setShowLeads(!showLeads)}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showLeads ? 'Hide' : 'Show'} Leads ({leads.length})
+          </button>
         </div>
-      )}
-      <div className="flex justify-center mt-4 gap-2">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        >
-          Previous
-        </button>
-        <span className="px-4 py-2">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage((prev) => prev + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        >
-          Next
-        </button>
+        
+        {showLeads && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedLeads.map((lead) => (
+                    <tr key={lead.lead_id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.lead_id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{lead.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lead.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lead.number}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${lead.status === 'Converted' ? 'bg-green-100 text-green-800' : 
+                            lead.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-yellow-100 text-yellow-800'}`}>
+                          {lead.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {leads.length === 0 && (
+                <p className="text-center py-4 text-gray-500">No leads found for this employee</p>
+              )}
+            </div>
+            
+            {/* Leads Pagination */}
+            {leads.length > itemsPerPage && (
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => setLeadsPage(prev => Math.max(prev - 1, 1))}
+                  disabled={leadsPage === 1}
+                  className={`px-3 py-1 rounded ${leadsPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Previous
+                </button>
+                <span>Page {leadsPage} of {totalLeadsPages}</span>
+                <button
+                  onClick={() => setLeadsPage(prev => Math.min(prev + 1, totalLeadsPages))}
+                  disabled={leadsPage === totalLeadsPages}
+                  className={`px-3 py-1 rounded ${leadsPage === totalLeadsPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Calls Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Call Logs</h2>
+          <button 
+            onClick={() => setShowCalls(!showCalls)}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showCalls ? 'Hide' : 'Show'} Calls ({calls.length})
+          </button>
+        </div>
+        
+        {showCalls && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Call ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remark</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">At</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedCalls.map((call) => (
+                    <tr key={call.call_id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.call_id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {call.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{call.number} </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {call.remark}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(call.createdAt).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {calls.length === 0 && (
+                <p className="text-center py-4 text-gray-500">No call logs found for this employee</p>
+              )}
+            </div>
+            
+            {/* Calls Pagination */}
+            {calls.length > itemsPerPage && (
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => setCallsPage(prev => Math.max(prev - 1, 1))}
+                  disabled={callsPage === 1}
+                  className={`px-3 py-1 rounded ${callsPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Previous
+                </button>
+                <span>Page {callsPage} of {totalCallsPages}</span>
+                <button
+                  onClick={() => setCallsPage(prev => Math.min(prev + 1, totalCallsPages))}
+                  disabled={callsPage === totalCallsPages}
+                  className={`px-3 py-1 rounded ${callsPage === totalCallsPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

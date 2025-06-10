@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import API_URL from "../../config";
+import * as XLSX from "xlsx";
 
 const AttendanceScreen = () => {
   const [attendanceData, setAttendanceData] = useState([]);
@@ -14,6 +15,37 @@ const AttendanceScreen = () => {
 const recordsPerPage = 20; 
 const indexOfLastRecord = currentPage * recordsPerPage;
 const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
+
+  const downloadExcel = () => {
+    const sheetData = [
+      [
+        "Emp ID",
+        "Name",
+        "Total",
+        "Full",
+        "Late",
+        ...[...Array(totalDays)].map((_, i) => `Day ${i + 1}`),
+      ],
+    ];
+
+    currentRecords.forEach((emp) => {
+      const row = [
+        emp.userId,
+        emp.name,
+        emp.total,
+        emp.full,
+        emp.late,
+        ...emp.days.map((day) => day.symbol || "-"),
+      ];
+      sheetData.push(row);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+    XLSX.writeFile(wb, `attendance_${selectedMonth}.xlsx`);
+  };
 
 
   // Fetch attendance data
@@ -156,16 +188,38 @@ const totalPages = Math.ceil(processedData.length / recordsPerPage);
   return (
     <div className="p-4 overflow-auto">
       <h2 className="text-2xl font-semibold mb-4">Attendance</h2>
+      <div className="flex items-center justify-between flex-wrap mb-4">
+        <label className="block">
+          <span className="font-medium">Select Month:</span>
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="border rounded px-2 py-1 ml-2"
+          />
+        </label>
 
-      <label className="mb-4 block">
-        <span className="font-medium">Select Month:</span>
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="border rounded px-2 py-1 ml-2"
-        />
-      </label>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-2 py-1 bg-green-100 rounded">
+            <span className="text-lg">✅</span>
+            <span className="text-sm">Full Day</span>
+          </div>
+          <div className="flex items-center gap-2 px-2 py-1 bg-yellow-100 rounded">
+            <span className="text-lg">🟨</span>
+            <span className="text-sm">Late</span>
+          </div>
+        </div>
+        
+        <button
+    onClick={downloadExcel}
+    className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition-all"
+  >
+    Download Excel
+  </button>
+
+      </div>
+
+
 
       {loading ? (
         <p className="mt-4">Loading attendance...</p>

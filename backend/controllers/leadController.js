@@ -2,34 +2,22 @@ const Lead = require('../models/leadModel');
 
 
 exports.addLead = async (req, res) => {
-    const {person_id, name, number, email, owner, branch, source, priority, status, next_meeting, refrence, description, address, loan_type} = req.body;
+  const { name, number } = req.body;
 
-    if(!name || !number){
-        return res.status(400).json({message : 'name and number are required'});
-    }
+  if (!name || !number) {
+    return res.status(400).json({ message: 'Name and number are required' });
+  }
 
-    try{
-        const newLead = await Lead.create({
-            person_id, 
-            name,
-            number,
-            email, 
-            owner, 
-            branch,
-            source, 
-            priority,
-            status,
-            next_meeting,
-            refrence, 
-            description,
-            address,
-            loan_type
-        });
-        res.status(200).json({message : "lead added successfully", id : newLead.lead_id});
-    }catch(error){
-        console.error("Error adding lead : ",error);
-        res.status(500).json({message: "database error", error});
-    }
+  try {
+    const newLead = await Lead.create(req.body); 
+    res.status(200).json({
+      message: "Lead added successfully",
+      id: newLead.lead_id,
+    });
+  } catch (error) {
+    console.error("Error adding lead:", error);
+    res.status(500).json({ message: "Database error", error });
+  }
 };
 
 exports.updateLead = async (req, res) => {

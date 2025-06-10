@@ -4,6 +4,7 @@ class Leads {
   final name;
   final number;
   final email;
+  final dob;
   final owner;
   final branch;
   final source;
@@ -17,6 +18,8 @@ class Leads {
   final est_budget;
   final remark;
   final createdAt;
+  final employment_type;
+  final loan_term;
 
   Leads({
     this.lead_id,
@@ -24,6 +27,7 @@ class Leads {
     this.name,
     this.number,
     this.email,
+    this.dob,
     this.owner,
     this.branch,
     this.source,
@@ -37,6 +41,8 @@ class Leads {
     this.est_budget,
     this.remark,
     this.createdAt,
+    this.employment_type,
+    this.loan_term,
   });
 
   Map<String, dynamic> toJson() {
@@ -45,6 +51,7 @@ class Leads {
     if (name != null) json["name"] = name;
     if (number != null) json["number"] = number;
     if (email != null) json["email"] = email;
+    if (dob != null) json["dob"] = dob;
     if (owner != null) json["owner"] = owner;
     if (branch != null) json["branch"] = branch;
     if (source != null) json["source"] = source;
@@ -57,6 +64,8 @@ class Leads {
     if (loanType != null) json["loan_type"] = loanType;
     if (est_budget != null) json["est_budget"] = est_budget;
     if (remark != null) json["remark"] = remark;
+    if (employment_type != null) json["employment_type"] = employment_type;
+    if (loan_term != null) json["loan_term"] = loan_term;
     return json;
   }
 
@@ -78,6 +87,9 @@ class Leads {
       refrence: json['refrence'] ?? "",
       loanType: json['loan_type'] ?? "",
       remark: json['remark'] ?? "",
+      dob: json['dob']??"",
+      employment_type: json['employment_type']??"",
+      loan_term : json['loan_term']??"",
     );
   }
 }

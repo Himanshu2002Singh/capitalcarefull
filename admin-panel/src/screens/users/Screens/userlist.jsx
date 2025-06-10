@@ -179,7 +179,7 @@ const UserList = () => {
               <tr
                 key={user.id}
                 className="hover:bg-gray-50"
-                onClick={() => navigate(`/userdetail/${user.id}`)}
+                onClick={() => navigate(`/userdetail/${user.emp_id}`)}
               >
                 <td className="p-4 text-[15px] text-gray-800">{user.emp_id}</td>
                 <td className="p-4 text-[15px] text-gray-800">{user.ename}</td>

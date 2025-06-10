@@ -11,6 +11,7 @@ import UserList from "./screens/users/Screens/userlist";
 import LeadsList from "./screens/leads/Screens/leadslist";
 import LeadDetailScreen from "./screens/leads/Screens/leadsdetailsscreen";
 import AttendanceScreen from "./screens/attendance/attendance_screen";
+import UserDetailScreen from "./screens/users/Screens/userdetailsscreen";
 
 // Custom layout component that uses useLocation hook
 const Layout = () => {
@@ -33,6 +34,7 @@ const Layout = () => {
           <Route exact path="/add-users" element={<UserList />} />
           <Route exact path="/lead-details/:id" element = {<LeadDetailScreen/>}/>
           <Route exact path = "/attendance" element = {<AttendanceScreen/>}/>
+          <Route exact path ="/userdetail/:emp_id" element = {<UserDetailScreen/>}/>
 
           {/* Add more routes as needed */}
         </Routes>
