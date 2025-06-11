@@ -98,3 +98,13 @@ exports.getLeadDetails = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+exports.searchByName = async (req, res)=>{
+  const search = req.query.search || "";
+
+  const leads = await Lead.find({
+    name: { $regex: search, $options: "i" }, 
+  });
+
+  res.json(leads);
+};

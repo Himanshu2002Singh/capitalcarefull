@@ -7,6 +7,7 @@ import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:capital_care/views/screens/my_attendance_screen.dart';
+import 'package:capital_care/views/screens/profile_screen.dart';
 import 'package:capital_care/views/screens/task/task_assigned_by_me.dart';
 import 'package:capital_care/views/screens/task_management/task_management_screen.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
@@ -63,19 +64,29 @@ class AppScaffold extends StatelessWidget {
         children: <Widget>[
           DrawerHeader(
             decoration: BoxDecoration(color: AppColors.primaryColor),
-            child: Column(
-              children: [
-                SizedBox(height: 10),
-                CircleAvatar(radius: 45, child: Text("U")),
-                SizedBox(height: 5),
-                Text(
-                  user?.ename ?? "User",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmployeeProfilePage(),
                   ),
-                ),
-              ],
+                );
+              },
+              child: Column(
+                children: [
+                  SizedBox(height: 10),
+                  CircleAvatar(radius: 45, child: Text("U")),
+                  SizedBox(height: 5),
+                  Text(
+                    user?.ename ?? "User",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           ...[

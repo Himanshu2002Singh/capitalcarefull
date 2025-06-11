@@ -18,4 +18,6 @@ router.get("/employees/:id", employeeController.getEmployeeById);
 
 router.post("/login", employeeController.loginEmployee);
 
+router.put("/update_employee/:id", employeeController.updateEmployee)
+
 module.exports = router;

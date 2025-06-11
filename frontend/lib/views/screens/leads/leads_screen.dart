@@ -18,8 +18,10 @@ class LeadsScreen extends StatefulWidget {
 
 class _LeadsScreenState extends State<LeadsScreen> {
   String loanSelectedItem = "All";
+  String selectedStatusItem = "All";
+  String searchQuery = "";
 
-  List<String> loanTypeOptions = [
+  final List<String> loanTypeOptions = [
     "All",
     "Home Loan",
     "Mortgage Loan",
@@ -33,8 +35,8 @@ class _LeadsScreenState extends State<LeadsScreen> {
     "Insurance",
     "Other",
   ];
-  String selectedStatusItem = "All";
-  List<String> statusOptions = [
+
+  final List<String> statusOptions = [
     "All",
     "Interested",
     "Call Back",
@@ -59,18 +61,18 @@ class _LeadsScreenState extends State<LeadsScreen> {
     final isLoading = leadProvider.isLoading;
     final user = Provider.of<UserProvider>(context).user;
 
-    /// 🔥 Filter logic
+    /// 🔍 Final filtered list (Loan Type + Status + Search Query)
     final filteredLeads =
-        loanSelectedItem == "All"
-            ? leads
-            : leads.where((lead) => lead.loanType == loanSelectedItem).toList();
-
-    final statusFilteredLeads =
-        selectedStatusItem == "All"
-            ? filteredLeads
-            : filteredLeads
-                .where((lead) => lead.status == selectedStatusItem)
-                .toList();
+        leads.where((lead) {
+          final matchesLoan =
+              loanSelectedItem == "All" || lead.loanType == loanSelectedItem;
+          final matchesStatus =
+              selectedStatusItem == "All" || lead.status == selectedStatusItem;
+          final matchesSearch =
+              searchQuery.isEmpty ||
+              lead.name.toLowerCase().contains(searchQuery.toLowerCase());
+          return matchesLoan && matchesStatus && matchesSearch;
+        }).toList();
 
     return AppScaffold(
       isFloatingActionButton: true,
@@ -111,11 +113,43 @@ class _LeadsScreenState extends State<LeadsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 🔍 Search Bar
                     Padding(
-                      padding: const EdgeInsets.only(top: 8, left: 8),
-                      child: Text("Total Leads: ${statusFilteredLeads.length}"),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search by name...",
+                          prefixIcon: const Icon(Icons.search),
+                          isDense: true, // Ye height kam karega
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 10,
+                          ), // Adjust vertical height
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
-                    //  Status Filter
+
+                    // 📊 Count
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        "Total Leads: ${filteredLeads.length}",
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+
+                    // 🏷 Status Filter Chips
                     Container(
                       height: 50,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -156,7 +190,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
                               ),
                               child: Text(
                                 option,
-                                style: TextStyle(fontSize: 14),
+                                style: const TextStyle(fontSize: 14),
                               ),
                             ),
                           );
@@ -164,12 +198,12 @@ class _LeadsScreenState extends State<LeadsScreen> {
                       ),
                     ),
 
-                    // Leads List
+                    // 📋 Leads List
                     Expanded(
                       child: ListView.builder(
-                        itemCount: statusFilteredLeads.length,
+                        itemCount: filteredLeads.length,
                         itemBuilder: (context, index) {
-                          final lead = statusFilteredLeads[index];
+                          final lead = filteredLeads[index];
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(

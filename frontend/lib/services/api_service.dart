@@ -28,6 +28,24 @@ class ApiService {
     }
   }
 
+  static Future<bool> updateUser(String userId, Employee employee) async {
+    final url = Uri.parse("$baseUrl/update_employee/$userId");
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(employee.toJson()),
+    );
+    if (response.statusCode == 200) {
+      print("employee updated: ${response.body}");
+      return true;
+    } else {
+      print(
+        "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
+      );
+      return false;
+    }
+  }
+
   static Future<Employee> login(String username, String password) async {
     final url = Uri.parse('$baseUrl/login');
     final response = await http.post(
