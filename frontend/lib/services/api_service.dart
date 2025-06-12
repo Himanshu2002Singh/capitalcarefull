@@ -5,6 +5,7 @@ import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/models/employee_model.dart';
+import 'package:capital_care/models/task_model.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -201,6 +202,36 @@ class ApiService {
         "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
       );
       return false;
+    }
+  }
+
+  static Future<bool> addTask(Task task) async {
+    final url = Uri.parse("$baseUrl/add_task");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(task.toJson()),
+    );
+    if (response.statusCode == 200) {
+      print("Task added successfull: ${response.body}");
+      return true;
+    } else {
+      print(
+        "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
+      );
+      return false;
+    }
+  }
+
+  static Future<List<Task>> getTasks(String emp_id) async {
+    final url = Uri.parse("$baseUrl/task/$emp_id");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      final List taskList = jsonData['tasks'];
+      return taskList.map((e) => Task.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load Tasks");
     }
   }
 }

@@ -116,7 +116,7 @@ class _EmployeeProfilePageState extends State<EmployeeProfilePage> {
             TextFormField(
               initialValue: user?.empId ?? "",
               readOnly: true,
-              enabled: true,
+              enabled: !isEditing,
               decoration: const InputDecoration(
                 labelText: 'Employee Id',
                 border: OutlineInputBorder(),
@@ -126,7 +126,7 @@ class _EmployeeProfilePageState extends State<EmployeeProfilePage> {
             TextFormField(
               initialValue: user?.username,
               readOnly: true,
-              enabled: true,
+              enabled: !isEditing,
               decoration: const InputDecoration(
                 labelText: 'username',
                 border: OutlineInputBorder(),
@@ -137,7 +137,7 @@ class _EmployeeProfilePageState extends State<EmployeeProfilePage> {
               initialValue:
                   "${Provider.of<LeadProvider>(context, listen: false).leads.length}",
               readOnly: true,
-              enabled: true,
+              enabled: !isEditing,
               decoration: const InputDecoration(
                 labelText: 'Total leads Assigned',
                 border: OutlineInputBorder(),

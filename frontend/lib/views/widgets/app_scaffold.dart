@@ -162,30 +162,45 @@ class AppScaffold extends StatelessWidget {
                 );
               },
             ),
+
+            // _drawerItem(
+            //   Icons.note,
+            //   "Task Management",
+            //   onTap:
+            //       () => Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => TaskManagementScreen(),
+            //         ),
+            //       ),
+            // ),
+
+            // _drawerItem(
+            //   Icons.error_outline,
+            //   "Performance Report",
+            //   section: "Custom Menu",
+            // ),
             _drawerItem(
-              Icons.note,
-              "Task Management",
-              onTap:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TaskManagementScreen(),
-                    ),
+              Icons.person,
+              "Profile",
+              section: "Custom Menu",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmployeeProfilePage(),
                   ),
+                );
+              },
             ),
 
-            _drawerItem(
-              Icons.error_outline,
-              "Performance Report",
-              section: "Custom Menu",
-            ),
-            _drawerItem(
-              Icons.view_headline,
-              "Create CheckList",
-              section: "Check List",
-            ),
-            _drawerItem(Icons.playlist_add, "Fill CheckList"),
-            _drawerItem(Icons.playlist_add_check, "CheckList Report"),
+            // _drawerItem(
+            //   Icons.view_headline,
+            //   "Create CheckList",
+            //   section: "Check List",
+            // ),
+            // _drawerItem(Icons.playlist_add, "Fill CheckList"),
+            // _drawerItem(Icons.playlist_add_check, "CheckList Report"),
             _drawerItem(Icons.security, "App Permission", section: "Policies"),
             _drawerItem(Icons.private_connectivity, "Privacy Policy"),
             _drawerItem(Icons.settings, "Settings"),
