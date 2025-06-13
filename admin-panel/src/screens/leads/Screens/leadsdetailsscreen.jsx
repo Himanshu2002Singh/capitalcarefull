@@ -10,6 +10,7 @@ const LeadDetailScreen = () => {
   const [user, setUser] = useState(null);
   const [lead, setLead] = useState(null);
   const [calls, setCalls] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [personNames, setPersonNames] = useState({});
   const [histories, setHistories] = useState([]);
   const [activeTab, setActiveTab] = useState("calls");
@@ -149,10 +150,20 @@ const downloadexcel = () => {
     }
   };
 
+  const fetchTaskDetails = async () => {
+    try{
+      const res = await axios.get(`${API_URL}/task_by_lead_id/${id}`);
+      setTasks(res.data.tasks);
+    }catch(error){
+      console.error("Error fetching tasks", error);
+    }
+  }
+
   useEffect(() => {
     fetchLeadDetails();
     fetchCallDetails();
     fetchHistoryDetails();
+    fetchTaskDetails();
   }, []);
 
   return (
@@ -203,6 +214,12 @@ const downloadexcel = () => {
         >
           History Details
         </button>
+        <button
+          onClick={() => setActiveTab("tasks")}
+          className={`px-4 py-2 rounded ${activeTab === "tasks" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+        >
+          Tasks Details
+        </button>
       </div>
 
       {activeTab === "calls" ? (
@@ -237,7 +254,7 @@ const downloadexcel = () => {
             </tbody>
           </table>
         </>
-      ) : (
+      ) : activeTab === "history" ? (
         <>
           <h2 className="text-xl font-bold mb-4">History Details</h2>
           {histories.length ? (
@@ -270,7 +287,44 @@ const downloadexcel = () => {
           
           
         </>
-      )}
+      ):(<>
+          <h2 className="text-xl font-bold mb-4">Tasks</h2>
+          {tasks.length ? (
+            <div className="border rounded p-4 mb-6 bg-gray-100">
+              <p><strong>Total Tasks:</strong> {tasks.length}</p>
+            </div>):(<p>No related Task found</p>)}
+            <h3 className="text-lg font-bold mb-2">All Tasks</h3>
+            <table className="table-auto w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border px-4 py-2">Task Id</th>
+                  <th className="border px-4 py-2">Title</th>
+                  <th className="border px-4 py-2">Lead Name</th>
+                  <th className="border px-4 py-2">Start Date</th>
+                  <th className="border px-4 py-2">End Date</th>
+                  <th className="border px-4 py-2">Priority</th>
+                  <th className="border px-4 py-2">Active</th>
+                  <th className="border px-4 py-2">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border px-4 py-2">{item.task_id || "N/A"}</td>
+                    <td className="border px-4 py-2">{item.title || "N/A"}</td>
+                    <td className="border px-4 py-2">{item.choose_lead || "N/A"}</td>
+                    <td className="border px-4 py-2">{item.start_date ? new Date(item.start_date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "--"}</td>
+                    <td className="border px-4 py-2">{item.end_date ? new Date(item.end_date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "--"}</td>
+                    <td className="border px-4 py-2">{item.priority || "--"}</td>
+                    <td className="border px-4 py-2">{item.is_active == 1?"true":"false"}</td>
+                    <td className="border px-4 py-2">{item.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          
+          
+        </>)}
     </div>
   );
 };

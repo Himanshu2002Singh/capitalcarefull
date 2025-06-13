@@ -260,12 +260,12 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
                 className="hover:bg-gray-50"
                 // onClick={() => navigate(`/lead-details/${user.lead_id}`)}
               >
-                <td className="p-4 text-[15px] text-gray-800">
+                <td className="p-4 text-[15px] text-gray-800" onClick={()=>navigate(`/lead-details/${user.lead_id}`)}>
                   {user.lead_id}
                 </td>
-                <td className="p-4 text-[15px] text-gray-800">{user.name}</td>
+                <td className="p-4 text-[15px] text-gray-800" onClick={()=>navigate(`/lead-details/${user.lead_id}`)}>{user.name}</td>
                 {/* <td className="p-4 text-[15px] text-gray-800">{user.email}</td> */}
-                <td className="p-4 text-[15px] text-gray-800">{user.number}</td>
+                <td className="p-4 text-[15px] text-gray-800" onClick={()=>navigate(`/lead-details/${user.lead_id}`)}>{user.number}</td>
                 <td className="p-4 text-[15px] text-gray-800" onClick={e => e.stopPropagation()}>
   {personNames[user.person_id] ? (
     personNames[user.person_id]

@@ -18,36 +18,85 @@ const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
 
   const downloadExcel = () => {
-    const sheetData = [
-      [
-        "Emp ID",
-        "Name",
-        "Total",
-        "Full",
-        "Late",
-        ...[...Array(totalDays)].map((_, i) => `Day ${i + 1}`),
-      ],
+  const sheetData = [
+    [
+      "Emp ID",
+      "Name",
+      "Total",
+      "Full",
+      "Late",
+      ...[...Array(totalDays)].map((_, i) => `Day ${i + 1}`),
+    ],
+  ];
+
+  currentRecords.forEach((emp) => {
+    const row = [
+      emp.userId,
+      emp.name,
+      emp.total,
+      emp.full,
+      emp.late,
+      ...emp.days.map((day) => {
+        if (!day.symbol) return "-";
+        return `${day.symbol} (${day.startTime || "-"} - ${day.endTime || "-"})\nRemark: ${day.remark || "-"}`;
+      }),
     ];
+    sheetData.push(row);
+  });
 
-    currentRecords.forEach((emp) => {
-      const row = [
-        emp.userId,
-        emp.name,
-        emp.total,
-        emp.full,
-        emp.late,
-        ...emp.days.map((day) => day.symbol || "-"),
-      ];
-      sheetData.push(row);
+  const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+  // Enable text wrap in all cells
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[cellRef]) continue;
+      if (!ws[cellRef].s) ws[cellRef].s = {};
+      ws[cellRef].s.alignment = { wrapText: true, vertical: "top" };
+    }
+  }
+
+  // Auto column widths
+  const colWidths = sheetData[0].map((_, colIndex) => {
+    let maxLength = 10;
+    sheetData.forEach(row => {
+      const val = row[colIndex];
+      const len = val ? val.toString().length : 0;
+      if (len > maxLength) maxLength = len;
     });
+    return { wch: maxLength + 2 }; // Add padding
+  });
+  ws['!cols'] = colWidths;
 
-    const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, `attendance_${selectedMonth}.xlsx`);
+  // Bold headers (first row)
+  sheetData[0].forEach((_, i) => {
+    const cellRef = XLSX.utils.encode_cell({ r: 0, c: i });
+    if (ws[cellRef]) {
+      ws[cellRef].s = {
+        ...(ws[cellRef].s || {}),
+        font: { bold: true },
+        alignment: { wrapText: true, horizontal: "center" },
+      };
+    }
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+  // Important: apply style support
+  XLSX.writeFile(wb, `attendance_${selectedMonth}.xlsx`, { cellStyles: true });
+};
+
+
+  const formatToLocalTime = (isoString) => {
+    if (!isoString) return "-";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
-
-
   // Fetch attendance data
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -91,10 +140,16 @@ const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   // Group attendance by userId and date
   const groupedAttendance = {};
   attendanceData.forEach((record) => {
-    const { userId, date, isLate } = record;
+    const { userId, date, isLate, startTime, endTime, remark } = record;
     const day = new Date(date).getDate();
     if (!groupedAttendance[userId]) groupedAttendance[userId] = {};
-    groupedAttendance[userId][day] = isLate ? "late" : "full";
+    groupedAttendance[userId][day] = {
+    symbol: isLate ? "🟨" : "✅",
+    className: isLate ? "bg-yellow-100" : "bg-green-100",
+    startTime : formatToLocalTime(startTime),
+    endTime : formatToLocalTime(endTime),
+    remark,
+  };
   });
 
   // Final processed data
@@ -106,12 +161,8 @@ const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
     for (let i = 1; i <= totalDays; i++) {
       const status = groupedAttendance[emp.emp_id]?.[i];
-      if (status === "full") {
-        days.push({ symbol: "✅", className: "bg-green-100" });
-        full++;
-      } else if (status === "late") {
-        days.push({ symbol: "🟨", className: "bg-yellow-100" });
-        late++;
+      if (status) {
+        days.push(status); // already contains symbol, className, startTime, etc.
       } else {
         days.push({ symbol: "", className: "" });
       }
@@ -250,9 +301,15 @@ const totalPages = Math.ceil(processedData.length / recordsPerPage);
                     <td
                       key={i}
                       className={`border px-1 py-1 ${day.className}`}
+                      title={
+                        day.symbol
+                          ? `Start: ${day.startTime || "-"}\nClose: ${day.endTime || "-"}\nRemark: ${day.remark || "-"}`
+                          : ""
+                      }
                     >
                       {day.symbol}
                     </td>
+
                   ))}
                 </tr>
               ))}

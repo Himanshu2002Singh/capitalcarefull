@@ -40,6 +40,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       emp_id: Provider.of<UserProvider>(context, listen: false).user?.empId,
       title: nameController.text,
       choose_lead: selectedLead?.name,
+      lead_id: selectedLead?.lead_id,
       start_date: startDate?.toIso8601String(),
       end_date: endDate?.toIso8601String(),
       priority: priority,

@@ -1,5 +1,6 @@
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/models/history_model.dart';
+import 'package:capital_care/models/task_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/leads/add_lead_screen.dart';
@@ -23,16 +24,23 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<History> history = [];
+  List<Task> tasks = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     fetchHistory();
+    fetchTasks();
   }
 
   void fetchHistory() async {
     history = await ApiService.getHistory(widget.lead.lead_id);
+    setState(() {});
+  }
+
+  void fetchTasks() async {
+    tasks = await ApiService.getTasksByLeadId(widget.lead.lead_id);
     setState(() {});
   }
 
@@ -199,7 +207,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             child: Text(
                               formatError
                                   ? ""
-                                  : (widget.lead.next_meeting).substring(0, 10),
+                                  : (widget.lead.createdAt).substring(0, 10),
                             ),
                           ),
                           Expanded(
@@ -239,7 +247,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.calendar_today, size: 18),
                           SizedBox(width: 6),
-                          Text(formatDateTime(widget.lead.createdAt)),
+                          Text(formatDateTime(widget.lead.next_meeting)),
                         ],
                       ),
                       Row(
@@ -451,7 +459,200 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildTaskTab() {
-    return Center(child: Text("No data found"));
+    // String formatDateTime(String dateTimeString) {
+    //   if (dateTimeString.isEmpty) {
+    //     return "";
+    //   }
+    //   final dateTime = DateTime.parse(dateTimeString);
+    //   final formatter = DateFormat('d-MMM-yyyy hh:mm a');
+    //   return formatter.format(dateTime);
+    // }
+
+    return Expanded(
+      child:
+          tasks.isEmpty
+              ? const Center(child: Text("No matching tasks found."))
+              : ListView.builder(
+                padding: const EdgeInsets.all(10),
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  final t = tasks[index];
+                  return Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              bottomLeft: Radius.circular(10),
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Center(
+                            child: Text(
+                              formatDateTime(t.start_date),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        t.title,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(
+                                        Icons.edit_rounded,
+                                        size: 20,
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.person,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      t.choose_lead,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(
+                                      Icons.timer_outlined,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        "${formatDateTime(t.start_date)} to ${formatDateTime(t.end_date)}",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(
+                                      Icons.assignment,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        t.description,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder:
+                                              (context) => AlertDialog(
+                                                title: const Text(
+                                                  "Task Description!",
+                                                ),
+                                                content: Text(t.description),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed:
+                                                        () => Navigator.pop(
+                                                          context,
+                                                        ),
+                                                    child: Text(
+                                                      "Ok",
+                                                      style: TextStyle(
+                                                        color:
+                                                            AppColors
+                                                                .primaryColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "(see more...)",
+                                        style: TextStyle(
+                                          color: AppColors.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    InkWell(
+                                      onTap: () {},
+                                      child: const Icon(
+                                        Icons.delete_rounded,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+    );
   }
 
   Widget _buildDetailRow(String title, String value) {
@@ -481,7 +682,10 @@ String formatTime(String dateTimeString) {
 }
 
 String formatDateTime(String dateTimeString) {
-  final dateTime = DateTime.parse(dateTimeString);
+  if (dateTimeString.isEmpty) {
+    return "";
+  }
+  final dateTime = DateTime.parse(dateTimeString).toLocal();
   final formatter = DateFormat('d-MMM-yyyy hh:mm a');
   return formatter.format(dateTime);
 }

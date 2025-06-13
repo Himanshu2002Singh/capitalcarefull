@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from "../../../config";
+// import { useParams, useNavigate } from 'react-router-dom';
 
 const UserDetailScreen = () => {
   const { emp_id } = useParams();
   const [employee, setEmployee] = useState(null);
   const [leads, setLeads] = useState([]);
   const [calls, setCalls] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const navigate = useNavigate();
   
   // Toggle states
   const [showLeads, setShowLeads] = useState(true);
   const [showCalls, setShowCalls] = useState(true);
+  const [showTasks, setShowTasks] = useState(true);
   
   // Pagination states
   const [leadsPage, setLeadsPage] = useState(1);
   const [callsPage, setCallsPage] = useState(1);
+  const [tasksPage, setTasksPage] = useState(1);
   const itemsPerPage = 10;
 
   // Fetch employee details
@@ -37,6 +43,10 @@ const UserDetailScreen = () => {
         // Fetch calls associated with this employee
         const callsResponse = await axios.get(`${API_URL}/calls/${emp_id}`);
         setCalls(callsResponse.data.calls);
+
+        // Fetch tasks associated with this employee
+        const tasksResponse = await axios.get(`${API_URL}/task/${emp_id}`);
+        setTasks(tasksResponse.data.tasks);
         
         setLoading(false);
       } catch (err) {
@@ -59,8 +69,14 @@ const UserDetailScreen = () => {
     callsPage * itemsPerPage
   );
 
+  const paginatedTasks = tasks.slice(
+    (tasksPage-1)*itemsPerPage,
+    tasksPage * itemsPerPage
+  );
+
   const totalLeadsPages = Math.ceil(leads.length / itemsPerPage);
   const totalCallsPages = Math.ceil(calls.length / itemsPerPage);
+  const totalTasksPages = Math.ceil(tasks.length / itemsPerPage);
 
   if (loading) return <div className="text-center py-8">Loading...</div>;
   if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
@@ -128,7 +144,7 @@ const UserDetailScreen = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {paginatedLeads.map((lead) => (
-                    <tr key={lead.lead_id} className="hover:bg-gray-50">
+                    <tr key={lead.lead_id} className="hover:bg-gray-50" onClick = {()=> navigate(`/lead-details/${lead.lead_id}`)}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.lead_id}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{lead.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lead.email}</td>
@@ -245,6 +261,91 @@ const UserDetailScreen = () => {
           </>
         )}
       </div>
+
+      {/* task section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Tasks</h2>
+          <button 
+            onClick={() => setShowTasks(!showTasks)}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {showTasks ? 'Hide' : 'Show'} Tasks ({tasks.length})
+          </button>
+        </div>
+        
+        {showTasks && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedTasks.map((task) => (
+                    <tr key={task.task_id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{task.task_id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.choose_lead} </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.end_date != null ? new Date(task.start_date).toLocaleString():""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.end_date != null ? new Date(task.end_date).toLocaleString():""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.priority}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.is_active ==1 ?"true": "false"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.description}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {tasks.length === 0 && (
+                <p className="text-center py-4 text-gray-500">No tasks found for this employee</p>
+              )}
+            </div>
+            
+            {/* Tasks Pagination */}
+            {tasks.length > itemsPerPage && (
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => setCallsPage(prev => Math.max(prev - 1, 1))}
+                  disabled={tasksPage === 1}
+                  className={`px-3 py-1 rounded ${tasksPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Previous
+                </button>
+                <span>Page {tasksPage} of {totalTasksPages}</span>
+                <button
+                  onClick={() => setTasksPage(prev => Math.min(prev + 1, totalTasksPages))}
+                  disabled={tasksPage === totalTasksPages}
+                  className={`px-3 py-1 rounded ${tasksPage === totalTasksPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
     </div>
   );
 };

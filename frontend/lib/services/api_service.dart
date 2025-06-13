@@ -66,6 +66,10 @@ class ApiService {
         key: "userId",
         value: Employee.fromJson(userJson).empId,
       );
+      await secureStorage.write(
+        key: "loginTime",
+        value: DateTime.now().toIso8601String(),
+      );
 
       return Employee.fromJson(userJson);
     } else {
@@ -229,6 +233,19 @@ class ApiService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonData = jsonDecode(response.body);
       final List taskList = jsonData['tasks'];
+      return taskList.map((e) => Task.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load Tasks");
+    }
+  }
+
+  static Future<List<Task>> getTasksByLeadId(int lead_id) async {
+    final url = Uri.parse("$baseUrl/task_by_lead_id/$lead_id");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      final List taskList = jsonData['tasks'];
+      print("===============> tasks fetched + $taskList");
       return taskList.map((e) => Task.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load Tasks");

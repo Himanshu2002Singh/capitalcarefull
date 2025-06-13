@@ -23,11 +23,23 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkLogin() async {
     final token = await storage.read(key: "auth_token");
     final userId = await storage.read(key: "userId");
+    final loginTime = await storage.read(key: "loginTime");
+    if (loginTime == null || loginTime.isEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+    final lgTime = DateTime.parse(loginTime!);
+    final now = DateTime.now();
+    final diff = now.difference(lgTime).inDays;
+
     print("=================================>$userId");
     if (token != null &&
         token.isNotEmpty &&
         userId != null &&
-        userId.isNotEmpty) {
+        userId.isNotEmpty &&
+        diff < 7) {
       // Already logged in
 
       await Provider.of<UserProvider>(

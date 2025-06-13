@@ -18,6 +18,9 @@ const Task = sequelize.define(
         choose_lead : {
             type: DataTypes.STRING,
         },
+        lead_id :{
+            type: DataTypes.STRING,
+        },
         start_date :{
             type: DataTypes.DATE
         },

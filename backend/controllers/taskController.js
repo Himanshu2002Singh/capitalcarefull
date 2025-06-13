@@ -28,3 +28,16 @@ exports.getTasks = async (req, res)=>{
         res.status(500).json({message : "Database error", error});
     }
 };
+
+exports.getTasksByLeadId = async(req, res)=>{
+    const {id} = req.params;
+    try{
+        const task = await Tasks.findAll({
+            where : {lead_id : id}
+        });
+        res.status(200).json({tasks: task});
+    }catch(error){
+        console.error("Error fetching tasks", error);
+        res.status(500).json({message: "Database error", error});
+    }
+}

@@ -156,6 +156,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
           widget.title == "Add Lead"
               ? await ApiService.addLead(lead)
               : await ApiService.updateLead(widget.lead_id, lead);
+      print("=========================================> ${dobController.text}");
 
       Provider.of<LeadProvider>(context, listen: false).addLead();
       ScaffoldMessenger.of(
@@ -316,15 +317,32 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
-
-                      firstDate: DateTime(2025),
-                      lastDate: DateTime(2026),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2050),
                     );
+
                     if (pickedDate != null) {
-                      nextMeetingTimeController.text =
-                          pickedDate.toLocal().toString().split(
-                            ' ',
-                          )[0]; // or use DateFormat
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+
+                      if (pickedTime != null) {
+                        // Combine date and time into one DateTime
+                        DateTime finalDateTime = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+
+                        // Format as desired, e.g., YYYY-MM-DD HH:MM
+                        nextMeetingTimeController.text =
+                            finalDateTime.toString();
+                        // OR use intl package for prettier format:
+                        // nextMeetingTimeController.text = DateFormat('yyyy-MM-dd HH:mm').format(finalDateTime);
+                      }
                     }
                   },
                   child: AbsorbPointer(
@@ -363,7 +381,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                 DateTime? pickedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
-                  firstDate: DateTime(1950),
+                  firstDate: DateTime(1900),
                   lastDate: DateTime.now(),
                 );
                 if (pickedDate != null) {
