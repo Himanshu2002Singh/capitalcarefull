@@ -21,7 +21,7 @@ app.use(cors());
 
 const port = 5000 || process.env.PORT;
 
-app.use(cors());
+
 app.use(bodyParser.json());
 app.use("/api", leadRoutes);
 app.use("/api", employeeRoutes);

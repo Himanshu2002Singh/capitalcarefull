@@ -1,4 +1,5 @@
 Calls = require("../models/callsModel");
+const { Op } = require("sequelize");
 
 exports.addCalls = async (req, res) => {
     const {emp_id} = req.body;
@@ -63,3 +64,26 @@ exports.updateCall = async (req, res) => {
     res.status(500).json({ message: 'Database error', error });
   }
 };
+
+exports.getCallsByDates = async (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ message: "startDate and endDate are required" });
+    }
+
+    try {
+        const callsData = await Calls.findAll({
+            where: {
+                createdAt: {
+                    [Op.between]: [new Date(startDate), new Date(endDate)]
+                }
+            },
+            order: [['createdAt', 'DESC']],
+        });
+        res.status(200).json({ calls: callsData });
+    } catch (error) {
+        console.error("Error fetching calls by dates", error);
+        res.status(500).json({ message: "Database error", error });
+    }
+}

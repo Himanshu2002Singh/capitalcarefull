@@ -241,6 +241,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                   'No Requirement',
                   'Follow up',
                   'Document Rejected',
+                  'Document Pending',
                   'File Login',
                   'Loan Section',
                   'Loan Disbursement',
