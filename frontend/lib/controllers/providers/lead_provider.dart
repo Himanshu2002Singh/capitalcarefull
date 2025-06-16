@@ -24,8 +24,12 @@ class LeadProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addLead() async {
-    await fetchLeads();
-    notifyListeners();
+  Future<void> addLead(Leads newLead) async {
+    try {
+      _leads.add(newLead);
+      notifyListeners();
+    } catch (e) {
+      print("Error adding lead: $e");
+    }
   }
 }

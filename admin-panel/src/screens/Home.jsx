@@ -116,10 +116,6 @@ const Home = () => {
 useEffect(() => {
   const stats = generateEmployeeStats(employees, leads, calls);
   setEmployeeStats(stats);
-  // if (employees.length && leads.length && calls.length) {
-  //   const stats = generateEmployeeStats(employees, leads, calls);
-  //   setEmployeeStats(stats);
-  // }
 }, [employees, leads, calls]);
 
   const metricsData1 = [
@@ -134,18 +130,6 @@ useEffect(() => {
     { title: 'Documents Pending', value: documentsPending.length, icon: <XCircle className="w-5 h-5" /> }
   ];
 
-//   const leadsByStatusExtendedData = [
-//   { label: 'Interested', value: 10, color: '#3b82f6' },
-//   { label: 'Call Back', value: 7, color: '#60a5fa' },
-//   { label: 'No Requirement', value: 3, color: '#93c5fd' },
-//   { label: 'Follow up', value: 5, color: '#dbeafe' },
-//   { label: 'Document Reject', value: 2, color: '#10b981' },
-//   { label: 'Document Pending', value: 1, color: '#f59e0b' },
-//   { label: 'File Login', value: 8, color: '#f59e0b' },
-//   { label: 'Loan Section', value: 6, color: '#f59e0b' },
-//   { label: 'Loan Disbursement', value: 4, color: '#f59e0b' },
-// ];
-
 const leadsData = [
   { name: "Interested", value: interestedLeads.length, color: "#3b82f6" },         // Blue
   { name: "Call Back", value: callBackLeads.length, color: "#60a5fa" },           // Sky Blue
@@ -159,7 +143,6 @@ const leadsData = [
 ];
 const pieData = [
   { name: 'Home Loans', value: homeLoanLeads.length, color: '#3b82f6' },
-  { name: 'Call Back', value: callBackLeads.length, color: '#60a5fa' },
   { name: 'User Car Loans', value: userCarLoanLeads.length, color: '#f97316' },
   { name: 'Business Loans', value: businessLoanLeads.length, color: '#f59e0b' },
   { name: 'Personal Loans', value: personalLoanLeads.length, color: '#10b981' },
@@ -171,25 +154,6 @@ const pieData = [
   { name: 'Insurance', value: insuranceLeads.length, color: '#ec4899' },
   { name: 'Other', value: otherLeads.length, color: '#f43f5e' }
 ];
-
-
-  // const leadsByLoanTypeData = [
-  //   { label: 'File Login', value: 65, color: '#1e293b' },
-  //   { label: 'Home Loan', value: 35, color: '#3b82f6' },
-  // ];
-
-  // const loanTypeBarChartData = [
-  //   { label: 'Home Loan', value: 35, color: '#1d4ed8' },
-  //   { label: 'Mortgage Loan', value: 20, color: '#2563eb' },
-  //   { label: 'Used Car Loan', value: 15, color: '#3b82f6' },
-  //   { label: 'Business Loan', value: 10, color: '#60a5fa' },
-  //   { label: 'Personal Loan', value: 8, color: '#93c5fd' },
-  //   { label: 'CC/OD', value: 12, color: '#a5b4fc' },
-  //   { label: 'CGTMSME', value: 5, color: '#c7d2fe' },
-  //   { label: 'Mutual Fund', value: 7, color: '#dbeafe' },
-  //   { label: 'Insurance', value: 9, color: '#e0f2fe' },
-  //   { label: 'Other', value: 6, color: '#f0f9ff' },
-  // ];
 
   const MetricCard = ({ title, value, icon }) => (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 group">
@@ -290,13 +254,6 @@ const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
     </div>
   );
 };
-
-  // const employeeStats = [
-  //   { name: 'Priya Sharma', totalCalls: 120, totalLeads: 80, interestedLeads: 35, avatar: 'PS' },
-  //   { name: 'Rohan Mehta', totalCalls: 150, totalLeads: 100, interestedLeads: 45, avatar: 'RM' },
-  //   { name: 'Anita Verma', totalCalls: 110, totalLeads: 60, interestedLeads: 25, avatar: 'AV' },
-  //   { name: 'Vikas Patel', totalCalls: 170, totalLeads: 130, interestedLeads: 65, avatar: 'VP' },
-  // ];
 
   return (
     <div className="flex flex-col items-center bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen p-6 md:p-8 space-y-8">

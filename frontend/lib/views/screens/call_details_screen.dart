@@ -139,7 +139,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       est_budget: budgetController.text,
     );
     bool success = await ApiService.addLead(newLead);
-    Provider.of<LeadProvider>(context, listen: false).addLead();
+    Provider.of<LeadProvider>(context, listen: false).addLead(newLead);
     updateHistory(user?.ename, user?.empId);
     ScaffoldMessenger.of(
       context,
