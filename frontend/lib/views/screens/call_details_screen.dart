@@ -79,7 +79,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       updateLead,
     );
     bool success2 = await ApiService.addHistory(newHistory);
-    Provider.of<LeadProvider>(context, listen: false).addLead();
+    // Provider.of<LeadProvider>(context, listen: false).addLead();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(success1 && success2 ? "success" : "Error")),
@@ -236,15 +236,17 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                 value: feedbackStatus,
                 hint: 'Select Feedback Status',
                 items: [
-                  'Interested',
-                  'Call Back',
-                  'No Requirement',
-                  'Follow up',
-                  'Document Rejected',
-                  'Document Pending',
-                  'File Login',
-                  'Loan Section',
-                  'Loan Disbursement',
+                  "Interested",
+                  "Call Back",
+                  "No Requirement",
+                  "Follow up",
+                  "Document Rejected",
+                  "Document Pending",
+                  "Not Pick",
+                  "Not Connected",
+                  "File Login",
+                  "Loan Section",
+                  "Loan Disbursement",
                 ],
                 onChanged: (val) => setState(() => feedbackStatus = val!),
               ),

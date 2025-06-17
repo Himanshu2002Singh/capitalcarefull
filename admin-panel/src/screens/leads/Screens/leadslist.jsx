@@ -29,34 +29,25 @@ const LeadsList = () => {
 
       // Set leads
       setUsers(leads);
-
       // Fetch person names in parallel
       const nameMap = {};
-      await Promise.all(
-        leads.map(async (lead) => {
-          if (lead.person_id) {
-            try {
-              const personRes = await axios.get(`${API_URL}/employees/${lead.person_id}`);
-              if (personRes.status === 200) {
-                nameMap[lead.person_id] = personRes.data.ename;
-              }
-            } catch (err) {
-              nameMap[lead.person_id] = "N/A";
-              console.error("Error fetching person name for ID:", lead.person_id, err);
-            }
-          }
-        })
-      );
+      leads.forEach(lead => {
+        if (lead.person_id) {
+          const emp = employees.find(e => e.emp_id === lead.person_id);
+          nameMap[lead.person_id] = emp ? emp.ename : "N/A";
+        }
+      });
+      console.log("Name Map:", nameMap);
       setPersonNames(nameMap);
 
       // Total pages (if pagination is available)
       setTotalPages(leads.pagination?.totalPages || 0);
     }
-  } catch (error) {
-    console.error("Error fetching users:", error);
-  }
-  setIsLoading(false);
-};
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+    setIsLoading(false);
+  };
 
 useEffect(() => {
   axios.get(`${API_URL}/employees`)
@@ -71,14 +62,11 @@ useEffect(() => {
     });
 }, []);
 
-
-console.log(employees);
-
 const handleAssignPerson = async (leadId, selectedPersonId) => {
   try {
     await axios.put(`${API_URL}/leads/${leadId}`, { person_id: selectedPersonId });
     toast.success("Assigned successfully!");
-    window.location.reload();
+    // window.location.reload();
 
     const emp = employees.find(emp => emp.emp_id === +selectedPersonId);
     if (emp) {
@@ -119,7 +107,7 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, searchTerm]);
+  }, [employees]);
 
   const handleDeleteUser = async (leadId) => {
     try {
@@ -267,23 +255,23 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
                 {/* <td className="p-4 text-[15px] text-gray-800">{user.email}</td> */}
                 <td className="p-4 text-[15px] text-gray-800" onClick={()=>navigate(`/lead-details/${user.lead_id}`)}>{user.number}</td>
                 <td className="p-4 text-[15px] text-gray-800" onClick={e => e.stopPropagation()}>
-  {personNames[user.person_id] ? (
-    personNames[user.person_id]
-  ) : (
-    <select
-      value={user.person_id || ""}
-      onChange={e => handleAssignPerson(user.lead_id, e.target.value)}
-      className="border px-2 py-1 rounded text-sm"
-    >
-      <option value="" disabled>Select Employee</option>
-      {employees.map((emp) => (
-        <option key={emp.emp_id} value={emp.emp_id}>
-          {emp.emp_id} ─ {emp.ename}
-        </option>
-      ))}
-    </select>
-  )}
-</td>
+                  {personNames[user.person_id] ? (
+                    personNames[user.person_id]
+                  ) : (
+                    <select
+                      value={user.person_id || ""}
+                      onChange={e => handleAssignPerson(user.lead_id, e.target.value)}
+                      className="border px-2 py-1 rounded text-sm"
+                    >
+                      <option value="" disabled>Select Employee</option>
+                      {employees.map((emp) => (
+                        <option key={emp.emp_id} value={emp.emp_id}>
+                          {emp.emp_id} ─ {emp.ename}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </td>
 
                 <td className="p-4">
                   <button className="mr-4" title="Edit">

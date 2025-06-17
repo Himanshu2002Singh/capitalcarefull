@@ -105,6 +105,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     "Follow up",
     "Document Rejected",
     "Document Pending",
+    "Not Pick",
+    "Not Connected",
     "File Login",
     "Loan Section",
     "Loan Disbursement",
@@ -159,7 +161,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               : await ApiService.updateLead(widget.lead_id, lead);
       print("=========================================> ${dobController.text}");
 
-      Provider.of<LeadProvider>(context, listen: false).addLead();
+      Provider.of<LeadProvider>(context, listen: false).addLead(lead);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(success1 ? "success" : "Error")));
