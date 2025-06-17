@@ -221,8 +221,12 @@ const CustomPieChart = ({ data }) => {
 };
 
 const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
+  console.log("Bar Chart Data:", data);
   return (
-    <div className={`w-full h-[${height}px] bg-white p-4 rounded-xl shadow-md`}>
+    <div
+      className="w-full bg-white p-4 rounded-xl shadow-md"
+      style={{ height: `${height}px` }}
+    >
       <h2 className="text-lg font-semibold text-gray-700 mb-4">{title}</h2>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
@@ -254,6 +258,7 @@ const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
     </div>
   );
 };
+
 
   return (
     <div className="flex flex-col items-center bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen p-6 md:p-8 space-y-8">
