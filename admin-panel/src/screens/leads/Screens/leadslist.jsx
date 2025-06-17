@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import AddLead from "../addlead";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const LeadsList = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -17,13 +18,36 @@ const LeadsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [personNames, setPersonNames] = useState({});
   const [employees, setEmployees] = useState([]);
+  // const [fromDate, setFromDate] = useState("");
+  // const [toDate, setToDate] = useState("");
   const itemsPerPage = 50;
   const navigate = useNavigate();
 
-  const fetchUsers = async (page, search = "") => {
+  const getTodayRange = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1 );
+    const format = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    return {
+      from: format(firstDay),
+      to: format(lastDay),
+    };
+  };
+  const { from, to } = getTodayRange();
+  const [fromDate, setFromDate] = useState(from);
+  const [toDate, setToDate] = useState(to);
+
+  const fetchUsers = async (page, search = "", startDate, endDate) => {
   setIsLoading(true);
   try {
-    const response = await axios.get(`${API_URL}/leads`);
+    const response = await axios.get(`${API_URL}/getLeadsByDate`, {
+      params: {startDate, endDate}
+    });
     if (response.status === 200) {
       const leads = response.data;
 
@@ -88,22 +112,9 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
   }
 };
 
-
-  // const getNameById = async(id)=>{
-  //   try{
-  //     const response = await axios.get(`${API_URL}/employees/${id}`);
-  //     if(response.status == 200){
-  //       return response.data.ename;
-  //     }
-  //   }catch(e){
-  //     console.error("error fetching name:", e);
-  //     return "none";
-  //   }
-  // }
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchUsers(currentPage, searchTerm);
+      fetchUsers(currentPage, searchTerm, fromDate, toDate);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
@@ -124,30 +135,31 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
     }
   };
 
-  // const users = [
-  //   {
-  //     id: 1,
-  //     name: " Doe",
-  //     email: "john@example.com",
-  //     role: "Admin",
-  //     joinedAt: "2022-05-15",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Jane Smith",
-  //     email: "jane@example.com",
-  //     role: "User",
-  //     joinedAt: "2022-07-20",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Alen Doe",
-  //     email: "alen@example.com",
-  //     role: "User",
-  //     joinedAt: "2022-07-21",
-  //   },
-  //   // Add more users here
-  // ];
+const handleDownloadExcel = () => {
+  if (users.length === 0) {
+    toast.info("No leads available to download");
+    return;
+  }
+
+  // Create an array of rows
+  const excelData = users.map((user) => {
+    return {
+      "Lead ID": user.lead_id,
+      "Name": user.name || "N/A",
+      "Phone No.": user.phone_no || "N/A",
+      "Assigned To": personNames[user.person_id] || "Unassigned",
+    };
+  });
+
+  // Create worksheet and workbook
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+
+  // Trigger download
+  XLSX.writeFile(workbook, "Leads_Report.xlsx");
+};
+
 
   const handleopenaddcallformModal = () => {
     setIsFormModalOpen(true);
@@ -192,31 +204,64 @@ const handleAssignPerson = async (leadId, selectedPersonId) => {
 
       <div className="font-sans overflow-x-auto">
         {" "}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">User List</h2>
-          <div>
-            <input
-              type="text"
-              placeholder="Search by name, email, employee ID or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-2/6 mr-2 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            />
+<div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+  <h2 className="text-lg font-semibold">User List</h2>
 
-            <button
-              onClick={handleopenaddcallformModal}
-              className="mr-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Add Leads
-            </button>
-            {/* <button
-              onClick={handleopenaddcallExcelModal}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-              Upload using Excel
-            </button> */}
-          </div>
-        </div>
+  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+    {/* 🔍 Search */}
+    <input
+      type="text"
+      placeholder="Search by name, email, employee ID or phone..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full md:w-[250px] px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+    />
+
+    {/* 📅 From Date */}
+    <input
+      type="date"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+      className="px-3 py-2 border rounded-md text-sm"
+      placeholder="From Date"
+    />
+    <div>to</div>
+    {/* 📅 To Date */}
+    <input
+      type="date"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+      className="px-3 py-2 border rounded-md text-sm"
+      placeholder="To Date"
+    />
+
+    {/* ✅ GO button */}
+    <button
+      onClick={() => fetchUsers(currentPage, searchTerm, fromDate, toDate)}
+      className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
+    >
+      GO
+    </button>
+
+    {/* ➕ Add Leads */}
+    <button
+      onClick={handleopenaddcallformModal}
+      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Add Leads
+    </button>
+
+    {/* 📤 Download Excel */}
+    <button
+      onClick={handleDownloadExcel}
+      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800"
+    >
+      Download Excel
+    </button>
+  </div>
+</div>
+
+
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100 whitespace-nowrap">
             <tr>
