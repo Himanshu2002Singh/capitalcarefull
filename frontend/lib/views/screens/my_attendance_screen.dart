@@ -111,7 +111,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
       case 'late':
         return Colors.yellow.withOpacity(0.7);
       default:
-        return Colors.red.withOpacity(0.7);
+        return Colors.transparent;
     }
   }
 

@@ -163,6 +163,11 @@ const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
       const status = groupedAttendance[emp.emp_id]?.[i];
       if (status) {
         days.push(status); // already contains symbol, className, startTime, etc.
+        if(status.symbol === "✅") {
+          full++;
+        }else if(status.symbol === "🟨"){
+          late++;
+        }
       } else {
         days.push({ symbol: "", className: "" });
       }
