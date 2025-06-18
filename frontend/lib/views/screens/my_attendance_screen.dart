@@ -62,7 +62,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
             processedData[date] =
                 item['isLate'] == true
                     ? 'Late'
-                    : item['status']?.toString().trim() ?? 'Not marked';
+                    : 'Full Day'; // Normalize status to 'Late' or 'Full Day'
           }
 
           return processedData;
@@ -137,7 +137,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               : Column(
                 children: [
                   TableCalendar(
-                    firstDay: DateTime(2020),
+                    firstDay: DateTime(2024),
                     lastDay: DateTime(2030),
                     focusedDay: _focusedDay,
                     headerStyle: const HeaderStyle(
