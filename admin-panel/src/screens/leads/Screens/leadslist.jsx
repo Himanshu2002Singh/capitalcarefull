@@ -16,7 +16,6 @@ const LeadsList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [personNames, setPersonNames] = useState({});
   const [employees, setEmployees] = useState([]);
   // const [fromDate, setFromDate] = useState("");
   // const [toDate, setToDate] = useState("");
@@ -53,16 +52,6 @@ const LeadsList = () => {
 
       // Set leads
       setUsers(leads);
-      // Fetch person names in parallel
-      const nameMap = {};
-      leads.forEach(lead => {
-        if (lead.person_id) {
-          const emp = employees.find(e => e.emp_id === lead.person_id);
-          nameMap[lead.person_id] = emp ? emp.ename : "N/A";
-        }
-      });
-      console.log("Name Map:", nameMap);
-      setPersonNames(nameMap);
 
       // Total pages (if pagination is available)
       setTotalPages(leads.pagination?.totalPages || 0);
@@ -86,23 +75,16 @@ useEffect(() => {
     });
 }, []);
 
-const handleAssignPerson = async (leadId, selectedPersonId) => {
+const handleAssignPerson = async (leadId, value) => {
+  const [empId, empName] = value.split("|");
   try {
-    await axios.put(`${API_URL}/leads/${leadId}`, { person_id: selectedPersonId });
+    await axios.put(`${API_URL}/leads/${leadId}`, { person_id: empId, owner: empName });
     toast.success("Assigned successfully!");
     // window.location.reload();
 
-    const emp = employees.find(emp => emp.emp_id === +selectedPersonId);
-    if (emp) {
-      setPersonNames(prev => ({
-        ...prev,
-        [selectedPersonId]: emp.ename
-      }));
-    }
-
     setUsers(prev =>
       prev.map(u =>
-        u.lead_id === leadId ? { ...u, person_id: +selectedPersonId } : u
+        u.lead_id === leadId ? { ...u, person_id: empId } : u
       )
     );
 
@@ -146,8 +128,8 @@ const handleDownloadExcel = () => {
     return {
       "Lead ID": user.lead_id,
       "Name": user.name || "N/A",
-      "Phone No.": user.phone_no || "N/A",
-      "Assigned To": personNames[user.person_id] || "Unassigned",
+      "Phone No.": user.number || "N/A",
+      "Assigned To": user.owner || "Unassigned",
     };
   });
 
@@ -205,7 +187,7 @@ const handleDownloadExcel = () => {
       <div className="font-sans overflow-x-auto">
         {" "}
 <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-  <h2 className="text-lg font-semibold">User List</h2>
+  <h2 className="text-lg font-semibold">Leads List</h2>
 
   <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
     {/* 🔍 Search */}
@@ -300,8 +282,8 @@ const handleDownloadExcel = () => {
                 {/* <td className="p-4 text-[15px] text-gray-800">{user.email}</td> */}
                 <td className="p-4 text-[15px] text-gray-800" onClick={()=>navigate(`/lead-details/${user.lead_id}`)}>{user.number}</td>
                 <td className="p-4 text-[15px] text-gray-800" onClick={e => e.stopPropagation()}>
-                  {personNames[user.person_id] ? (
-                    personNames[user.person_id]
+                  {user.owner ? (
+                    user.owner
                   ) : (
                     <select
                       value={user.person_id || ""}
@@ -310,7 +292,7 @@ const handleDownloadExcel = () => {
                     >
                       <option value="" disabled>Select Employee</option>
                       {employees.map((emp) => (
-                        <option key={emp.emp_id} value={emp.emp_id}>
+                        <option key={emp.emp_id} value={`${emp.emp_id}|${emp.ename}`}>
                           {emp.emp_id} ─ {emp.ename}
                         </option>
                       ))}

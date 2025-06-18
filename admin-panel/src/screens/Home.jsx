@@ -15,8 +15,12 @@ import {
   Legend,
 
 } from "recharts";
+import LeadsPopup from '../components/leadsPopup';;
 
 const Home = () => {
+  const [showPopup, setShowPopup] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalLeads, setModalLeads] = useState([]);
   const [activeItem, setActiveItem] = useState('dashboard');
   const [calls, setCalls] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -111,7 +115,29 @@ const Home = () => {
   });
 };
 
+const handleMetricClick = (title) => {
+  setModalTitle(title);
 
+  // Conditional logic to set data according to title
+  if (title === 'Total Calls') {
+    setModalLeads(calls); // Assuming you have this array already
+  } else if (title === 'Total Leads') {
+    setModalLeads(leads); // Assuming you have this array already
+  } else if (title === 'Interested Leads') {
+    setModalLeads(interestedLeads); // Assuming you have this array already 
+  }
+  else if (title === 'Follow ups') {  
+    setModalLeads(followUps); // Assuming you have this array already
+  }
+  else if (title === 'File Login') {
+    setModalLeads(fileLogins); // Assuming you have this array already
+  }
+  else if (title === 'Documents Pending') {
+    setModalLeads(documentsPending); // Assuming you have this array already
+  }
+
+  setShowPopup(true);
+};
 
 useEffect(() => {
   const stats = generateEmployeeStats(employees, leads, calls);
@@ -119,8 +145,8 @@ useEffect(() => {
 }, [employees, leads, calls]);
 
   const metricsData1 = [
-    { title: 'Total Calls', value: calls.length, icon: <Phone className="w-5 h-5" /> },
-    { title: 'Total Leads', value: leads.length, icon: <Users className="w-5 h-5" /> }
+    { title: 'Total Calls', value: calls.length, icon: <Phone className="w-5 h-5" />},
+    { title: 'Total Leads', value: leads.length, icon: <Users className="w-5 h-5" />},
   ];
 
   const matricsData2 = [
@@ -155,7 +181,7 @@ const pieData = [
   { name: 'Other', value: otherLeads.length, color: '#f43f5e' }
 ];
 
-  const MetricCard = ({ title, value, icon }) => (
+  const MetricCard = ({ title, value, icon}) => (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 group">
       <div className="flex justify-between items-start">
         <div>
@@ -221,7 +247,6 @@ const CustomPieChart = ({ data }) => {
 };
 
 const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
-  console.log("Bar Chart Data:", data);
   return (
     <div
       className="w-full bg-white p-4 rounded-xl shadow-md"
@@ -307,14 +332,22 @@ const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {metricsData1.map((metric, index) => (
-            <MetricCard 
-              key={index} 
-              title={metric.title} 
-              value={metric.value} 
-              icon={metric.icon}
-            />
+            <div key={index} onClick={() => handleMetricClick(metric.title)} className="cursor-pointer">
+              <MetricCard 
+                title={metric.title} 
+                value={metric.value} 
+                icon={metric.icon}
+              />
+            </div>
           ))}
         </div>
+        <LeadsPopup
+          isOpen={showPopup}
+          onClose={() => setShowPopup(false)}
+          title={modalTitle}
+          leads={modalLeads}
+        />
+
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
@@ -323,12 +356,13 @@ const CustomBarChart = ({ data, title = "Bar Chart", height = 380 }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {matricsData2.map((metric, index) => (
+            <div key={index} onClick={() => handleMetricClick(metric.title)} className="cursor-pointer">
               <MetricCard 
-                key={index} 
                 title={metric.title} 
                 value={metric.value} 
                 icon={metric.icon}
               />
+            </div>
             ))}
           </div>
 
