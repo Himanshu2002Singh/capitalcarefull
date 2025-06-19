@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const SECRETE_KEY = process.env.SECRET_KEY;
 
 exports.addEmployee = async (req, res) => {
-  const { emp_id, email, username, ename, password } = req.body;
+  const { emp_id, email, username, ename, password, phone} = req.body;
 
   if (!username || !password) {
     return res
@@ -20,6 +20,7 @@ exports.addEmployee = async (req, res) => {
     const newEmployee = await Employee.create({
       emp_id,
       email,
+      phone,
       username,
       ename,
       password,
@@ -237,5 +238,28 @@ exports.updateEmployee = async (req, res) =>{
   }catch (error) {
       console.error('Error updating employee:', error);
       res.status(500).json({ message: 'Database error', error });
+  }
+}
+
+exports.deleteEmployee = async (req, res) => {
+  const userId = req.params.id;
+
+  if (!userId) {
+    return res.status(400).json({ message: "Employee ID is required" });
+  }
+
+  try {
+    const deleted = await Employee.destroy({
+      where: { emp_id: userId },
+    });
+
+    if (deleted === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    return res.status(200).json({ message: "Employee deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    return res.status(500).json({ message: "Database error", error });
   }
 }

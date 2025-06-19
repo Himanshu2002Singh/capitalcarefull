@@ -19,7 +19,6 @@ const Employee = sequelize.define(
     },
     phone: {
       type: DataTypes.STRING,
-
       allowNull: false,
     },
     username: {

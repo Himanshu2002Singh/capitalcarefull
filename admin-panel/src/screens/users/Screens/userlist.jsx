@@ -15,6 +15,10 @@ const UserList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const itemsPerPage = 50;
   const navigate = useNavigate();
 
@@ -42,20 +46,39 @@ const UserList = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [currentPage, searchTerm]);
 
-  const handleDeleteUser = async (userId, employeeId) => {
+  const handleDeleteUser = async (employeeId) => {
     try {
-      await toast.promise(axios.delete(`${API_URL}/delete/user/${userId}`), {
+      await toast.promise(axios.delete(`${API_URL}/delete_employee/${employeeId}`), {
         pending: "Deleting user...",
         success: `EmployeeId ${employeeId} deleted successfully!`,
         error: "Error deleting user. Please try again.",
       });
 
       // Update UI by filtering out the deleted user
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      setUsers((prevUsers) => prevUsers.filter((user) => user.emp_id !== employeeId));
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
+
+  const handleUpdateUser = async () => {
+    try {
+      const response = await axios.put(`${API_URL}/update_employee/${selectedUser.emp_id}`, selectedUser);
+      if (response.data.message === 'Employee data updated successfully') {
+        toast.success("User updated successfully!");
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.emp_id === selectedUser.emp_id ? selectedUser : user
+          )
+        );
+      } else {
+        toast.error("Failed to update user.");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Error updating user. Please try again.");
+    }
+  }
 
   // const users = [
   //   {
@@ -126,7 +149,7 @@ const UserList = () => {
       <div className="font-sans overflow-x-auto">
         {" "}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">User List</h2>
+          <h2 className="text-lg font-semibold">Employee List</h2>
           <div>
             <input
               type="text"
@@ -179,18 +202,21 @@ const UserList = () => {
               <tr
                 key={user.id}
                 className="hover:bg-gray-50"
-                onClick={() => navigate(`/userdetail/${user.emp_id}`)}
+                
               >
-                <td className="p-4 text-[15px] text-gray-800">{user.emp_id}</td>
-                <td className="p-4 text-[15px] text-gray-800">{user.ename}</td>
-                <td className="p-4 text-[15px] text-gray-800">{user.email}</td>
-                <td className="p-4 text-[15px] text-gray-800">{user.phone}</td>
-                <td className="p-4 text-[15px] text-gray-800">
+                <td onClick={() => navigate(`/userdetail/${user.emp_id}`)} className="p-4 text-[15px] text-gray-800">{user.emp_id}</td>
+                <td onClick={() => navigate(`/userdetail/${user.emp_id}`)} className="p-4 text-[15px] text-gray-800">{user.ename}</td>
+                <td onClick={() => navigate(`/userdetail/${user.emp_id}`)} className="p-4 text-[15px] text-gray-800">{user.email}</td>
+                <td onClick={() => navigate(`/userdetail/${user.emp_id}`)} className="p-4 text-[15px] text-gray-800">{user.phone}</td>
+                <td onClick={() => navigate(`/userdetail/${user.emp_id}`)} className="p-4 text-[15px] text-gray-800">
                   {user.password}
                 </td>
 
                 <td className="p-4">
-                  <button className="mr-4" title="Edit">
+                  <button onClick={() => {
+                    setSelectedUser(user);
+                    setShowEditModal(true);
+                  }} className="mr-4" title="Edit">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="w-5 fill-blue-500 hover:fill-blue-700"
@@ -207,8 +233,10 @@ const UserList = () => {
                     </svg>
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.id, user.employeeId)}
-                    className="mr-4"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowDeleteModal(true);
+                    }}
                     title="Delete"
                   >
                     <svg
@@ -256,6 +284,95 @@ const UserList = () => {
           Next
         </button>
       </div>
+
+      {/* delete Confirmation Modal */}
+      {showDeleteModal && selectedUser && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-md w-80">
+            <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+            <p className="mb-4">Are you sure you want to delete <strong>{selectedUser.name}</strong>?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteUser(selectedUser.emp_id);
+                  setShowDeleteModal(false);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+  <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded shadow-md w-96">
+      <h2 className="text-lg font-semibold mb-4">Update User</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleUpdateUser(); // define this
+          setShowEditModal(false);
+        }}
+        className="space-y-4"
+      >
+        <input
+          type="text"
+          defaultValue={selectedUser.ename}
+          onChange={(e) => selectedUser.ename = e.target.value}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Name"
+        />
+        <input
+          type="email"
+          defaultValue={selectedUser.email}
+          onChange={(e) => selectedUser.email = e.target.value}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Email"
+        />
+        <input
+          type="text"
+          defaultValue={selectedUser.phone}
+          onChange={(e) => selectedUser.phone = e.target.value}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Phone Number"
+        />
+        <input
+          type="text"
+          defaultValue={selectedUser.password}
+          onChange={(e) => selectedUser.password = e.target.value}
+          className="w-full border px-3 py-2 rounded"
+          placeholder="Password"
+        />
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setShowEditModal(false)}
+            className="px-4 py-2 bg-gray-200 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };
