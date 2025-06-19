@@ -18,4 +18,18 @@ class UserProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void updateUserFields({String? name, String? phone, String? email}) {
+    if (_user != null) {
+      _user = Employee(
+        empId: _user!.empId,
+        ename: name ?? _user!.ename,
+        email: email ?? _user!.email,
+        phone: phone ?? _user!.phone,
+        username: _user!.username,
+        password: _user!.password,
+      );
+      notifyListeners();
+    }
+  }
 }

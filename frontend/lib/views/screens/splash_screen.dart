@@ -64,7 +64,23 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(child: Image.asset('assets/images/capitalCareLogo.png')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/images/CCLogo.jpeg', width: 200, height: 200),
+            SizedBox(height: 20),
+            Text(
+              "Powered by Trusting Brains",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

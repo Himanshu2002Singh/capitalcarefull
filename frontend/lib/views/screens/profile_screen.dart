@@ -47,16 +47,21 @@ class _EmployeeProfilePageState extends State<EmployeeProfilePage> {
       phone: phoneController.text,
     );
     bool success = await ApiService.updateUser(user?.empId, employee);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success ? "Successfully " : "Error")),
+    );
     if (success) {
+      // Update state management here
+      Provider.of<UserProvider>(context, listen: false).updateUserFields(
+        name: nameController.text,
+        phone: phoneController.text,
+        email: emailController.text,
+      );
+
       setState(() {
         isEditing = false;
       });
     }
-
-    // Later: call your backend update method here
   }
 
   Widget buildTextField(

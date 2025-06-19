@@ -7,31 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-// import 'package:shared_preferences/shared_preferences.dart';
-
-// class Location {
-//   final String name;
-//   final double latitude;
-//   final double longitude;
-
-//   Location({
-//     required this.name,
-//     required this.latitude,
-//     required this.longitude,
-//   });
-
-//   Map<String, dynamic> toJson() => {
-//     'name': name,
-//     'latitude': latitude,
-//     'longitude': longitude,
-//   };
-
-//   factory Location.fromJson(Map<String, dynamic> json) => Location(
-//     name: json['name'],
-//     latitude: json['latitude'],
-//     longitude: json['longitude'],
-//   );
-// }
 
 class Attendancescreen extends StatefulWidget {
   const Attendancescreen({Key? key}) : super(key: key);
@@ -249,7 +224,11 @@ class _AttendancescreenState extends State<Attendancescreen> {
     );
 
     if (distanceInMeters <= 20) {
-      await _markAttendanceStart();
+      if (isAttendanceMarked) {
+        await _closeAttendance();
+      } else {
+        await _markAttendanceStart();
+      }
     } else {
       setState(() {
         attendanceStatus = 'You are not within 20 meters of office.';
@@ -386,6 +365,38 @@ class _AttendancescreenState extends State<Attendancescreen> {
     );
   }
 
+  void _showConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text("Close Attendance"),
+          content: Text("Are you sure you want to close attendance?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _checkLocationAndMarkAttendance();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text("Close Attendance"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -462,7 +473,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
                           isLoading
                               ? null
                               : isAttendanceMarked
-                              ? _closeAttendance
+                              ? _showConfirmationDialog
                               : (now.hour >= 10 && now.minute > 10)
                               ? _customDialog
                               : _checkLocationAndMarkAttendance,
