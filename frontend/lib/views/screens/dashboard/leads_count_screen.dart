@@ -1,21 +1,70 @@
+import 'package:capital_care/models/calls_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:capital_care/views/screens/leads/lead_details_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-class LeadsCountScreen extends StatelessWidget {
+class LeadsCountScreen extends StatefulWidget {
   final title;
   final leads;
   LeadsCountScreen({super.key, required this.title, required this.leads});
-  
+
+  @override
+  State<LeadsCountScreen> createState() => _LeadsCountScreenState();
+}
+
+class _LeadsCountScreenState extends State<LeadsCountScreen> {
+  Future<void> makeDirectCall(String number, dynamic lead) async {
+    var status = await Permission.phone.status;
+    if (!status.isGranted) {
+      await Permission.phone.request();
+    }
+
+    if (await Permission.phone.isGranted) {
+      await FlutterPhoneDirectCaller.callNumber(number);
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CallDetailsScreen(lead: lead),
+          ),
+        );
+      });
+
+      submitCall(lead); // If needed, ensure this function is defined
+    } else {
+      print("CALL_PHONE permission denied");
+    }
+  }
+
+  void submitCall(var lead) async {
+    final storage = FlutterSecureStorage();
+    final userId = await storage.read(key: "userId");
+    Calls call = Calls(
+      lead_id: lead.lead_id,
+      emp_id: userId,
+      name: lead.name,
+      number: lead.number,
+    );
+    bool success = await ApiService.addCalls(call);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       isFloatingActionButton: false,
       appBar: CustomAppbar(
-        title: title,
+        title: widget.title,
         action: const [Icon(Icons.search), SizedBox(width: 16)],
       ),
       body: Column(
@@ -26,16 +75,16 @@ class LeadsCountScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(10),
             child: Text(
-              'Total FollowUps - ${leads.length}',
+              'Total FollowUps - ${widget.leads.length}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
-              itemCount: leads.length,
+              itemCount: widget.leads.length,
               itemBuilder: (context, index) {
-                final f = leads[index];
+                final f = widget.leads[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -139,10 +188,15 @@ class LeadsCountScreen extends StatelessWidget {
                                     const Icon(Icons.call, color: Colors.blue),
                                     const SizedBox(width: 8),
                                     Flexible(
-                                      child: Text(
-                                        "Last call:- ${f.status}",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          makeDirectCall(f.number, f);
+                                        },
+                                        child: Text(
+                                          "Last call:- ${f.status}",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
                                     ),
                                   ],
