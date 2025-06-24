@@ -9,12 +9,12 @@ class LeadProvider with ChangeNotifier {
   List<Leads> get leads => _leads;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchLeads() async {
+  Future<void> fetchLeads({DateTime? startDate, DateTime? endDate}) async {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      _leads = await ApiService.fetchLeads();
+    try {   
+      _leads = await ApiService.fetchLeads(startDate, endDate);
     } catch (e) {
       print("Error fetching leads: $e");
       _leads = []; // fallback on error

@@ -87,3 +87,29 @@ exports.getCallsByDates = async (req, res) => {
         res.status(500).json({ message: "Database error", error });
     }
 }
+
+exports.getCallsByEmpIdAndDates = async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const { emp_id } = req.params;  
+
+    if (!emp_id || !startDate || !endDate) {
+        return res.status(400).json({ message: "emp_id, startDate and endDate are required" });
+    }
+
+    try {
+        const callsData = await Calls.findAll({
+            where: {
+                emp_id: emp_id,
+                createdAt: {
+                    [Op.between]: [new Date(startDate), new Date(endDate)]
+                }
+            },
+            order: [['createdAt', 'DESC']],
+        });
+        res.status(200).json({ calls: callsData });
+    } catch (error) {
+        console.error("Error fetching calls by emp_id and dates", error);
+        res.status(500).json({ message: "Database error", error });
+    }
+};
+

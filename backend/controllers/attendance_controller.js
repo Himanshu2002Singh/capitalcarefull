@@ -129,7 +129,7 @@ const myattendance = async (req, res) => {
     const userId = req.user.id; // Assuming user ID is attached to the request
     const attendanceRecords = await Attendance.findAll({
       where: { userId },
-      attributes: ["date", "isLate"], // Fetch only necessary fields
+      attributes: ["date", "isLate", "startTime", "endTime"], // Fetch only necessary fields
     });
 
     if (!attendanceRecords || attendanceRecords.length === 0) {
@@ -139,7 +139,9 @@ const myattendance = async (req, res) => {
     // Format response to send dates and statuses
     const formattedData = attendanceRecords.map((record) => ({
       date: moment(record.date).format("YYYY-MM-DD"),
-      isLate : record.isLate
+      isLate : record.isLate,
+      startTime: moment(record.startTime),
+      endTime: record.endTime ? moment(record.endTime) : null,
     }));
     console.log(formattedData, "=========?");
     res.status(200).json({ success: true, data: formattedData });

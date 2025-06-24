@@ -3,6 +3,7 @@ import 'package:capital_care/constants/server_url.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class MyAttendanceScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class MyAttendanceScreen extends StatefulWidget {
 
 class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   Map<DateTime, String> attendanceData = {};
+  Map<DateTime, AttendanceEntry> attendanceEntries = {};
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   int fullDayCount = 0;
@@ -63,6 +65,10 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 item['isLate'] == true
                     ? 'Late'
                     : 'Full Day'; // Normalize status to 'Late' or 'Full Day'
+            attendanceEntries[date] = AttendanceEntry(
+              startTime: item['startTime'],
+              endTime: item['endTime'],
+            );
           }
 
           return processedData;
@@ -150,6 +156,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                         _selectedDay = selectedDay;
                         _focusedDay = focusedDay;
                       });
+                      _showAttendanceDetailsModal(selectedDay);
                     },
                     onPageChanged: (focusedDay) {
                       setState(() {
@@ -272,6 +279,91 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
       ),
     );
   }
+
+  void _showAttendanceDetailsModal(DateTime selectedDate) {
+    final status =
+        attendanceData[DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+        )];
+    final entry =
+        attendanceEntries[DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+        )];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5, // Half screen
+          minChildSize: 0.3,
+          maxChildSize: 0.7,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    "Attendance Details",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Date: ${selectedDate.toLocal().toIso8601String().substring(0, 10)}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Status: ${status ?? 'Not Found'}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color:
+                          status == "Late"
+                              ? Colors.orange
+                              : status == "Full Day"
+                              ? Colors.green
+                              : Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Start Time: ${_formatTime(entry?.startTime)}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    "End Time: ${_formatTime(entry?.endTime)}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class InfoRow extends StatelessWidget {
@@ -293,5 +385,23 @@ class InfoRow extends StatelessWidget {
         Text(label, style: const TextStyle(fontSize: 14)),
       ],
     );
+  }
+}
+
+class AttendanceEntry {
+  final String? startTime;
+  final String? endTime;
+
+  AttendanceEntry({this.startTime, this.endTime});
+}
+
+String _formatTime(String? isoTime) {
+  if (isoTime == null || isoTime.isEmpty) return '--';
+
+  try {
+    final dateTime = DateTime.parse(isoTime).toLocal();
+    return DateFormat.jm().format(dateTime); // Example: 10:09 AM
+  } catch (e) {
+    return 'Invalid Time';
   }
 }

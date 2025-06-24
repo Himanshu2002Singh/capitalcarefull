@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:capital_care/constants/server_url.dart';
+import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/my_attendance_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -402,7 +403,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Attendance'),
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.primaryColor,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -429,7 +430,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.teal, Colors.teal.shade200],
+              colors: [AppColors.primaryColor, AppColors.appBarForegroundColor],
             ),
           ),
           child: SafeArea(

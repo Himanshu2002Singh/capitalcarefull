@@ -1,5 +1,7 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/leads_count_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
@@ -24,6 +26,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Colors.blueGrey,
     Colors.greenAccent,
     Colors.lightBlue,
+    Colors.orange,
+    Colors.purple,
   ];
 
   final boxIconList = [
@@ -31,6 +35,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Icons.event_available,
     Icons.calendar_month,
     Icons.man,
+    Icons.call,
+    Icons.call_received,
   ];
 
   final boxTextList = [
@@ -38,6 +44,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     "Tomorrow FollowUps",
     "Today FollowUps",
     "Total Leads",
+    "Total Calls",
+    "Today Calls",
   ];
 
   @override
@@ -47,15 +55,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<LeadProvider>(context, listen: false).fetchLeads();
+      Provider.of<CallsProvider>(context, listen: false).fetchTotalCalls();
+      Provider.of<CallsProvider>(context, listen: false).fetchTodayCalls();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final leadProvider = Provider.of<LeadProvider>(context);
+    final leadProvider = Provider.of<LeadProvider>(context, listen: true);
+    final callProvider = Provider.of<CallsProvider>(context, listen: true);
     final leads = leadProvider.leads;
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final calls = callProvider.calls;
+    final todayCalls = callProvider.todayCalls;
 
     final tomorrowLeads =
         leads.where((lead) {
@@ -93,6 +106,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       tomorrowLeads.length,
       todayLeads.length,
       leads.length,
+      calls.length,
+      todayCalls.length,
     ];
     return AppScaffold(
       isFloatingActionButton: true,
@@ -122,7 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: List.generate(4, (index) {
+                    children: List.generate(6, (index) {
                       return GestureDetector(
                         onTap:
                             () => Navigator.push(
@@ -141,11 +156,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       title: "Tomorrow Leads",
                                       leads: tomorrowLeads,
                                     );
-                                  } else {
+                                  } else if (index == 2) {
                                     return LeadsCountScreen(
                                       title: "Today Leads",
                                       leads: todayLeads,
                                     );
+                                  } else if (index == 4) {
+                                    return CallLogsScreen();
+                                  } else {
+                                    return CallLogsScreen(title: "Today Calls");
                                   }
                                 },
                               ),

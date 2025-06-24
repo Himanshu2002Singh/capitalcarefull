@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
@@ -13,6 +14,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => LeadProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => CallsProvider()),
       ],
       child: const MyApp(),
     ),

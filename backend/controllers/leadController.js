@@ -133,3 +133,28 @@ exports.leadsByDate = async (req, res) => {
     res.status(500).json({ message: 'Database error', error });
   }
 } 
+exports.leadsByEmpIdAndDate = async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const { emp_id } = req.params;
+
+  if (!emp_id || !startDate || !endDate) {
+    return res.status(400).json({ message: 'Employee ID, start date, and end date are required' });
+  }
+
+  try {
+    const leads = await Lead.findAll({
+      where: {
+        person_id: emp_id,
+        createdAt: {
+          [Op.between]: [new Date(startDate), new Date(endDate)]
+        }
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json(leads);
+  } catch (error) {
+    console.error('Error fetching leads by employee ID and date:', error);
+    res.status(500).json({ message: 'Database error', error });
+  }
+}

@@ -7,5 +7,6 @@ router.get('/calls/:id', callsController.getCalls);
 router.get('/callsByLeadId/:id', callsController.getCallsByLeadId);
 router.put('/updateCall/:callId', callsController.updateCall);
 router.get('/callsByDates', callsController.getCallsByDates);
+router.get('/callsByEmpIdAndDate/:emp_id', callsController.getCallsByEmpIdAndDates);
 
 module.exports = router;

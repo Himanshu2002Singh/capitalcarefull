@@ -7,6 +7,7 @@ import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:capital_care/views/widgets/lead_card.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class LeadsScreen extends StatefulWidget {
@@ -20,6 +21,11 @@ class _LeadsScreenState extends State<LeadsScreen> {
   String loanSelectedItem = "All";
   String selectedStatusItem = "All";
   String searchQuery = "";
+  bool showSearchBar = false;
+
+  DateTime today = DateTime.now();
+  DateTime? startDate = DateTime(2025, 5, 1); // Changed to reasonable default
+  DateTime? endDate = DateTime.now();
 
   final List<String> loanTypeOptions = [
     "All",
@@ -54,17 +60,21 @@ class _LeadsScreenState extends State<LeadsScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<LeadProvider>(context, listen: false).fetchLeads();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<LeadProvider>(
+        context,
+        listen: false,
+      ).fetchLeads(startDate: startDate, endDate: endDate);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final leadProvider = Provider.of<LeadProvider>(context);
+    final leadProvider = Provider.of<LeadProvider>(context, listen: true);
     final leads = leadProvider.leads;
     final isLoading = leadProvider.isLoading;
     final user = Provider.of<UserProvider>(context).user;
 
-    /// 🔍 Final filtered list (Loan Type + Status + Search Query)
     final filteredLeads =
         leads.where((lead) {
           final matchesLoan =
@@ -82,128 +92,184 @@ class _LeadsScreenState extends State<LeadsScreen> {
       appBar: CustomAppbar(
         title: "Leads",
         action: [
-          const Text("Loan Type: ", style: TextStyle(color: Colors.white)),
+          const SizedBox(width: 10),
           DropdownButton<String>(
             value: loanSelectedItem,
-            style: const TextStyle(color: Colors.white),
-            dropdownColor: Colors.black,
-            iconEnabledColor: Colors.white,
+            underline: const SizedBox(),
             items:
                 loanTypeOptions.map((type) {
                   return DropdownMenuItem(
                     value: type,
-                    child: Text(
-                      type,
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                    child: Text(type, style: const TextStyle(fontSize: 14)),
                   );
                 }).toList(),
-            onChanged: (value) {
-              setState(() {
-                loanSelectedItem = value!;
-              });
-            },
+            onChanged: (value) => setState(() => loanSelectedItem = value!),
           ),
         ],
       ),
-      body:
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : leads.isEmpty
-              ? const Center(child: Text("No leads found"))
-              : RefreshIndicator(
-                onRefresh: () => leadProvider.fetchLeads(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 🔍 Search Bar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+      body: Column(
+        children: [
+          // Filters and search section (always visible)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.lightBlue.shade100,
+                          Colors.lightBlue.shade50,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Search by name...",
-                          prefixIcon: const Icon(Icons.search),
-                          isDense: true, // Ye height kam karega
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 10,
-                          ), // Adjust vertical height
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Flexible(
+                          child: ElevatedButton(
+                            onPressed: _selectStartDate,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 0,
+                              ),
+                              backgroundColor: Colors.teal,
+                            ),
+                            child: Text(
+                              maxLines: 1,
+                              startDate != null
+                                  ? "Start: ${DateFormat('d MMM yyyy').format(startDate!)}"
+                                  : "Pick Start Date",
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-
-                    // 📊 Count
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        "Total Leads: ${filteredLeads.length}",
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-
-                    // 🏷 Status Filter Chips
-                    Container(
-                      height: 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: statusOptions.length,
-                        itemBuilder: (context, index) {
-                          final option = statusOptions[index];
-                          return GestureDetector(
-                            onTap: () {
-                              selectedStatusItem = option;
-                              setState(() {});
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 8,
-                              ),
+                        Flexible(
+                          child: ElevatedButton(
+                            onPressed: _selectEndDate,
+                            style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 5,
+                                horizontal: 10,
+                                vertical: 0,
                               ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: AppColors.primaryColor,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                color:
-                                    selectedStatusItem == option
-                                        ? const Color.fromARGB(
-                                          255,
-                                          219,
-                                          219,
-                                          219,
-                                        )
-                                        : Colors.white,
-                              ),
-                              child: Text(
-                                option,
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                              backgroundColor: Colors.deepPurple,
                             ),
-                          );
-                        },
-                      ),
+                            child: Text(
+                              endDate != null
+                                  ? "End: ${DateFormat('d MMM yyyy').format(endDate!)}"
+                                  : "Pick End Date",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black),
+                  onPressed:
+                      () => setState(() => showSearchBar = !showSearchBar),
+                ),
+              ],
+            ),
+          ),
 
-                    // 📋 Leads List
-                    Expanded(
-                      child: ListView.builder(
+          if (showSearchBar)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: TextField(
+                onChanged: (value) => setState(() => searchQuery = value),
+                decoration: InputDecoration(
+                  hintText: "Search by name...",
+                  prefixIcon: const Icon(Icons.search),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 10,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Text(
+                  "Total Leads: ${filteredLeads.length}",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+
+          Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: statusOptions.length,
+              itemBuilder: (context, index) {
+                final option = statusOptions[index];
+                return GestureDetector(
+                  onTap: () => setState(() => selectedStatusItem = option),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.primaryColor,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color:
+                          selectedStatusItem == option
+                              ? const Color.fromARGB(255, 219, 219, 219)
+                              : Colors.white,
+                    ),
+                    child: Text(option, style: const TextStyle(fontSize: 14)),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Main content with RefreshIndicator
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh:
+                  () => Provider.of<LeadProvider>(
+                    context,
+                    listen: false,
+                  ).fetchLeads(startDate: startDate, endDate: endDate),
+              child:
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : filteredLeads.isEmpty
+                      ? const Center(child: Text("No leads found"))
+                      : ListView.builder(
                         itemCount: filteredLeads.length,
                         itemBuilder: (context, index) {
                           final lead = filteredLeads[index];
@@ -222,10 +288,10 @@ class _LeadsScreenState extends State<LeadsScreen> {
                           );
                         },
                       ),
-                    ),
-                  ],
-                ),
-              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButtonIcon: const Icon(Icons.add),
       floatingActionButtonOnTap: () {
         Navigator.push(
@@ -241,5 +307,37 @@ class _LeadsScreenState extends State<LeadsScreen> {
         );
       },
     );
+  }
+
+  Future<void> _selectStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: startDate ?? DateTime.now(),
+      firstDate: DateTime(2023),
+      lastDate: endDate ?? DateTime.now(), // Don't allow start after end
+    );
+    if (picked != null) {
+      setState(() => startDate = picked);
+      Provider.of<LeadProvider>(
+        context,
+        listen: false,
+      ).fetchLeads(startDate: startDate, endDate: endDate);
+    }
+  }
+
+  Future<void> _selectEndDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: endDate ?? DateTime.now(),
+      firstDate: startDate ?? DateTime(2023), // Don't allow end before start
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() => endDate = picked);
+      Provider.of<LeadProvider>(
+        context,
+        listen: false,
+      ).fetchLeads(startDate: startDate, endDate: endDate);
+    }
   }
 }

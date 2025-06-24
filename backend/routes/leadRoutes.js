@@ -9,5 +9,6 @@ router.put('/leads/:id', leadController.updateLead);
 router.delete('/delete-lead/:id', leadController.deleteLead);
 router.get('/getLead/:id', leadController.getLeadDetails);
 router.get('/getLeadsByDate', leadController.leadsByDate);
+router.get('/getLeadsByEmpIdAndDate/:emp_id', leadController.leadsByEmpIdAndDate);
 
 module.exports = router;

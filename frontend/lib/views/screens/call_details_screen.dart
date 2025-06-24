@@ -99,7 +99,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       return;
     }
 
-    List<Calls> callList = await ApiService.getCalls(userId);
+    List<Calls> callList = await ApiService.getCalls();
 
     if (callList.isEmpty) {
       print("No calls found for this user");

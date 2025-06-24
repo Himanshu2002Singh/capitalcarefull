@@ -10,6 +10,7 @@ import 'package:capital_care/models/task_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ApiService {
   static String baseUrl = ServerUrl;
@@ -54,7 +55,6 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({'username': username, 'password': password}),
     );
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
@@ -77,16 +77,30 @@ class ApiService {
     }
   }
 
-  static Future<List<Leads>> fetchLeads() async {
+  static Future<List<Leads>> fetchLeads(
+    DateTime? startDate,
+    DateTime? endDate,
+  ) async {
     final emp_id = await secureStorage.read(key: "userId");
-    final url = Uri.parse("$baseUrl/leads/$emp_id");
+
+    // Set default values if dates are null
+    final DateTime start = startDate ?? DateTime(2025, 5, 1);
+    final DateTime end = endDate ?? DateTime.now();
+
+    final url = Uri.parse("$baseUrl/getLeadsByEmpIdAndDate/$emp_id").replace(
+      queryParameters: {
+        'startDate': DateFormat('yyyy-MM-dd').format(start),
+        'endDate': DateFormat('yyyy-MM-dd').format(end),
+      },
+    );
+
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       List jsonData = jsonDecode(response.body);
       return jsonData.map((e) => Leads.fromJson(e)).toList();
     } else {
-      throw Exception("failed to load employees");
+      throw Exception("Failed to load leads");
     }
   }
 
@@ -178,12 +192,43 @@ class ApiService {
     }
   }
 
-  static Future<List<Calls>> getCalls(String id) async {
-    final url = Uri.parse("$baseUrl/calls/$id");
+  static Future<List<Calls>> getCalls() async {
+    final emp_id = await secureStorage.read(key: "userId");
+    final url = Uri.parse("$baseUrl/calls/$emp_id");
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonData = jsonDecode(response.body);
 
+      final List callList = jsonData['calls'];
+      return callList.map((e) => Calls.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load Calls");
+    }
+  }
+
+  static Future<List<Calls>> getCallsByDates({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final empId = await secureStorage.read(key: "userId");
+
+    // If dates are not passed, use today's date and tomorrow as default
+    final now = DateTime.now();
+    final defaultStart = startDate ?? DateTime(now.year, now.month, now.day);
+    final defaultEnd = endDate ?? defaultStart.add(const Duration(days: 1));
+
+    final formattedStart =
+        "${defaultStart.year}-${defaultStart.month.toString().padLeft(2, '0')}-${defaultStart.day.toString().padLeft(2, '0')}";
+    final formattedEnd = defaultEnd.toIso8601String();
+
+    final url = Uri.parse("$baseUrl/callsByEmpIdAndDate/$empId").replace(
+      queryParameters: {'startDate': formattedStart, 'endDate': formattedEnd},
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
       final List callList = jsonData['calls'];
       return callList.map((e) => Calls.fromJson(e)).toList();
     } else {
