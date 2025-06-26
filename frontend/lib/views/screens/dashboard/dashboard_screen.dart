@@ -49,22 +49,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LeadProvider>(context, listen: false).fetchLeads();
-      Provider.of<CallsProvider>(context, listen: false).fetchTotalCalls();
-      Provider.of<CallsProvider>(context, listen: false).fetchTodayCalls();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final leadProvider = Provider.of<LeadProvider>(context, listen: true);
     final callProvider = Provider.of<CallsProvider>(context, listen: true);
-    final leads = leadProvider.leads;
+    final leads = leadProvider.allLeads;
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final calls = callProvider.calls;

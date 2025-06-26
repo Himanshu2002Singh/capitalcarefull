@@ -84,8 +84,12 @@ class ApiService {
     final emp_id = await secureStorage.read(key: "userId");
 
     // Set default values if dates are null
+    final today = DateTime.now();
     final DateTime start = startDate ?? DateTime(2025, 5, 1);
-    final DateTime end = endDate ?? DateTime.now();
+    final DateTime end =
+        endDate != null
+            ? DateTime(endDate.year, endDate.month, endDate.day + 1)
+            : DateTime(today.year, today.month, today.day + 1);
 
     final url = Uri.parse("$baseUrl/getLeadsByEmpIdAndDate/$emp_id").replace(
       queryParameters: {
@@ -104,7 +108,7 @@ class ApiService {
     }
   }
 
-  static Future<bool> addLead(Leads lead) async {
+  static Future<int> addLead(Leads lead) async {
     final url = Uri.parse("$baseUrl/submit-lead");
     final response = await http.post(
       url,
@@ -114,10 +118,15 @@ class ApiService {
 
     if (response.statusCode == 200) {
       print("lead added : ${response.body}");
-      return true;
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      print(
+        "===========================================>>>>>>>>>${jsonData['id']}",
+      );
+      print("==================================>>>>${response.body[1]}");
+      return jsonData['id'];
     } else {
       print("failed : ${response.body}");
-      return false;
+      return -1;
     }
   }
 
@@ -215,7 +224,10 @@ class ApiService {
     // If dates are not passed, use today's date and tomorrow as default
     final now = DateTime.now();
     final defaultStart = startDate ?? DateTime(now.year, now.month, now.day);
-    final defaultEnd = endDate ?? defaultStart.add(const Duration(days: 1));
+    final defaultEnd =
+        endDate != null
+            ? endDate.add(const Duration(days: 1))
+            : defaultStart.add(const Duration(days: 1));
 
     final formattedStart =
         "${defaultStart.year}-${defaultStart.month.toString().padLeft(2, '0')}-${defaultStart.day.toString().padLeft(2, '0')}";

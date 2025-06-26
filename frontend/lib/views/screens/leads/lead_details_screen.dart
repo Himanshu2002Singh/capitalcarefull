@@ -1,3 +1,5 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/controllers/providers/history_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/models/history_model.dart';
@@ -39,8 +41,12 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   void fetchHistory() async {
-    history = await ApiService.getHistory(widget.lead.lead_id);
-    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      ).fetchHistory(widget.lead.lead_id);
+    });
   }
 
   void fetchTasks() async {
@@ -86,13 +92,16 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
       name: lead.name,
       number: lead.number,
     );
-    bool success = await ApiService.addCalls(call);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+    Provider.of<CallsProvider>(context, listen: false).addCall(call);
+    // bool success = await ApiService.addCalls(call);
+    // ScaffoldMessenger.of(
+    //   context,
+    // ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
   }
 
   Widget build(BuildContext context) {
+    final historyProvider = Provider.of<HistoryProvider>(context, listen: true);
+    history = historyProvider.history;
     return AppScaffold(
       isFloatingActionButton: true,
       floatingActionButtonIcon: Icon(Icons.add),

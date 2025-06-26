@@ -1,5 +1,7 @@
 import 'dart:ffi';
 
+import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/controllers/providers/history_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/models/calls_model.dart';
@@ -73,20 +75,25 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       status: feedbackStatus,
       remark: remarkController.text,
     );
-
-    bool success1 = await ApiService.updateLead(
-      widget.lead.lead_id,
-      updateLead,
-    );
-    bool success2 = await ApiService.addHistory(newHistory);
+    Provider.of<LeadProvider>(
+      context,
+      listen: false,
+    ).updateLead(updateLead, widget.lead.lead_id);
+    // bool success1 = await ApiService.updateLead(
+    //   widget.lead.lead_id,
+    //   updateLead,
+    // );
+    // bool success2 = await ApiService.addHistory(newHistory);
+    Provider.of<HistoryProvider>(context, listen: false).addHistory(newHistory);
     // Provider.of<LeadProvider>(context, listen: false).addLead();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success1 && success2 ? "success" : "Error")),
-    );
-    if (success1 && success2) {
-      Navigator.pop(context);
-    }
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text(success1 && success2 ? "success" : "Error")),
+    // );
+    // if (success1 && success2) {
+    //   Navigator.pop(context);
+    // }
+    Navigator.pop(context);
   }
 
   void updateCall() async {
@@ -98,8 +105,8 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       print("User ID not found");
       return;
     }
-
-    List<Calls> callList = await ApiService.getCalls();
+    final callProvider = Provider.of<CallsProvider>(context, listen: true);
+    List<Calls> callList = callProvider.calls;
 
     if (callList.isEmpty) {
       print("No calls found for this user");
@@ -118,6 +125,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   }
 
   void addLeadSubmission() async {
+    int idOfLead;
     updateCall();
     if (contactNameController.text.isEmpty) {
       ScaffoldMessenger.of(
@@ -138,35 +146,41 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       remark: remarkController.text,
       est_budget: budgetController.text,
     );
-    bool success = await ApiService.addLead(newLead);
-    Provider.of<LeadProvider>(context, listen: false).addLead(newLead);
-    updateHistory(user?.ename, user?.empId);
-    ScaffoldMessenger.of(
+    // bool success = await ApiService.addLead(newLead);
+    int newLeadId = await Provider.of<LeadProvider>(
       context,
-    ).showSnackBar(SnackBar(content: Text(success ? "Success" : "error")));
-
-    if (success) Navigator.pop(context);
+      listen: false,
+    ).addLead(newLead);
+    idOfLead = newLeadId;
+    updateHistory(user?.ename, user?.empId, idOfLead);
+    // ScaffoldMessenger.of(
+    //   context,
+    // ).showSnackBar(SnackBar(content: Text(success ? "Success" : "error")));
+    Navigator.pop(context);
+    // if (success) Navigator.pop(context);
   }
 
-  void updateHistory(ename, emp_id) async {
-    List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
+  void updateHistory(ename, emp_id, idOfLead) async {
+    // List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
 
     History newHistory = History(
-      lead_id: leads[0].lead_id + 1,
+      lead_id: idOfLead ?? widget.lead.lead_id,
       owner: ename,
       next_meeting: nextMeetingController.text,
       status: feedbackStatus,
       remark: remarkController.text,
     );
-    await ApiService.addHistory(newHistory);
+    // await ApiService.addHistory(newHistory);
+    Provider.of<HistoryProvider>(context, listen: false).addHistory(newHistory);
 
     Calls call = Calls(
-      lead_id: leads[0].lead_id + 1,
+      lead_id: idOfLead ?? widget.lead.lead_id,
       emp_id: emp_id,
       name: contactNameController.text,
       number: widget.number,
     );
-    await ApiService.addCalls(call);
+    // await ApiService.addCalls(call);
+    Provider.of<CallsProvider>(context, listen: false).addCall(call);
   }
 
   @override

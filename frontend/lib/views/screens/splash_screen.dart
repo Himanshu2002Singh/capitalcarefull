@@ -1,3 +1,5 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
@@ -34,7 +36,6 @@ class _SplashScreenState extends State<SplashScreen> {
     final now = DateTime.now();
     final diff = now.difference(lgTime).inDays;
 
-    print("=================================>$userId");
     if (token != null &&
         token.isNotEmpty &&
         userId != null &&
@@ -46,6 +47,16 @@ class _SplashScreenState extends State<SplashScreen> {
         context,
         listen: false,
       ).fetchUserData(userId);
+      await Provider.of<LeadProvider>(context, listen: false).fetchAllLeads();
+      await Provider.of<CallsProvider>(
+        context,
+        listen: false,
+      ).fetchTotalCalls();
+      await Provider.of<CallsProvider>(
+        context,
+        listen: false,
+      ).fetchTodayCalls();
+      await Provider.of<LeadProvider>(context, listen: false).fetchAllLeads();
 
       Navigator.pushReplacement(
         context,

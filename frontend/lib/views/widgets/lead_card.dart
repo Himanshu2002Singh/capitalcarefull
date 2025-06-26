@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LeadCard extends StatefulWidget {
@@ -26,17 +28,14 @@ class _LeadCardState extends State<LeadCard> {
 
   void submitCall() async {
     final storage = FlutterSecureStorage();
-    final userId = await storage.read(key: "userId");
+    final userId = await storage.read(key: "userId") ?? "";
     Calls call = Calls(
-      lead_id: widget.lead.lead_id,
+      lead_id: widget.lead.lead_id ?? "",
       emp_id: userId,
-      name: widget.lead.name,
-      number: widget.lead.number,
+      name: widget.lead.name ?? "",
+      number: widget.lead.number ?? "",
     );
-    bool success = await ApiService.addCalls(call);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+    Provider.of<CallsProvider>(context, listen: false).addCall(call);
   }
 
   @override
@@ -54,7 +53,7 @@ class _LeadCardState extends State<LeadCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.lead.name,
+                  widget.lead.name ?? "",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Row(
@@ -62,13 +61,13 @@ class _LeadCardState extends State<LeadCard> {
                     IconButton(
                       icon: const Icon(Icons.phone, color: Colors.blue),
                       onPressed: () {
-                        makeDirectCall(widget.lead.number);
+                        makeDirectCall(widget.lead.number ?? "");
                       },
                     ),
                     IconButton(
                       icon: const Icon(Icons.sms, color: Colors.orange),
                       onPressed: () {
-                        sendSMS(widget.lead.number, "");
+                        sendSMS(widget.lead.number ?? "", "");
                       },
                     ),
                     IconButton(
@@ -77,7 +76,10 @@ class _LeadCardState extends State<LeadCard> {
                         color: Colors.green,
                       ),
                       onPressed: () {
-                        openWhatsApp(widget.lead.number, "message description");
+                        openWhatsApp(
+                          widget.lead.number ?? "",
+                          "message description",
+                        );
                       },
                     ),
                     IconButton(
@@ -107,9 +109,10 @@ class _LeadCardState extends State<LeadCard> {
                         const Icon(Icons.person),
                         const SizedBox(width: 5),
                         Text(
-                          (widget.lead.owner).length > 15
-                              ? (widget.lead.owner).substring(0, 12) + "..."
-                              : (widget.lead.owner),
+                          ((widget.lead.owner ?? "").length > 15
+                              ? (widget.lead.owner ?? "").substring(0, 12) +
+                                  "..."
+                              : (widget.lead.owner ?? "")),
                         ),
                       ],
                     ),
@@ -117,14 +120,19 @@ class _LeadCardState extends State<LeadCard> {
                       children: [
                         const Icon(Icons.public),
                         const SizedBox(width: 5),
-                        Text(widget.lead.source),
+                        Text(widget.lead.source ?? ""),
                       ],
                     ),
                     Row(
                       children: [
                         const Icon(Icons.timer),
                         const SizedBox(width: 5),
-                        Text((widget.lead.createdAt).substring(0, 10)),
+                        Text(
+                          widget.lead.createdAt != null &&
+                                  widget.lead.createdAt != ""
+                              ? (widget.lead.createdAt ?? "").substring(0, 10)
+                              : "",
+                        ),
                       ],
                     ),
                     Icon(Icons.forum),
@@ -133,9 +141,10 @@ class _LeadCardState extends State<LeadCard> {
                         const Icon(Icons.stairs),
                         const SizedBox(width: 5),
                         Text(
-                          (widget.lead.priority).length > 15
-                              ? (widget.lead.priority).substring(0, 12) + "..."
-                              : (widget.lead.priority),
+                          ((widget.lead.priority ?? "").length > 15
+                              ? (widget.lead.priority ?? "").substring(0, 12) +
+                                  "..."
+                              : (widget.lead.priority ?? "")),
                           style: const TextStyle(color: Colors.purple),
                         ),
                       ],
@@ -150,7 +159,7 @@ class _LeadCardState extends State<LeadCard> {
                         const Icon(Icons.assignment),
                         const SizedBox(width: 5),
                         Text(
-                          widget.lead.status,
+                          widget.lead.status ?? "",
                           style: TextStyle(color: Colors.purple),
                         ),
                       ],
@@ -163,10 +172,13 @@ class _LeadCardState extends State<LeadCard> {
                             const Icon(Icons.messenger),
                             const SizedBox(width: 5),
                             Text(
-                              (widget.lead.description).length > 8
-                                  ? (widget.lead.description).substring(0, 8) +
+                              ((widget.lead.description ?? "").length > 8
+                                  ? (widget.lead.description ?? "").substring(
+                                        0,
+                                        8,
+                                      ) +
                                       "..."
-                                  : (widget.lead.description),
+                                  : (widget.lead.description ?? "")),
                             ),
                           ],
                         ),
@@ -182,7 +194,9 @@ class _LeadCardState extends State<LeadCard> {
                               builder:
                                   (context) => AlertDialog(
                                     title: Text("Lead Description!"),
-                                    content: Text(widget.lead.description),
+                                    content: Text(
+                                      widget.lead.description ?? "",
+                                    ),
                                     actions: [
                                       TextButton(
                                         onPressed: () {
@@ -205,8 +219,12 @@ class _LeadCardState extends State<LeadCard> {
                         const Icon(Icons.calendar_month_sharp),
                         const SizedBox(width: 5),
                         Text(
-                          widget.lead.next_meeting != ""
-                              ? (widget.lead.next_meeting).substring(0, 10)
+                          widget.lead.next_meeting != null &&
+                                  widget.lead.next_meeting != ""
+                              ? (widget.lead.next_meeting ?? "").substring(
+                                0,
+                                10,
+                              )
                               : "",
                         ),
                       ],
@@ -380,22 +398,6 @@ class _LeadCardState extends State<LeadCard> {
                                           decoration: InputDecoration(
                                             prefixIcon: Icon(Icons.search),
                                           ),
-                                          // onChanged: (value) {
-                                          //   setState(() {
-                                          //     filteredUsers =
-                                          //         assignLeadOptions
-                                          //             .where(
-                                          //               (
-                                          //                 user,
-                                          //               ) => user
-                                          //                   .toLowerCase()
-                                          //                   .contains(
-                                          //                     value.toLowerCase(),
-                                          //                   ),
-                                          //             )
-                                          //             .toList();
-                                          //   });
-                                          // },
                                         ),
                                         Container(
                                           height: 200,
@@ -458,10 +460,6 @@ class _LeadCardState extends State<LeadCard> {
                         // Your submit logic here
                         Navigator.of(context).pop();
                       },
-                      // icon: Icon(
-                      //   Icons.keyboard_double_arrow_right,
-                      //   color: Colors.white,
-                      // // ),
                       child: Text(
                         "SUBMIT",
                         style: TextStyle(color: Colors.white),

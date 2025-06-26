@@ -35,7 +35,7 @@ class DynamicBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leadProvider = Provider.of<LeadProvider>(context);
-    final leads = leadProvider.leads;
+    final leads = leadProvider.allLeads;
 
     // Step 1: Count how many leads have each status
     Map<String, int> statusCounts = {for (var s in statusList) s: 0};

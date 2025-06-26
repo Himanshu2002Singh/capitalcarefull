@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:capital_care/controllers/providers/history_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -128,6 +130,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   List<String> loanTerm = ["Monthly", "Yearly"];
 
   void handleSubmit() async {
+    int idOfLead;
     if (contactNameController.text.isEmpty ||
         contactNumberController.text.isEmpty) {
       ScaffoldMessenger.of(
@@ -154,42 +157,68 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         loan_term: LoanTermController.text,
         est_budget: loanAmountController.text,
       );
-
-      bool success1 =
-          widget.title == "Add Lead"
-              ? await ApiService.addLead(lead)
-              : await ApiService.updateLead(widget.lead_id, lead);
-      print("=========================================> ${dobController.text}");
-
-      Provider.of<LeadProvider>(context, listen: false).addLead(lead);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(success1 ? "success" : "Error")));
-      handleSubmission2();
-      Navigator.pop(context);
-    }
-  }
-
-  void handleSubmission2() async {
-    List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
-    if (contactNameController.text.isEmpty ||
-        contactNumberController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Name and Number can't be null")));
-    } else {
+      if (widget.title == "Add Lead") {
+        int newLeadId = await Provider.of<LeadProvider>(
+          context,
+          listen: false,
+        ).addLead(lead);
+        idOfLead = newLeadId;
+      } else {
+        Provider.of<LeadProvider>(
+          context,
+          listen: false,
+        ).updateLead(lead, widget.lead_id);
+        idOfLead = widget.lead_id;
+      }
+      // print("=======================================> $UpdaidOfLead");
       History newHistory = History(
-        lead_id: leads[0].lead_id + 1,
+        lead_id: idOfLead,
         owner: ownerController.text,
         next_meeting: nextMeetingTimeController.text,
         status: statusController.text,
       );
-      bool success2 =
-          widget.title == "Add Lead"
-              ? await ApiService.addHistory(newHistory)
-              : false;
+      Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      ).addHistory(newHistory);
+      // bool success1 =
+      //     widget.title == "Add Lead"
+      //         ? await ApiService.addLead(lead)
+      //         : await ApiService.updateLead(widget.lead_id, lead);
+      // print("=========================================> ${dobController.text}");
+
+      // Provider.of<LeadProvider>(context, listen: false).addLead(lead);
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(SnackBar(content: Text(success1 ? "success" : "Error")));
+      // handleSubmission2(idOfLead);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LeadsScreen()),
+      );
     }
   }
+
+  // void handleSubmission2(int idOfLead) async {
+  //   // List<Leads> leads = Provider.of<LeadProvider>(context, listen: false).leads;
+  //   if (contactNameController.text.isEmpty ||
+  //       contactNumberController.text.isEmpty) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text("Name and Number can't be null")));
+  //   } else {
+  //     History newHistory = History(
+  //       lead_id: idOfLead,
+  //       owner: ownerController.text,
+  //       next_meeting: nextMeetingTimeController.text,
+  //       status: statusController.text,
+  //     );
+  //     Provider.of<HistoryProvider>(
+  //       context,
+  //       listen: false,
+  //     ).addHistory(newHistory);
+  //   }
+  // }
 
   @override
   void initState() {

@@ -23,7 +23,7 @@ class DynamicPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leadProvider = Provider.of<LeadProvider>(context);
-    final leads = leadProvider.leads;
+    final leads = leadProvider.allLeads;
 
     // Count leads per source
     Map<String, int> sourceCounts = {for (var s in sources) s: 0};

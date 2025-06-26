@@ -1,3 +1,4 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 class LeadsCountScreen extends StatefulWidget {
   final title;
@@ -53,10 +55,11 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
       name: lead.name,
       number: lead.number,
     );
-    bool success = await ApiService.addCalls(call);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
+    Provider.of<CallsProvider>(context, listen: false).addCall(call);
+    // bool success = await ApiService.addCalls(call);
+    // ScaffoldMessenger.of(
+    //   context,
+    // ).showSnackBar(SnackBar(content: Text(success ? "success" : "Error")));
   }
 
   @override

@@ -31,7 +31,7 @@ class _CallLogsScreenState extends State<CallLogsScreen> {
         widget.title != "Today Calls"
             ? DateTime(2025, 5, 1)
             : DateTime(today.year, today.month, today.day);
-    endDate = DateTime(today.year, today.month, today.day + 1);
+    endDate = DateTime(today.year, today.month, today.day);
     fetchCallLogs();
   }
 

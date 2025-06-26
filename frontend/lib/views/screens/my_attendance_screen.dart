@@ -296,49 +296,90 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
 
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.5, // Half screen
+          initialChildSize: 0.4,
           minChildSize: 0.3,
-          maxChildSize: 0.7,
+          maxChildSize: 0.6,
           expand: false,
           builder: (context, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
               padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 6,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                  ),
-                  Text(
-                    "Attendance Details",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Date: ${selectedDate.toLocal().toIso8601String().substring(0, 10)}",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Status: ${status ?? 'Not Found'}",
-                    style: TextStyle(
-                      fontSize: 16,
+
+                    // Header Section
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.deepPurpleAccent,
+                            Colors.purpleAccent,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, color: Colors.white),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Attendance Details",
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _buildInfoRow(
+                      "📅 Date",
+                      "${selectedDate.toLocal().toIso8601String().substring(0, 10)}",
+                    ),
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      "📌 Status",
+                      status ?? "Not Found",
                       color:
                           status == "Late"
                               ? Colors.orange
@@ -346,22 +387,42 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                               ? Colors.green
                               : Colors.red,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Start Time: ${_formatTime(entry?.startTime)}",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  Text(
-                    "End Time: ${_formatTime(entry?.endTime)}",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      "🕒 Start Time",
+                      _formatTime(entry?.startTime) ?? "--",
+                    ),
+                    _buildInfoRow(
+                      "🏁 End Time",
+                      _formatTime(entry?.endTime) ?? "--",
+                    ),
+                  ],
+                ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 16, color: color ?? Colors.black87),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
