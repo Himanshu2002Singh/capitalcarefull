@@ -1,6 +1,7 @@
 import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/services/api_service.dart';
+import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
@@ -184,6 +185,58 @@ class _CallLogsScreenState extends State<CallLogsScreen> {
                                 const SizedBox(height: 4),
                                 Text("Number: ${call.number}"),
                                 Text("Time: ${formatDateTime(call.createdAt)}"),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      call.remark != null && call.remark != ""
+                                          ? "Remark: ${call.remark}"
+                                          : "Remark : No remark Available",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder:
+                                              (context) => AlertDialog(
+                                                title: Text("Call Remark"),
+                                                content: Text(
+                                                  call.remark ??
+                                                      'No remark available.',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed:
+                                                        () =>
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop(),
+                                                    child: Text("Close"),
+                                                  ),
+                                                ],
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                              ),
+                                        );
+                                      },
+                                      child: Text(
+                                        " (view)",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),

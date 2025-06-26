@@ -26,6 +26,7 @@ class AddLeadScreen extends StatefulWidget {
   var status;
   var next_meeting;
   var refrence;
+  var remark;
   var description;
   var address;
   var loanType;
@@ -49,6 +50,7 @@ class AddLeadScreen extends StatefulWidget {
     this.next_meeting,
     this.priority,
     this.refrence,
+    this.remark,
     this.status,
     this.loanType,
     this.dob,
@@ -81,6 +83,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   TextEditingController loanAmountController = TextEditingController();
   TextEditingController employmentTypeController = TextEditingController();
   TextEditingController LoanTermController = TextEditingController();
+  TextEditingController remarkController = TextEditingController();
   File? lastSalaryController;
   File? cibilController;
   File? identityController;
@@ -149,6 +152,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         status: statusController.text,
         next_meeting: nextMeetingTimeController.text,
         refrence: referenceController.text,
+        remark: remarkController.text,
         description: descriptionController.text,
         address: addressController.text,
         loanType: loanTypeController.text,
@@ -177,6 +181,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         next_meeting: nextMeetingTimeController.text,
         status: statusController.text,
         loanType: loanTypeController.text,
+        remark: remarkController.text,
       );
       Provider.of<HistoryProvider>(
         context,
@@ -241,6 +246,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     nextMeetingTimeController.text =
         widget.next_meeting == null ? "" : widget.next_meeting;
     referenceController.text = widget.refrence == null ? "" : widget.refrence;
+    remarkController.text = widget.remark == null ? "" : widget.remark;
     descriptionController.text =
         widget.description == null ? "" : widget.description;
     addressController.text = widget.address == null ? "" : widget.address;
@@ -259,6 +265,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     ownerController.dispose();
     referenceController.dispose();
     descriptionController.dispose();
+    remarkController.dispose();
     super.dispose();
   }
 
@@ -392,12 +399,17 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               if (statusController.text != "No Requirement")
                 SizedBox(height: 12),
             CustomTextField(hint: "Reference", controller: referenceController),
+
+            const SizedBox(height: 12),
+            CustomTextField(hint: "Remark", controller: remarkController),
+
             const SizedBox(height: 12),
             CustomTextField(
               hint: "Description",
               controller: descriptionController,
             ),
             const SizedBox(height: 12),
+
             CustomTextField(
               hint: "Address",
               controller: addressController,

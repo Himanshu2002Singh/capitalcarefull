@@ -80,9 +80,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leadDate.day == now.day;
         }).toList();
 
-    final documentSubmitedLeads =
+    final fileLoginLeads =
         leads.where((leads) {
-          if (leads.status == "Documents Submitted") {
+          if (leads.status == "File Login") {
             return true;
           } else {
             return false;
@@ -90,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }).toList();
 
     final boxCountList = [
-      documentSubmitedLeads.length,
+      fileLoginLeads.length,
       tomorrowLeads.length,
       todayLeads.length,
       leads.length,
@@ -136,8 +136,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     return LeadsScreen();
                                   } else if (index == 0) {
                                     return LeadsCountScreen(
-                                      title: "Document Submitted",
-                                      leads: documentSubmitedLeads,
+                                      title: "File Login",
+                                      leads: fileLoginLeads,
                                     );
                                   } else if (index == 1) {
                                     return LeadsCountScreen(
