@@ -174,18 +174,19 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
     int daysDiff = 0;
     bool formatError = false;
     try {
-      DateTime d1 = DateTime.parse(widget.lead.next_meeting);
-      DateTime d2 = DateTime.parse(widget.lead.createdAt);
-      daysDiff = ((d1).difference(d2).inDays) + 1;
+      DateTime d1 = DateTime.parse(widget.lead.next_meeting ?? "");
+      DateTime d2 = DateTime.parse(widget.lead.createdAt ?? "");
+      daysDiff = d1.difference(d2).inDays + 1;
     } catch (e) {
       daysDiff = 0;
       formatError = true;
     }
+
     final user = Provider.of<UserProvider>(context).user;
 
     return SingleChildScrollView(
       child: Container(
-        color: const Color.fromARGB(255, 239, 238, 238), // B,
+        color: const Color.fromARGB(255, 239, 238, 238),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -205,7 +206,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            widget.lead.name,
+                            widget.lead.name ?? '',
                             style: TextStyle(fontSize: 20),
                           ),
                           IconButton(
@@ -219,23 +220,25 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                                         userId: user?.empId ?? "",
                                         userName: user?.ename ?? "",
                                         lead_id: widget.lead.lead_id,
-                                        contactName: widget.lead.name,
-                                        contactNumber: widget.lead.number,
-                                        email: widget.lead.email,
-                                        // branch: widget.lead.branch,
-                                        source: widget.lead.source,
-                                        priority: widget.lead.priority,
-                                        status: widget.lead.status,
-                                        next_meeting: widget.lead.next_meeting,
-                                        refrence: widget.lead.refrence,
-                                        description: widget.lead.description,
-                                        address: widget.lead.address,
-                                        loanType: widget.lead.loanType,
-                                        dob: widget.lead.dob,
-                                        loanAmount: widget.lead.est_budget,
-                                        loanTerm: widget.lead.loan_term,
+                                        contactName: widget.lead.name ?? '',
+                                        contactNumber: widget.lead.number ?? '',
+                                        email: widget.lead.email ?? '',
+                                        source: widget.lead.source ?? '',
+                                        priority: widget.lead.priority ?? '',
+                                        status: widget.lead.status ?? '',
+                                        next_meeting:
+                                            widget.lead.next_meeting ?? '',
+                                        refrence: widget.lead.refrence ?? '',
+                                        description:
+                                            widget.lead.description ?? '',
+                                        address: widget.lead.address ?? '',
+                                        loanType: widget.lead.loanType ?? '',
+                                        dob: widget.lead.dob ?? '',
+                                        loanAmount:
+                                            widget.lead.est_budget ?? '',
+                                        loanTerm: widget.lead.loan_term ?? '',
                                         employmentType:
-                                            widget.lead.employment_type,
+                                            widget.lead.employment_type ?? '',
                                       ),
                                 ),
                               );
@@ -249,7 +252,8 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Expanded(
                             child: Text(
-                              widget.lead.est_budget == ""
+                              (widget.lead.est_budget == null ||
+                                      widget.lead.est_budget == "")
                                   ? "\u20B9 0.00"
                                   : "\u20B9 ${widget.lead.est_budget}",
                             ),
@@ -258,7 +262,10 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             child: Text(
                               formatError
                                   ? ""
-                                  : (widget.lead.createdAt).substring(0, 10),
+                                  : (widget.lead.createdAt ?? "").substring(
+                                    0,
+                                    10,
+                                  ),
                             ),
                           ),
                           Expanded(
@@ -274,19 +281,19 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.email, size: 18),
                           SizedBox(width: 6),
-                          Text(widget.lead.email),
+                          Text(widget.lead.email ?? ''),
                         ],
                       ),
                       SizedBox(height: 6),
                       GestureDetector(
                         onTap: () {
-                          makeDirectCall(widget.lead.number, widget.lead);
+                          makeDirectCall(widget.lead.number ?? '', widget.lead);
                         },
                         child: Row(
                           children: [
                             Icon(Icons.phone, size: 18),
                             SizedBox(width: 6),
-                            Text(widget.lead.number),
+                            Text(widget.lead.number ?? ''),
                           ],
                         ),
                       ),
@@ -295,7 +302,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.location_on, size: 18),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.address)),
+                          Expanded(child: Text(widget.lead.address ?? '')),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -303,7 +310,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         children: [
                           Icon(Icons.calendar_today, size: 18),
                           SizedBox(width: 6),
-                          Text(formatDateTime(widget.lead.next_meeting)),
+                          Text(formatDateTime(widget.lead.next_meeting ?? '')),
                         ],
                       ),
                       Row(
@@ -314,7 +321,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.dob)),
+                          Expanded(child: Text(widget.lead.dob ?? '')),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -325,7 +332,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.loanType)),
+                          Expanded(child: Text(widget.lead.loanType ?? '')),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -336,7 +343,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.loan_term)),
+                          Expanded(child: Text(widget.lead.loan_term ?? '')),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -347,7 +354,9 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.employment_type)),
+                          Expanded(
+                            child: Text(widget.lead.employment_type ?? ''),
+                          ),
                         ],
                       ),
                       SizedBox(height: 6),
@@ -357,6 +366,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
               ),
 
               SizedBox(height: 20),
+
               // Other Details Section
               Container(
                 width: double.infinity,
@@ -376,11 +386,14 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                       ),
                     ),
                     Divider(),
-                    _buildDetailRow("Assigned To :", widget.lead.owner),
-                    _buildDetailRow("Added By :", widget.lead.owner),
-                    _buildDetailRow("Source :", widget.lead.source),
-                    _buildDetailRow("Reference", widget.lead.refrence),
-                    _buildDetailRow("Description", widget.lead.description),
+                    _buildDetailRow("Assigned To :", widget.lead.owner ?? ''),
+                    _buildDetailRow("Added By :", widget.lead.owner ?? ''),
+                    _buildDetailRow("Source :", widget.lead.source ?? ''),
+                    _buildDetailRow("Reference", widget.lead.refrence ?? ''),
+                    _buildDetailRow(
+                      "Description",
+                      widget.lead.description ?? '',
+                    ),
                   ],
                 ),
               ),
@@ -395,11 +408,12 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
     return RefreshIndicator(
       onRefresh: () async {
         fetchHistory(); // Fetch latest data
-        await Duration(seconds: 1);
+        await Future.delayed(
+          Duration(seconds: 1),
+        ); // Fix: await should wrap a Future
       },
       child: SingleChildScrollView(
-        physics:
-            AlwaysScrollableScrollPhysics(), // Add this to enable scroll even if not full screen
+        physics: AlwaysScrollableScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -407,7 +421,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                 history.map((entry) {
                   String nextMeeting;
                   try {
-                    nextMeeting = formatDateTime(entry.next_meeting);
+                    nextMeeting = formatDateTime(entry.next_meeting ?? '');
                   } catch (e) {
                     nextMeeting = "";
                   }
@@ -419,7 +433,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                         alignment: Alignment.topLeft,
                         width: 60,
                         child: Text(
-                          "${formatDate(entry.createdAt)} \n${formatTime(entry.createdAt)}",
+                          "${formatDate(entry.createdAt ?? '')} \n${formatTime(entry.createdAt ?? '')}",
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.black87,
@@ -470,7 +484,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "User : ${entry.owner}",
+                                "User : ${entry.owner ?? ''}",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               SizedBox(height: 4),
@@ -482,7 +496,7 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                                       style: TextStyle(color: Colors.black),
                                     ),
                                     TextSpan(
-                                      text: entry.status,
+                                      text: entry.status ?? '',
                                       style: TextStyle(
                                         color: Colors.green,
                                         fontWeight: FontWeight.bold,
@@ -493,17 +507,17 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                               ),
                               SizedBox(height: 2),
                               Text(
-                                "Loan Type : ${entry.loanType}",
+                                "Loan Type : ${entry.loanType ?? ''}",
                                 style: TextStyle(color: Colors.purple),
                               ),
                               SizedBox(height: 2),
                               Text(
-                                "Schedule : ${nextMeeting}",
+                                "Schedule : $nextMeeting",
                                 style: TextStyle(color: Colors.purple),
                               ),
                               SizedBox(height: 2),
                               Text(
-                                "Remark : ${entry.remark}",
+                                "Remark : ${entry.remark ?? ''}",
                                 style: TextStyle(color: Colors.brown),
                               ),
                             ],
@@ -731,12 +745,18 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
 }
 
 String formatDate(String dateTimeString) {
+  if (dateTimeString.isEmpty) {
+    return "";
+  }
   final dateTime = DateTime.parse(dateTimeString);
   final formatter = DateFormat('d MMM');
   return formatter.format(dateTime);
 }
 
 String formatTime(String dateTimeString) {
+  if (dateTimeString.isEmpty) {
+    return "";
+  }
   final dateTime = DateTime.parse(dateTimeString).toLocal();
   final formatter = DateFormat('hh:mm a');
   return formatter.format(dateTime);
