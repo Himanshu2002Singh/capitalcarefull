@@ -56,7 +56,6 @@ class _SplashScreenState extends State<SplashScreen> {
         context,
         listen: false,
       ).fetchTodayCalls();
-      await Provider.of<LeadProvider>(context, listen: false).fetchAllLeads();
 
       Navigator.pushReplacement(
         context,

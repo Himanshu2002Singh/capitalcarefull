@@ -1,3 +1,5 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
@@ -34,7 +36,15 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         listen: false,
       ).fetchUserData(user.empId);
-
+      await Provider.of<LeadProvider>(context, listen: false).fetchAllLeads();
+      await Provider.of<CallsProvider>(
+        context,
+        listen: false,
+      ).fetchTotalCalls();
+      await Provider.of<CallsProvider>(
+        context,
+        listen: false,
+      ).fetchTodayCalls();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Welcome ${user.ename}!')));
