@@ -185,19 +185,22 @@ class ApiService {
     }
   }
 
-  static Future<bool> addCalls(Calls call) async {
+  static Future<Calls?> addCalls(Calls call) async {
     final url = Uri.parse("$baseUrl/calls");
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(call.toJson()),
     );
-    if (response.statusCode == 200) {
-      print("call added : ${response.body}");
-      return true;
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("Call added: ${response.body}");
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      print(jsonData['call_id']);
+      return Calls.fromJson(jsonData);
     } else {
-      print("failed : ${response.body}");
-      return false;
+      print("Failed: ${response.body}");
+      return null;
     }
   }
 
@@ -249,12 +252,14 @@ class ApiService {
   }
 
   static Future<bool> updateCall(Calls call, int callId) async {
+    print("===========================>update call called");
     final url = Uri.parse("$baseUrl/updateCall/$callId");
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(call.toJson()),
     );
+    print("=====================>call update ${response.body}");
     if (response.statusCode == 200) {
       print("Call updated: ${response.body}");
       return true;

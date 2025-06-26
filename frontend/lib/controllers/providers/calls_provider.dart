@@ -12,14 +12,61 @@ class CallsProvider with ChangeNotifier {
 
   Future<void> addCall(Calls call) async {
     try {
-      bool success = await ApiService.addCalls(call);
-      if (success) {
-        _calls.add(call);
-        _todayCalls.add(call);
+      Calls? newCall = await ApiService.addCalls(call);
+      if (newCall != null) {
+        print("===========================>${newCall.number}");
+        _calls.add(newCall);
+        _todayCalls.add(newCall);
         notifyListeners();
       }
     } catch (e) {
-      print("Error adding new call");
+      print("Error adding new call: $e");
+    }
+  }
+
+  Future<bool> updateLastCallRemark(String newRemark) async {
+    if (_calls.isEmpty) {
+      print("No calls to update");
+      return false;
+    }
+
+    // Get last call
+    Calls lastCall = _calls.last;
+    print("===================>${lastCall.call_id}");
+    // Create updated call with required fields
+    Calls updatedCall = Calls(
+      call_id: lastCall.call_id,
+      lead_id: lastCall.lead_id,
+      emp_id: lastCall.emp_id,
+      name: lastCall.name,
+      number: lastCall.number,
+      remark: newRemark, // only remark is changed
+      createdAt: lastCall.createdAt,
+    );
+
+    try {
+      bool success = await ApiService.updateCall(updatedCall, lastCall.call_id);
+
+      if (success) {
+        // Update _calls list
+        int index = _calls.lastIndexWhere((c) => c.call_id == lastCall.call_id);
+        if (index != -1) _calls[index] = updatedCall;
+
+        // Update _todayCalls list if needed
+        int todayIndex = _todayCalls.indexWhere(
+          (c) => c.call_id == lastCall.call_id,
+        );
+        if (todayIndex != -1) _todayCalls[todayIndex] = updatedCall;
+
+        notifyListeners();
+        return true;
+      } else {
+        print("❌ API update failed");
+        return false;
+      }
+    } catch (e) {
+      print("❌ Exception during update: $e");
+      return false;
     }
   }
 

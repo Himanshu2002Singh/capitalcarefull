@@ -112,23 +112,26 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       print("User ID not found");
       return;
     }
-    final callProvider = Provider.of<CallsProvider>(context, listen: true);
-    List<Calls> callList = callProvider.calls;
+    // final callProvider = Provider.of<CallsProvider>(context, listen: false);
+    // List<Calls> callList = callProvider.calls;
 
-    if (callList.isEmpty) {
-      print("No calls found for this user");
-      return;
-    }
+    // if (callList.isEmpty) {
+    //   print("No calls found for this user");
+    //   return;
+    // }
 
-    Calls newCall = Calls(remark: remarkController.text);
+    Provider.of<CallsProvider>(
+      context,
+      listen: false,
+    ).updateLastCallRemark(remarkController.text);
 
-    bool success = await ApiService.updateCall(newCall, callList[0].call_id);
+    // bool success = await ApiService.updateCall(newCall, callList[0].call_id);
 
-    print(
-      success
-          ? "=================> Call updated successfully"
-          : "Failed to update call",
-    );
+    // print(
+    //   success
+    //       ? "=================> Call updated successfully"
+    //       : "Failed to update call",
+    // );
   }
 
   void addLeadSubmission() async {
