@@ -176,6 +176,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         owner: ownerController.text,
         next_meeting: nextMeetingTimeController.text,
         status: statusController.text,
+        loanType: loanTypeController,
       );
       Provider.of<HistoryProvider>(
         context,

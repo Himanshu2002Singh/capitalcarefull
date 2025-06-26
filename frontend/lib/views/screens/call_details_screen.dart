@@ -32,6 +32,8 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
 
   String? source;
 
+  String? loanType;
+
   final TextEditingController nextMeetingController = TextEditingController();
 
   final TextEditingController budgetController = TextEditingController();
@@ -46,10 +48,13 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
     if (feedbackStatus == null) {
       feedbackStatus = widget.lead.status;
     }
-
+    if (loanType == null) {
+      loanType = widget.lead.loanType;
+    }
     if (priority == null) {
       priority = widget.lead.priority;
     }
+
     if (nextMeetingController.text.isEmpty) {
       nextMeetingController.text = widget.lead.next_meeting;
     }
@@ -62,6 +67,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
 
     Leads updateLead = Leads(
       status: feedbackStatus!,
+      loanType: loanType,
       priority: priority!,
       next_meeting: nextMeetingController.text,
       est_budget: budgetController.text,
@@ -73,6 +79,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       owner: widget.lead.owner,
       next_meeting: nextMeetingController.text,
       status: feedbackStatus,
+      loanType: loanType,
       remark: remarkController.text,
     );
     Provider.of<LeadProvider>(
@@ -97,7 +104,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   }
 
   void updateCall() async {
-    print("==================================> update call called");
+    // print("==================================> update call called");
     final storage = FlutterSecureStorage();
     final userId = await storage.read(key: "userId");
 
@@ -263,6 +270,29 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                   "Loan Disbursement",
                 ],
                 onChanged: (val) => setState(() => feedbackStatus = val!),
+              ),
+
+              //select loan type
+              buildDropdown(
+                value: loanType,
+                hint: 'Select Loan Type',
+                items: [
+                  "Home Loan",
+                  "Mortgage Loan",
+                  "User Car Loan",
+                  "Business Loan",
+                  "Personal Loan",
+                  "DOD",
+                  "CC/OD",
+                  "CGTMSME",
+                  "Mutual Fund",
+                  "Insurance",
+                  "Other",
+                ],
+                onChanged:
+                    (val) => setState(() {
+                      loanType = val!;
+                    }),
               ),
 
               /// Priority Dropdown

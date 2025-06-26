@@ -493,6 +493,11 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
                               ),
                               SizedBox(height: 2),
                               Text(
+                                "Loan Type : ${entry.loanType}",
+                                style: TextStyle(color: Colors.purple),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
                                 "Schedule : ${nextMeeting}",
                                 style: TextStyle(color: Colors.purple),
                               ),
