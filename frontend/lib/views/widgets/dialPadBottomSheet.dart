@@ -1,3 +1,5 @@
+import 'package:capital_care/models/leads_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,25 +14,61 @@ class DialPadBottomSheet extends StatefulWidget {
 
 class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
   String input = '';
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = input;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
 
   void onKeyTap(String value) {
-    if (input.length < 10) {
+    final cursorPos = _controller.selection.baseOffset;
+    final text = _controller.text;
+
+    if (text.length < 10 && cursorPos >= 0) {
+      final newText =
+          text.substring(0, cursorPos) + value + text.substring(cursorPos);
       setState(() {
-        input += value;
+        input = newText;
+        _controller.text = newText;
+        _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: cursorPos + 1),
+        );
       });
     }
   }
 
   void onDelete() {
-    if (input.isNotEmpty) {
+    final text = _controller.text;
+    final cursorPos = _controller.selection.baseOffset;
+
+    if (cursorPos > 0) {
+      final newText =
+          text.substring(0, cursorPos - 1) + text.substring(cursorPos);
       setState(() {
-        input = input.substring(0, input.length - 1);
+        input = newText;
+        _controller.text = newText;
+        _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: cursorPos - 1),
+        );
       });
     }
   }
 
+  void onClearAll() {
+    setState(() {
+      input = '';
+      _controller.clear();
+    });
+  }
+
   void onCopy() {
-    Clipboard.setData(ClipboardData(text: input));
+    Clipboard.setData(ClipboardData(text: _controller.text));
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text("Copied to clipboard")));
@@ -48,22 +86,31 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Row with Copy Icon and Display
+            // Copy, TextField, Delete Row
             Row(
               children: [
                 IconButton(icon: Icon(Icons.copy), onPressed: onCopy),
                 Expanded(
-                  child: Text(
-                    input,
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    readOnly: true,
+                    showCursor: true,
+                    enableInteractiveSelection: true,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
+                    decoration: InputDecoration.collapsed(hintText: ''),
                   ),
                 ),
-                IconButton(icon: Icon(Icons.backspace), onPressed: onDelete),
+                IconButton(
+                  icon: Icon(Icons.backspace),
+                  onPressed: onDelete,
+                  onLongPress: onClearAll,
+                ),
               ],
             ),
             SizedBox(height: 10),
+
             // Number Pad
             Container(
               height: MediaQuery.of(context).size.height / 3,
@@ -106,22 +153,17 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
               ),
             ),
             SizedBox(height: 10),
-            // Call Buttons
+
+            // Call Button
             ElevatedButton.icon(
               onPressed: () {
-                makeDirectCall(input);
+                makeDirectCall(_controller.text);
               },
               icon: Icon(Icons.call),
               label: Text("Call"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 foregroundColor: Colors.white,
-                // shape: RoundedRectangleBorder(
-                //   borderRadius: BorderRadius.only(
-                //     topLeft: Radius.circular(20),
-                //     bottomLeft: Radius.circular(20),
-                //   ),
-                // ),
               ),
             ),
           ],
@@ -137,7 +179,6 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-
           elevation: 0,
         ),
         onPressed: () {
@@ -157,8 +198,9 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
       await Permission.phone.request();
     }
 
-    if (await Permission.phone.isGranted) {
+    if (await Permission.phone.isGranted && number.isNotEmpty) {
       await FlutterPhoneDirectCaller.callNumber(number);
+      // Leads lead = ApiService().getLeadWithNumber(number);
       Future.delayed(Duration(seconds: 2), () {
         Navigator.push(
           context,
