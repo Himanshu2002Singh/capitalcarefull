@@ -140,105 +140,108 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                   style: const TextStyle(color: Colors.red),
                 ),
               )
-              : Column(
-                children: [
-                  TableCalendar(
-                    firstDay: DateTime(2024),
-                    lastDay: DateTime(2030),
-                    focusedDay: _focusedDay,
-                    headerStyle: const HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                    ),
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    onDaySelected: (selectedDay, focusedDay) {
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                      });
-                      _showAttendanceDetailsModal(selectedDay);
-                    },
-                    onPageChanged: (focusedDay) {
-                      setState(() {
-                        _focusedDay = focusedDay;
-                      });
-                      _updateCountsForMonth(focusedDay);
-                    },
-                    calendarStyle: const CalendarStyle(
-                      todayDecoration: BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
+              : SafeArea(
+                child: Column(
+                  children: [
+                    TableCalendar(
+                      firstDay: DateTime(2024),
+                      lastDay: DateTime(2030),
+                      focusedDay: _focusedDay,
+                      headerStyle: const HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
                       ),
-                      weekendTextStyle: TextStyle(color: Colors.red),
-                    ),
-                    eventLoader: _getEventsForDay,
-                    calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) {
-                        List<String> events = _getEventsForDay(day);
-                        if (events.isNotEmpty) {
-                          return _buildEventDay(day, events.first);
-                        }
-                        return null;
+                      selectedDayPredicate:
+                          (day) => isSameDay(_selectedDay, day),
+                      onDaySelected: (selectedDay, focusedDay) {
+                        setState(() {
+                          _selectedDay = selectedDay;
+                          _focusedDay = focusedDay;
+                        });
+                        _showAttendanceDetailsModal(selectedDay);
                       },
-                      todayBuilder: (context, day, focusedDay) {
-                        List<String> events = _getEventsForDay(day);
-                        return _buildEventDay(
-                          day,
-                          events.isNotEmpty ? events.first : 'today',
-                          overrideColor: Colors.blue.withOpacity(0.7),
-                          border: true,
-                        );
+                      onPageChanged: (focusedDay) {
+                        setState(() {
+                          _focusedDay = focusedDay;
+                        });
+                        _updateCountsForMonth(focusedDay);
                       },
-                      selectedBuilder: (context, day, focusedDay) {
-                        List<String> events = _getEventsForDay(day);
-                        return _buildEventDay(
-                          day,
-                          events.isNotEmpty ? events.first : '',
-                          overrideColor: Colors.blue.withOpacity(0.3),
-                          border: true,
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      calendarStyle: const CalendarStyle(
+                        todayDecoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        weekendTextStyle: TextStyle(color: Colors.red),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            _buildSummaryRow(
-                              "Total Attendance",
-                              fullDayCount + lateDayCount,
-                            ),
-                            _buildSummaryRow("Full Attendance", fullDayCount),
-                            _buildSummaryRow("Late Attendance", lateDayCount),
-                          ],
+                      eventLoader: _getEventsForDay,
+                      calendarBuilders: CalendarBuilders(
+                        defaultBuilder: (context, day, focusedDay) {
+                          List<String> events = _getEventsForDay(day);
+                          if (events.isNotEmpty) {
+                            return _buildEventDay(day, events.first);
+                          }
+                          return null;
+                        },
+                        todayBuilder: (context, day, focusedDay) {
+                          List<String> events = _getEventsForDay(day);
+                          return _buildEventDay(
+                            day,
+                            events.isNotEmpty ? events.first : 'today',
+                            overrideColor: Colors.blue.withOpacity(0.7),
+                            border: true,
+                          );
+                        },
+                        selectedBuilder: (context, day, focusedDay) {
+                          List<String> events = _getEventsForDay(day);
+                          return _buildEventDay(
+                            day,
+                            events.isNotEmpty ? events.first : '',
+                            overrideColor: Colors.blue.withOpacity(0.3),
+                            border: true,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              _buildSummaryRow(
+                                "Total Attendance",
+                                fullDayCount + lateDayCount,
+                              ),
+                              _buildSummaryRow("Full Attendance", fullDayCount),
+                              _buildSummaryRow("Late Attendance", lateDayCount),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 20,
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 20,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: const [
+                          InfoRow(color: Colors.yellow, label: 'Late'),
+                          InfoRow(color: Colors.green, label: 'Full day'),
+                          InfoRow(color: Colors.blue, label: 'Current Day'),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
-                        InfoRow(color: Colors.yellow, label: 'Late'),
-                        InfoRow(color: Colors.green, label: 'Full day'),
-                        InfoRow(color: Colors.blue, label: 'Current Day'),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
     );
   }

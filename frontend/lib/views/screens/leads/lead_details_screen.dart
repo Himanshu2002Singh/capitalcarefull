@@ -184,220 +184,228 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
 
     final user = Provider.of<UserProvider>(context).user;
 
-    return SingleChildScrollView(
-      child: Container(
-        color: const Color.fromARGB(255, 239, 238, 238),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              // Main card
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Container(
+          color: const Color.fromARGB(255, 239, 238, 238),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                // Main card
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.lead.name ?? '',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => AddLeadScreen(
+                                          title: "Edit Lead",
+                                          userId: user?.empId ?? "",
+                                          userName: user?.ename ?? "",
+                                          lead_id: widget.lead.lead_id,
+                                          contactName: widget.lead.name ?? '',
+                                          contactNumber:
+                                              widget.lead.number ?? '',
+                                          email: widget.lead.email ?? '',
+                                          source: widget.lead.source ?? '',
+                                          priority: widget.lead.priority ?? '',
+                                          status: widget.lead.status ?? '',
+                                          next_meeting:
+                                              widget.lead.next_meeting ?? '',
+                                          refrence: widget.lead.refrence ?? '',
+                                          description:
+                                              widget.lead.description ?? '',
+                                          address: widget.lead.address ?? '',
+                                          loanType: widget.lead.loanType ?? '',
+                                          dob: widget.lead.dob ?? '',
+                                          loanAmount:
+                                              widget.lead.est_budget ?? '',
+                                          loanTerm: widget.lead.loan_term ?? '',
+                                          employmentType:
+                                              widget.lead.employment_type ?? '',
+                                        ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.edit),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                (widget.lead.est_budget == null ||
+                                        widget.lead.est_budget == "")
+                                    ? "\u20B9 0.00"
+                                    : "\u20B9 ${widget.lead.est_budget}",
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                formatError
+                                    ? ""
+                                    : (widget.lead.createdAt ?? "").substring(
+                                      0,
+                                      10,
+                                    ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                "$daysDiff days",
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.email, size: 18),
+                            SizedBox(width: 6),
+                            Text(widget.lead.email ?? ''),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: () {
+                            makeDirectCall(
+                              widget.lead.number ?? '',
+                              widget.lead,
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Icon(Icons.phone, size: 18),
+                              SizedBox(width: 6),
+                              Text(widget.lead.number ?? ''),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 18),
+                            SizedBox(width: 6),
+                            Expanded(child: Text(widget.lead.address ?? '')),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              formatDateTime(widget.lead.next_meeting ?? ''),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_month_rounded, size: 18),
+                            Text(
+                              " DOB : ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 6),
+                            Expanded(child: Text(widget.lead.dob ?? '')),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Text(
+                              "Loan Type :",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 6),
+                            Expanded(child: Text(widget.lead.loanType ?? '')),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Text(
+                              "Loan Term :",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 6),
+                            Expanded(child: Text(widget.lead.loan_term ?? '')),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Text(
+                              "Employment Type :",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 6),
+                            Expanded(
+                              child: Text(widget.lead.employment_type ?? ''),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
+
+                SizedBox(height: 20),
+
+                // Other Details Section
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.lead.name ?? '',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => AddLeadScreen(
-                                        title: "Edit Lead",
-                                        userId: user?.empId ?? "",
-                                        userName: user?.ename ?? "",
-                                        lead_id: widget.lead.lead_id,
-                                        contactName: widget.lead.name ?? '',
-                                        contactNumber: widget.lead.number ?? '',
-                                        email: widget.lead.email ?? '',
-                                        source: widget.lead.source ?? '',
-                                        priority: widget.lead.priority ?? '',
-                                        status: widget.lead.status ?? '',
-                                        next_meeting:
-                                            widget.lead.next_meeting ?? '',
-                                        refrence: widget.lead.refrence ?? '',
-                                        description:
-                                            widget.lead.description ?? '',
-                                        address: widget.lead.address ?? '',
-                                        loanType: widget.lead.loanType ?? '',
-                                        dob: widget.lead.dob ?? '',
-                                        loanAmount:
-                                            widget.lead.est_budget ?? '',
-                                        loanTerm: widget.lead.loan_term ?? '',
-                                        employmentType:
-                                            widget.lead.employment_type ?? '',
-                                      ),
-                                ),
-                              );
-                            },
-                            icon: Icon(Icons.edit),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              (widget.lead.est_budget == null ||
-                                      widget.lead.est_budget == "")
-                                  ? "\u20B9 0.00"
-                                  : "\u20B9 ${widget.lead.est_budget}",
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              formatError
-                                  ? ""
-                                  : (widget.lead.createdAt ?? "").substring(
-                                    0,
-                                    10,
-                                  ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "$daysDiff days",
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Icon(Icons.email, size: 18),
-                          SizedBox(width: 6),
-                          Text(widget.lead.email ?? ''),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () {
-                          makeDirectCall(widget.lead.number ?? '', widget.lead);
-                        },
-                        child: Row(
-                          children: [
-                            Icon(Icons.phone, size: 18),
-                            SizedBox(width: 6),
-                            Text(widget.lead.number ?? ''),
-                          ],
+                      Text(
+                        "Other Details",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 18),
-                          SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.address ?? '')),
-                        ],
+                      Divider(),
+                      _buildDetailRow("Assigned To :", widget.lead.owner ?? ''),
+                      _buildDetailRow("Added By :", widget.lead.owner ?? ''),
+                      _buildDetailRow("Source :", widget.lead.source ?? ''),
+                      _buildDetailRow("Reference", widget.lead.refrence ?? ''),
+                      _buildDetailRow(
+                        "Description",
+                        widget.lead.description ?? '',
                       ),
-                      SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today, size: 18),
-                          SizedBox(width: 6),
-                          Text(formatDateTime(widget.lead.next_meeting ?? '')),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_month_rounded, size: 18),
-                          Text(
-                            " DOB : ",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.dob ?? '')),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(
-                            "Loan Type :",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.loanType ?? '')),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(
-                            "Loan Term :",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 6),
-                          Expanded(child: Text(widget.lead.loan_term ?? '')),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(
-                            "Employment Type :",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 6),
-                          Expanded(
-                            child: Text(widget.lead.employment_type ?? ''),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 6),
                     ],
                   ),
                 ),
-              ),
-
-              SizedBox(height: 20),
-
-              // Other Details Section
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Other Details",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Divider(),
-                    _buildDetailRow("Assigned To :", widget.lead.owner ?? ''),
-                    _buildDetailRow("Added By :", widget.lead.owner ?? ''),
-                    _buildDetailRow("Source :", widget.lead.source ?? ''),
-                    _buildDetailRow("Reference", widget.lead.refrence ?? ''),
-                    _buildDetailRow(
-                      "Description",
-                      widget.lead.description ?? '',
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -405,128 +413,130 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
   }
 
   Widget buildHistory() {
-    return RefreshIndicator(
-      onRefresh: () async {
-        fetchHistory(); // Fetch latest data
-        await Future.delayed(
-          Duration(seconds: 1),
-        ); // Fix: await should wrap a Future
-      },
-      child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children:
-                history.map((entry) {
-                  String nextMeeting;
-                  try {
-                    nextMeeting = formatDateTime(entry.next_meeting ?? '');
-                  } catch (e) {
-                    nextMeeting = "";
-                  }
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          fetchHistory(); // Fetch latest data
+          await Future.delayed(
+            Duration(seconds: 1),
+          ); // Fix: await should wrap a Future
+        },
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children:
+                  history.map((entry) {
+                    String nextMeeting;
+                    try {
+                      nextMeeting = formatDateTime(entry.next_meeting ?? '');
+                    } catch (e) {
+                      nextMeeting = "";
+                    }
 
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        alignment: Alignment.topLeft,
-                        width: 60,
-                        child: Text(
-                          "${formatDate(entry.createdAt ?? '')} \n${formatTime(entry.createdAt ?? '')}",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 25,
-                              width: 25,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    203,
-                                    202,
-                                    202,
-                                  ),
-                                  width: 3,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          alignment: Alignment.topLeft,
+                          width: 60,
+                          child: Text(
+                            "${formatDate(entry.createdAt ?? '')} \n${formatTime(entry.createdAt ?? '')}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
                             ),
-                            Container(
-                              width: 2,
-                              height: 100,
-                              color: Colors.grey.shade400,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
+                            textAlign: TextAlign.start,
                           ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "User : ${entry.owner ?? ''}",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: 4),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Status : ",
-                                      style: TextStyle(color: Colors.black),
+                              Container(
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color.fromARGB(
+                                      255,
+                                      203,
+                                      202,
+                                      202,
                                     ),
-                                    TextSpan(
-                                      text: entry.status ?? '',
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
+                                    width: 3,
+                                    style: BorderStyle.solid,
+                                  ),
                                 ),
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Loan Type : ${entry.loanType ?? ''}",
-                                style: TextStyle(color: Colors.purple),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Schedule : $nextMeeting",
-                                style: TextStyle(color: Colors.purple),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Remark : ${entry.remark ?? ''}",
-                                style: TextStyle(color: Colors.brown),
+                              Container(
+                                width: 2,
+                                height: 100,
+                                color: Colors.grey.shade400,
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "User : ${entry.owner ?? ''}",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 4),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "Status : ",
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                      TextSpan(
+                                        text: entry.status ?? '',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  "Loan Type : ${entry.loanType ?? ''}",
+                                  style: TextStyle(color: Colors.purple),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  "Schedule : $nextMeeting",
+                                  style: TextStyle(color: Colors.purple),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  "Remark : ${entry.remark ?? ''}",
+                                  style: TextStyle(color: Colors.brown),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+            ),
           ),
         ),
       ),
@@ -543,190 +553,194 @@ class _LeadDetailsScreenState extends State<LeadDetailsScreen>
     //   return formatter.format(dateTime);
     // }
 
-    return Expanded(
-      child:
-          tasks.isEmpty
-              ? const Center(child: Text("No matching tasks found."))
-              : ListView.builder(
-                padding: const EdgeInsets.all(10),
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  final t = tasks[index];
-                  return Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              bottomLeft: Radius.circular(10),
-                            ),
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: Center(
-                            child: Text(
-                              formatDateTime(t.start_date),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+    return SafeArea(
+      child: Expanded(
+        child:
+            tasks.isEmpty
+                ? const Center(child: Text("No matching tasks found."))
+                : ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    final t = tasks[index];
+                    return Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                bottomLeft: Radius.circular(10),
                               ),
-                              textAlign: TextAlign.center,
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Center(
+                              child: Text(
+                                formatDateTime(t.start_date),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        t.title,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          t.title,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.edit_rounded,
-                                        size: 20,
-                                        color: AppColors.primaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.person,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      t.choose_lead,
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.timer_outlined,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Expanded(
-                                      child: Text(
-                                        "${formatDateTime(t.start_date)} to ${formatDateTime(t.end_date)}",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.assignment,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        t.description,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          builder:
-                                              (context) => AlertDialog(
-                                                title: const Text(
-                                                  "Task Description!",
-                                                ),
-                                                content: Text(t.description),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed:
-                                                        () => Navigator.pop(
-                                                          context,
-                                                        ),
-                                                    child: Text(
-                                                      "Ok",
-                                                      style: TextStyle(
-                                                        color:
-                                                            AppColors
-                                                                .primaryColor,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                        );
-                                      },
-                                      child: Text(
-                                        "(see more...)",
-                                        style: TextStyle(
+                                      IconButton(
+                                        onPressed: () {},
+                                        icon: Icon(
+                                          Icons.edit_rounded,
+                                          size: 20,
                                           color: AppColors.primaryColor,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    InkWell(
-                                      onTap: () {},
-                                      child: const Icon(
-                                        Icons.delete_rounded,
-                                        color: Colors.red,
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        color: Colors.grey,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        t.choose_lead,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.timer_outlined,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                        child: Text(
+                                          "${formatDateTime(t.start_date)} to ${formatDateTime(t.end_date)}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.assignment,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          t.description,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (context) => AlertDialog(
+                                                  title: const Text(
+                                                    "Task Description!",
+                                                  ),
+                                                  content: Text(t.description),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed:
+                                                          () => Navigator.pop(
+                                                            context,
+                                                          ),
+                                                      child: Text(
+                                                        "Ok",
+                                                        style: TextStyle(
+                                                          color:
+                                                              AppColors
+                                                                  .primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "(see more...)",
+                                          style: TextStyle(
+                                            color: AppColors.primaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      InkWell(
+                                        onTap: () {},
+                                        child: const Icon(
+                                          Icons.delete_rounded,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+      ),
     );
   }
 

@@ -103,62 +103,64 @@ class _EmployeeProfilePageState extends State<EmployeeProfilePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: NetworkImage(profileImage),
-            ),
-            const SizedBox(height: 20),
-            buildTextField("Name", nameController, readOnly: !isEditing),
-            const SizedBox(height: 8),
-            buildTextField("Email", emailController, readOnly: !isEditing),
-            const SizedBox(height: 8),
-            buildTextField("Phone", phoneController, readOnly: !isEditing),
-            const SizedBox(height: 12),
-            TextFormField(
-              initialValue: user?.empId ?? "",
-              readOnly: true,
-              enabled: !isEditing,
-              decoration: const InputDecoration(
-                labelText: 'Employee Id',
-                border: OutlineInputBorder(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundImage: NetworkImage(profileImage),
               ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              initialValue: user?.username,
-              readOnly: true,
-              enabled: !isEditing,
-              decoration: const InputDecoration(
-                labelText: 'username',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+              buildTextField("Name", nameController, readOnly: !isEditing),
+              const SizedBox(height: 8),
+              buildTextField("Email", emailController, readOnly: !isEditing),
+              const SizedBox(height: 8),
+              buildTextField("Phone", phoneController, readOnly: !isEditing),
+              const SizedBox(height: 12),
+              TextFormField(
+                initialValue: user?.empId ?? "",
+                readOnly: true,
+                enabled: !isEditing,
+                decoration: const InputDecoration(
+                  labelText: 'Employee Id',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              initialValue:
-                  "${Provider.of<LeadProvider>(context, listen: false).leads.length}",
-              readOnly: true,
-              enabled: !isEditing,
-              decoration: const InputDecoration(
-                labelText: 'Total leads Assigned',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+              TextFormField(
+                initialValue: user?.username,
+                readOnly: true,
+                enabled: !isEditing,
+                decoration: const InputDecoration(
+                  labelText: 'username',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 15),
-            CustomButton(
-              text: "Change Password",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ChangePassword()),
-                );
-              },
-            ),
-          ],
+              const SizedBox(height: 20),
+              TextFormField(
+                initialValue:
+                    "${Provider.of<LeadProvider>(context, listen: false).leads.length}",
+                readOnly: true,
+                enabled: !isEditing,
+                decoration: const InputDecoration(
+                  labelText: 'Total leads Assigned',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 15),
+              CustomButton(
+                text: "Change Password",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChangePassword()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

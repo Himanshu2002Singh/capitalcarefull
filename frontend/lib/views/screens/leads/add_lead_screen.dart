@@ -281,261 +281,266 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SectionTitle(title: "Contact Details"),
-            const SizedBox(height: 8),
-            CustomTextField(
-              hint: "Contact Name",
-              controller: contactNameController,
-              maxLine: 1,
-            ),
-            SizedBox(height: 12),
-            CustomTextField(
-              hint: "Contact Number",
-              controller: contactNumberController,
-              keyboardType: TextInputType.phone,
-              maxLine: 1,
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(hint: "Email", controller: emailController),
-            const SizedBox(height: 12),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionTitle(title: "Contact Details"),
+              const SizedBox(height: 8),
+              CustomTextField(
+                hint: "Contact Name",
+                controller: contactNameController,
+                maxLine: 1,
+              ),
+              SizedBox(height: 12),
+              CustomTextField(
+                hint: "Contact Number",
+                controller: contactNumberController,
+                keyboardType: TextInputType.phone,
+                maxLine: 1,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(hint: "Email", controller: emailController),
+              const SizedBox(height: 12),
 
-            const SectionTitle(title: "Company Other Details"),
-            const SizedBox(height: 8),
-            CustomTextField(hint: "Owner", controller: ownerController),
-            const SizedBox(height: 12),
-            CustomDropdown(
-              hint: "-- Select Branch --",
-              options: branchOptions,
-              onChange: (value) {
-                branchController.text = value;
-              },
-            ),
-            const SizedBox(height: 12),
-            CustomDropdown(
-              hint:
-                  widget.source == null || widget.source.isEmpty
-                      ? "-- Select Source --"
-                      : widget.source,
-              options: sourceOptions,
-              onChange: (value) {
-                sourceController.text = value;
-              },
-            ),
-            const SizedBox(height: 12),
-            CustomDropdown(
-              hint:
-                  widget.priority == null || widget.priority.isEmpty
-                      ? "Lower"
-                      : widget.priority,
-              options: levelOptions,
-              onChange: (value) {
-                levelController.text = value;
-              },
-            ),
-            const SizedBox(height: 12),
-            if (widget.title == "Add Lead")
+              const SectionTitle(title: "Company Other Details"),
+              const SizedBox(height: 8),
+              CustomTextField(hint: "Owner", controller: ownerController),
+              const SizedBox(height: 12),
               CustomDropdown(
-                hint: widget.status == null ? "Select Status" : widget.status,
-                options: statusOptions,
+                hint: "-- Select Branch --",
+                options: branchOptions,
                 onChange: (value) {
-                  setState(() {
-                    statusController.text = value;
-                  });
+                  branchController.text = value;
                 },
               ),
-            if (widget.title == "Add Lead") const SizedBox(height: 12),
+              const SizedBox(height: 12),
+              CustomDropdown(
+                hint:
+                    widget.source == null || widget.source.isEmpty
+                        ? "-- Select Source --"
+                        : widget.source,
+                options: sourceOptions,
+                onChange: (value) {
+                  sourceController.text = value;
+                },
+              ),
+              const SizedBox(height: 12),
+              CustomDropdown(
+                hint:
+                    widget.priority == null || widget.priority.isEmpty
+                        ? "Lower"
+                        : widget.priority,
+                options: levelOptions,
+                onChange: (value) {
+                  levelController.text = value;
+                },
+              ),
+              const SizedBox(height: 12),
+              if (widget.title == "Add Lead")
+                CustomDropdown(
+                  hint: widget.status == null ? "Select Status" : widget.status,
+                  options: statusOptions,
+                  onChange: (value) {
+                    setState(() {
+                      statusController.text = value;
+                    });
+                  },
+                ),
+              if (widget.title == "Add Lead") const SizedBox(height: 12),
 
-            if (widget.title == "Add Lead")
-              if (statusController.text != "No Requirement")
-                GestureDetector(
-                  onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2050),
-                    );
-
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
+              if (widget.title == "Add Lead")
+                if (statusController.text != "No Requirement")
+                  GestureDetector(
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
                         context: context,
-                        initialTime: TimeOfDay.now(),
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2050),
                       );
 
-                      if (pickedTime != null) {
-                        // Combine date and time into one DateTime
-                        DateTime finalDateTime = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
+                      if (pickedDate != null) {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
                         );
 
-                        // Format as desired, e.g., YYYY-MM-DD HH:MM
-                        nextMeetingTimeController.text =
-                            finalDateTime.toString();
-                        // OR use intl package for prettier format:
-                        // nextMeetingTimeController.text = DateFormat('yyyy-MM-dd HH:mm').format(finalDateTime);
+                        if (pickedTime != null) {
+                          // Combine date and time into one DateTime
+                          DateTime finalDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+
+                          // Format as desired, e.g., YYYY-MM-DD HH:MM
+                          nextMeetingTimeController.text =
+                              finalDateTime.toString();
+                          // OR use intl package for prettier format:
+                          // nextMeetingTimeController.text = DateFormat('yyyy-MM-dd HH:mm').format(finalDateTime);
+                        }
                       }
-                    }
-                  },
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      controller: nextMeetingTimeController,
-                      decoration: InputDecoration(
-                        hintText: 'Select Next Meeting Date',
-                        border: OutlineInputBorder(),
+                    },
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: nextMeetingTimeController,
+                        decoration: InputDecoration(
+                          hintText: 'Select Next Meeting Date',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ),
-                ),
-            if (widget.title == "Add Lead")
-              if (statusController.text != "No Requirement")
-                SizedBox(height: 12),
-            CustomTextField(hint: "Reference", controller: referenceController),
+              if (widget.title == "Add Lead")
+                if (statusController.text != "No Requirement")
+                  SizedBox(height: 12),
+              CustomTextField(
+                hint: "Reference",
+                controller: referenceController,
+              ),
 
-            const SizedBox(height: 12),
-            CustomTextField(hint: "Remark", controller: remarkController),
+              const SizedBox(height: 12),
+              CustomTextField(hint: "Remark", controller: remarkController),
 
-            const SizedBox(height: 12),
-            CustomTextField(
-              hint: "Description",
-              controller: descriptionController,
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+              CustomTextField(
+                hint: "Description",
+                controller: descriptionController,
+              ),
+              const SizedBox(height: 12),
 
-            CustomTextField(
-              hint: "Address",
-              controller: addressController,
-              maxLine: null,
-            ),
+              CustomTextField(
+                hint: "Address",
+                controller: addressController,
+                maxLine: null,
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            const SectionTitle(title: "Company Dynamic Questions"),
-            const SizedBox(height: 20),
+              const SectionTitle(title: "Company Dynamic Questions"),
+              const SizedBox(height: 20),
 
-            GestureDetector(
-              onTap: () async {
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (pickedDate != null) {
-                  dobController.text =
-                      pickedDate.toLocal().toString().split(
-                        ' ',
-                      )[0]; // or use DateFormat
-                }
-              },
-              child: AbsorbPointer(
-                child: TextFormField(
-                  controller: dobController,
-                  decoration: InputDecoration(
-                    hintText: 'Select Date of Birth',
-                    border: OutlineInputBorder(),
+              GestureDetector(
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    dobController.text =
+                        pickedDate.toLocal().toString().split(
+                          ' ',
+                        )[0]; // or use DateFormat
+                  }
+                },
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    controller: dobController,
+                    decoration: InputDecoration(
+                      hintText: 'Select Date of Birth',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              hint: "Enter loan Amount",
-              controller: loanAmountController,
-              maxLine: 1,
-            ),
-            const SizedBox(height: 16),
-            CustomDropdown(
-              hint:
-                  widget.employmentType == null
-                      ? "Employment Type"
-                      : widget.employmentType,
-              options: employmentType,
-              onChange: (value) {
-                setState(() {
-                  employmentTypeController.text = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomDropdown(
-              hint: widget.loanTerm == null ? "Loan Term" : widget.loanTerm,
-              options: loanTerm,
-              onChange: (value) {
-                setState(() {
-                  LoanTermController.text = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomDropdown(
-              hint:
-                  widget.loanType == null || widget.loanType.isEmpty
-                      ? "--Loan Type--"
-                      : widget.loanType,
-              options: loanType,
-              onChange: (value) {
-                loanTypeController.text = value;
-              },
-            ),
-            SizedBox(height: 10),
-            addDocumentContainer(
-              documentName: "Last 3 months Salary",
-              onFileSelected: (file) {
-                setState(() {
-                  lastSalaryController = file;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            addDocumentContainer(
-              documentName: "Cibil Score",
-              onFileSelected: (file) {
-                setState(() {
-                  cibilController = file;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            addDocumentContainer(
-              documentName: "Identity Proof",
-              onFileSelected: (file) {
-                setState(() {
-                  identityController = file;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            addDocumentContainer(
-              documentName: "File Details",
-              onFileSelected: (file) {
-                setState(() {
-                  fileDetailsController = file;
-                });
-              },
-            ),
-            SizedBox(height: 10),
-            CustomTextField(
-              hint: "Enter Loan Percentage",
-              controller: loanPercentageController,
-              keyboardType: TextInputType.number,
-            ),
-            SizedBox(height: 20),
-            CustomButton(
-              text: widget.title,
-              onPressed: () {
-                handleSubmit();
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              CustomTextField(
+                hint: "Enter loan Amount",
+                controller: loanAmountController,
+                maxLine: 1,
+              ),
+              const SizedBox(height: 16),
+              CustomDropdown(
+                hint:
+                    widget.employmentType == null
+                        ? "Employment Type"
+                        : widget.employmentType,
+                options: employmentType,
+                onChange: (value) {
+                  setState(() {
+                    employmentTypeController.text = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomDropdown(
+                hint: widget.loanTerm == null ? "Loan Term" : widget.loanTerm,
+                options: loanTerm,
+                onChange: (value) {
+                  setState(() {
+                    LoanTermController.text = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomDropdown(
+                hint:
+                    widget.loanType == null || widget.loanType.isEmpty
+                        ? "--Loan Type--"
+                        : widget.loanType,
+                options: loanType,
+                onChange: (value) {
+                  loanTypeController.text = value;
+                },
+              ),
+              SizedBox(height: 10),
+              addDocumentContainer(
+                documentName: "Last 3 months Salary",
+                onFileSelected: (file) {
+                  setState(() {
+                    lastSalaryController = file;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              addDocumentContainer(
+                documentName: "Cibil Score",
+                onFileSelected: (file) {
+                  setState(() {
+                    cibilController = file;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              addDocumentContainer(
+                documentName: "Identity Proof",
+                onFileSelected: (file) {
+                  setState(() {
+                    identityController = file;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              addDocumentContainer(
+                documentName: "File Details",
+                onFileSelected: (file) {
+                  setState(() {
+                    fileDetailsController = file;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              CustomTextField(
+                hint: "Enter Loan Percentage",
+                controller: loanPercentageController,
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 20),
+              CustomButton(
+                text: widget.title,
+                onPressed: () {
+                  handleSubmit();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

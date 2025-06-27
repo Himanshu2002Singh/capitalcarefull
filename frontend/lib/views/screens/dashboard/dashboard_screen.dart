@@ -111,113 +111,117 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       },
       appBar: CustomAppbar(title: "DashBoard"),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double boxWidth = (constraints.maxWidth - 12) / 2;
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double boxWidth = (constraints.maxWidth - 12) / 2;
 
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 4 boxes
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: List.generate(6, (index) {
-                      return GestureDetector(
-                        onTap:
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  if (index == 3) {
-                                    return LeadsScreen();
-                                  } else if (index == 0) {
-                                    return LeadsCountScreen(
-                                      title: "File Login",
-                                      leads: fileLoginLeads,
-                                    );
-                                  } else if (index == 1) {
-                                    return LeadsCountScreen(
-                                      title: "Tomorrow Leads",
-                                      leads: tomorrowLeads,
-                                    );
-                                  } else if (index == 2) {
-                                    return LeadsCountScreen(
-                                      title: "Today Leads",
-                                      leads: todayLeads,
-                                    );
-                                  } else if (index == 4) {
-                                    return CallLogsScreen();
-                                  } else {
-                                    return CallLogsScreen(title: "Today Calls");
-                                  }
-                                },
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 4 boxes
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: List.generate(6, (index) {
+                        return GestureDetector(
+                          onTap:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    if (index == 3) {
+                                      return LeadsScreen();
+                                    } else if (index == 0) {
+                                      return LeadsCountScreen(
+                                        title: "File Login",
+                                        leads: fileLoginLeads,
+                                      );
+                                    } else if (index == 1) {
+                                      return LeadsCountScreen(
+                                        title: "Tomorrow Leads",
+                                        leads: tomorrowLeads,
+                                      );
+                                    } else if (index == 2) {
+                                      return LeadsCountScreen(
+                                        title: "Today Leads",
+                                        leads: todayLeads,
+                                      );
+                                    } else if (index == 4) {
+                                      return CallLogsScreen();
+                                    } else {
+                                      return CallLogsScreen(
+                                        title: "Today Calls",
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: boxColorList[index],
                             ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: boxColorList[index],
-                          ),
-                          padding: const EdgeInsets.all(10),
-                          width: boxWidth,
-                          child: IconTheme(
-                            data: const IconThemeData(color: Colors.white),
-                            child: DefaultTextStyle(
-                              maxLines: 1,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(boxIconList[index]),
-                                  const SizedBox(height: 10),
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        // Text("0"),
-                                        Text("${boxCountList[index]}"),
-                                        const SizedBox(height: 10),
-                                        Text(boxTextList[index]),
-                                      ],
+                            padding: const EdgeInsets.all(10),
+                            width: boxWidth,
+                            child: IconTheme(
+                              data: const IconThemeData(color: Colors.white),
+                              child: DefaultTextStyle(
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(boxIconList[index]),
+                                    const SizedBox(height: 10),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          // Text("0"),
+                                          Text("${boxCountList[index]}"),
+                                          const SizedBox(height: 10),
+                                          Text(boxTextList[index]),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }),
-                  ),
+                        );
+                      }),
+                    ),
 
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Lead Status",
-                    style: TextStyle(color: Colors.blue, fontSize: 17),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Lead Status",
+                      style: TextStyle(color: Colors.blue, fontSize: 17),
+                    ),
+                    const SizedBox(height: 16),
 
-                  // Bar chart
-                  DynamicBarChart(),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Lead By Source",
-                    style: TextStyle(color: Colors.blue, fontSize: 17),
-                  ),
-                  const SizedBox(height: 16),
-                  //pie chart
-                  DynamicPieChart(),
-                ],
-              ),
-            );
-          },
+                    // Bar chart
+                    DynamicBarChart(),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Lead By Source",
+                      style: TextStyle(color: Colors.blue, fontSize: 17),
+                    ),
+                    const SizedBox(height: 16),
+                    //pie chart
+                    DynamicPieChart(),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

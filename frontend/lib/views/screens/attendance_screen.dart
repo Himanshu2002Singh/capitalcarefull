@@ -423,17 +423,20 @@ class _AttendancescreenState extends State<Attendancescreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppColors.primaryColor, AppColors.appBarForegroundColor],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.primaryColor,
+                  AppColors.appBarForegroundColor,
+                ],
+              ),
             ),
-          ),
-          child: SafeArea(
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -475,15 +478,23 @@ class _AttendancescreenState extends State<Attendancescreen> {
                               ? null
                               : isAttendanceMarked
                               ? _showConfirmationDialog
-                              : (now.hour >= 10 && now.minute > 10)
+                              : (now.hour > 10)
+                              ? _customDialog
+                              : (now.hour == 10 && now.minute > 10)
                               ? _customDialog
                               : _checkLocationAndMarkAttendance,
-                      child: Text(
-                        isAttendanceMarked
-                            ? "Close Attendance"
-                            : 'Mark Attendance',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      child:
+                          isLoading
+                              ? null
+                              : Text(
+                                isAttendanceMarked
+                                    ? "Close Attendance"
+                                    : 'Mark Attendance',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         padding: EdgeInsets.symmetric(

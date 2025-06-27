@@ -99,165 +99,167 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppbar(title: "Add Task", leading: const BackButton()),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Add Title"),
-            const SizedBox(height: 6),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                hintText: "Name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            const Text("Choose Lead"),
-            DropdownSearch<Leads>(
-              selectedItem: selectedLead,
-              items: allLeads,
-              onChanged: (Leads? lead) => setState(() => selectedLead = lead),
-              dropdownBuilder: (BuildContext context, Leads? selectedItem) {
-                return Text(
-                  selectedItem?.name ?? 'Lead Name',
-                  style: const TextStyle(fontSize: 16),
-                );
-              },
-              itemAsString: (Leads l) => l.name,
-              compareFn: (Leads a, Leads b) => a.lead_id == b.lead_id,
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                searchFieldProps: const TextFieldProps(
-                  decoration: InputDecoration(
-                    hintText: 'Search lead...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                fit: FlexFit.loose,
-                constraints: const BoxConstraints(maxHeight: 300),
-                menuProps: MenuProps(
-                  backgroundColor: Colors.white,
-                  elevation: 6,
-                  borderRadius: BorderRadius.circular(10),
-                  shadowColor: Colors.black26,
-                  // padding: const EdgeInsets.symmetric(vertical: 8),
-                ),
-                itemBuilder: (context, Leads item, bool isSelected) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? AppColors.primaryColor.withOpacity(0.1)
-                              : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      item.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color:
-                            isSelected
-                                ? AppColors.primaryColor
-                                : Colors.black87,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              dropdownDecoratorProps: const DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  // labelText: 'Choose Lead',
-                  hintText: "Lead Name",
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Add Title"),
+              const SizedBox(height: 6),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  hintText: "Name",
                   border: OutlineInputBorder(),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-            const Text("Task Start Date"),
-            GestureDetector(
-              onTap: () => _selectDateTime(context, true),
-              child: AbsorbPointer(
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText:
-                        startDate != null
-                            ? "${startDate!.toLocal()}".split(' ')[0]
-                            : 'Select date',
-                    border: const OutlineInputBorder(),
+              const SizedBox(height: 16),
+              const Text("Choose Lead"),
+              DropdownSearch<Leads>(
+                selectedItem: selectedLead,
+                items: allLeads,
+                onChanged: (Leads? lead) => setState(() => selectedLead = lead),
+                dropdownBuilder: (BuildContext context, Leads? selectedItem) {
+                  return Text(
+                    selectedItem?.name ?? 'Lead Name',
+                    style: const TextStyle(fontSize: 16),
+                  );
+                },
+                itemAsString: (Leads l) => l.name,
+                compareFn: (Leads a, Leads b) => a.lead_id == b.lead_id,
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  searchFieldProps: const TextFieldProps(
+                    decoration: InputDecoration(
+                      hintText: 'Search lead...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  fit: FlexFit.loose,
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  menuProps: MenuProps(
+                    backgroundColor: Colors.white,
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(10),
+                    shadowColor: Colors.black26,
+                    // padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  itemBuilder: (context, Leads item, bool isSelected) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected
+                                ? AppColors.primaryColor.withOpacity(0.1)
+                                : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        item.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color:
+                              isSelected
+                                  ? AppColors.primaryColor
+                                  : Colors.black87,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    // labelText: 'Choose Lead',
+                    hintText: "Lead Name",
+                    border: OutlineInputBorder(),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-            const Text("Task End Date"),
-            GestureDetector(
-              onTap: () => _selectDateTime(context, false),
-              child: AbsorbPointer(
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText:
-                        endDate != null
-                            ? "${endDate!.toLocal()}".split(' ')[0]
-                            : 'Select date',
-                    border: const OutlineInputBorder(),
+              const SizedBox(height: 16),
+              const Text("Task Start Date"),
+              GestureDetector(
+                onTap: () => _selectDateTime(context, true),
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText:
+                          startDate != null
+                              ? "${startDate!.toLocal()}".split(' ')[0]
+                              : 'Select date',
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-
-            const Text("Task Priority"),
-            buildDropdown(
-              value: priority,
-              hint: 'Select Priority',
-              items: ['High', 'Mid', 'Low', 'Important'],
-              onChanged: (val) => setState(() => priority = val),
-            ),
-
-            Row(
-              children: [
-                Checkbox(
-                  value: isActive,
-                  onChanged:
-                      (value) => setState(() => isActive = value ?? false),
+              const SizedBox(height: 16),
+              const Text("Task End Date"),
+              GestureDetector(
+                onTap: () => _selectDateTime(context, false),
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText:
+                          endDate != null
+                              ? "${endDate!.toLocal()}".split(' ')[0]
+                              : 'Select date',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
                 ),
-                const Text("Active Task"),
-              ],
-            ),
-
-            const Text("Description"),
-            TextField(
-              controller: descriptionController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: "Write about task.",
-                border: OutlineInputBorder(),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            CustomButton(
-              text: "Add Task",
-              onPressed: () {
-                // TODO: Add Task Logic Here
-                handle_submit();
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              const Text("Task Priority"),
+              buildDropdown(
+                value: priority,
+                hint: 'Select Priority',
+                items: ['High', 'Mid', 'Low', 'Important'],
+                onChanged: (val) => setState(() => priority = val),
+              ),
+
+              Row(
+                children: [
+                  Checkbox(
+                    value: isActive,
+                    onChanged:
+                        (value) => setState(() => isActive = value ?? false),
+                  ),
+                  const Text("Active Task"),
+                ],
+              ),
+
+              const Text("Description"),
+              TextField(
+                controller: descriptionController,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  hintText: "Write about task.",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              CustomButton(
+                text: "Add Task",
+                onPressed: () {
+                  // TODO: Add Task Logic Here
+                  handle_submit();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

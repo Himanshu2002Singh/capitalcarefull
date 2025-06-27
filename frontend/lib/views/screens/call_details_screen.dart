@@ -217,215 +217,217 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    size: 70,
-                    color: Color(0xFF03A9F4),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.lead == null
-                            ? widget.number
-                            : widget.lead.number,
-                        style: TextStyle(fontSize: 20, color: Colors.black54),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      size: 70,
+                      color: Color(0xFF03A9F4),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.lead == null
+                              ? widget.number
+                              : widget.lead.number,
+                          style: TextStyle(fontSize: 20, color: Colors.black54),
+                        ),
+                        Text(
+                          widget.lead == null ? "" : widget.lead.name,
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                        ),
+                        const Text(
+                          '01:31:46',
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Feedback Status Dropdown
+                buildDropdown(
+                  value: feedbackStatus,
+                  hint: 'Select Feedback Status',
+                  items: [
+                    "Interested",
+                    "Call Back",
+                    "No Requirement",
+                    "Follow up",
+                    "Document Rejected",
+                    "Document Pending",
+                    "Not Pick",
+                    "Not Connected",
+                    "File Login",
+                    "Loan Section",
+                    "Loan Disbursement",
+                  ],
+                  onChanged: (val) => setState(() => feedbackStatus = val!),
+                ),
+
+                //select loan type
+                buildDropdown(
+                  value: loanType,
+                  hint: 'Select Loan Type',
+                  items: [
+                    "Home Loan",
+                    "Mortgage Loan",
+                    "User Car Loan",
+                    "Business Loan",
+                    "Personal Loan",
+                    "DOD",
+                    "CC/OD",
+                    "CGTMSME",
+                    "Mutual Fund",
+                    "Insurance",
+                    "Other",
+                  ],
+                  onChanged:
+                      (val) => setState(() {
+                        loanType = val!;
+                      }),
+                ),
+
+                /// Priority Dropdown
+                buildDropdown(
+                  value: priority,
+                  hint: 'Select Priority',
+                  items: [
+                    'High Priority and Urgent',
+                    'Med',
+                    'Lower',
+                    "Important",
+                  ],
+                  onChanged: (val) => setState(() => priority = val!),
+                ),
+
+                GestureDetector(
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(DateTime.now().year + 1),
+                    );
+                    if (pickedDate != null) {
+                      nextMeetingController.text =
+                          pickedDate.toLocal().toString().split(
+                            ' ',
+                          )[0]; // or use DateFormat
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      controller: nextMeetingController,
+                      decoration: InputDecoration(
+                        hintText: 'Select Next Meeting Date',
+                        border: OutlineInputBorder(),
                       ),
-                      Text(
-                        widget.lead == null ? "" : widget.lead.name,
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                      ),
-                      const Text(
-                        '01:31:46',
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              /// Feedback Status Dropdown
-              buildDropdown(
-                value: feedbackStatus,
-                hint: 'Select Feedback Status',
-                items: [
-                  "Interested",
-                  "Call Back",
-                  "No Requirement",
-                  "Follow up",
-                  "Document Rejected",
-                  "Document Pending",
-                  "Not Pick",
-                  "Not Connected",
-                  "File Login",
-                  "Loan Section",
-                  "Loan Disbursement",
-                ],
-                onChanged: (val) => setState(() => feedbackStatus = val!),
-              ),
-
-              //select loan type
-              buildDropdown(
-                value: loanType,
-                hint: 'Select Loan Type',
-                items: [
-                  "Home Loan",
-                  "Mortgage Loan",
-                  "User Car Loan",
-                  "Business Loan",
-                  "Personal Loan",
-                  "DOD",
-                  "CC/OD",
-                  "CGTMSME",
-                  "Mutual Fund",
-                  "Insurance",
-                  "Other",
-                ],
-                onChanged:
-                    (val) => setState(() {
-                      loanType = val!;
-                    }),
-              ),
-
-              /// Priority Dropdown
-              buildDropdown(
-                value: priority,
-                hint: 'Select Priority',
-                items: [
-                  'High Priority and Urgent',
-                  'Med',
-                  'Lower',
-                  "Important",
-                ],
-                onChanged: (val) => setState(() => priority = val!),
-              ),
-
-              GestureDetector(
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(DateTime.now().year + 1),
-                  );
-                  if (pickedDate != null) {
-                    nextMeetingController.text =
-                        pickedDate.toLocal().toString().split(
-                          ' ',
-                        )[0]; // or use DateFormat
-                  }
-                },
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    controller: nextMeetingController,
-                    decoration: InputDecoration(
-                      hintText: 'Select Next Meeting Date',
-                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-              ),
 
-              /// Next Meeting DateTime Dropdown (Dummy)
-              // buildDropdown(
-              //   value: nextMeeting,
-              //   hint: 'Select Next Meeting DateTime',
-              //   items: ['Today 4 PM', 'Tomorrow 11 AM', 'Next Monday'],
-              //   onChanged: (val) => setState(() => nextMeeting = val),
-              // ),
+                /// Next Meeting DateTime Dropdown (Dummy)
+                // buildDropdown(
+                //   value: nextMeeting,
+                //   hint: 'Select Next Meeting DateTime',
+                //   items: ['Today 4 PM', 'Tomorrow 11 AM', 'Next Monday'],
+                //   onChanged: (val) => setState(() => nextMeeting = val),
+                // ),
 
-              /// Estimation Date Dropdown (Dummy)
-              // buildDropdown(
-              //   value: estimationDate,
-              //   hint: 'Select Estimation Date',
-              //   items: ['10 May 2025', '12 May 2025', '15 May 2025'],
-              //   onChanged: (val) => setState(() => estimationDate = val),
-              // ),
+                /// Estimation Date Dropdown (Dummy)
+                // buildDropdown(
+                //   value: estimationDate,
+                //   hint: 'Select Estimation Date',
+                //   items: ['10 May 2025', '12 May 2025', '15 May 2025'],
+                //   onChanged: (val) => setState(() => estimationDate = val),
+                // ),
 
-              /// Budget
-              buildTextField(
-                controller: budgetController,
-                hint: 'EstimationBudget',
-                keyboardType: TextInputType.number,
-              ),
-
-              /// Remark
-              buildTextField(controller: remarkController, hint: 'Remark'),
-              SizedBox(height: 10),
-
-              if (widget.lead == null)
-                Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Contact Details",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      buildTextField(
-                        controller: contactNameController,
-                        hint: "Contact Name",
-                      ),
-                      buildDropdown(
-                        value: source,
-                        hint: "--Select Source--",
-                        items: [
-                          "Internet",
-                          "Newspaper",
-                          "Website",
-                          "Refrence",
-                          "Bulk excel",
-                        ],
-                        onChanged: (value) {
-                          source = value;
-                          setState(() {});
-                        },
-                      ),
-                      buildTextField(
-                        controller: descriptionController,
-                        hint: "Description",
-                      ),
-                    ],
-                  ),
+                /// Budget
+                buildTextField(
+                  controller: budgetController,
+                  hint: 'EstimationBudget',
+                  keyboardType: TextInputType.number,
                 ),
 
-              SizedBox(height: 20),
+                /// Remark
+                buildTextField(controller: remarkController, hint: 'Remark'),
+                SizedBox(height: 10),
 
-              /// Submit Button
-              CustomButton(
-                text: "SUBMIT",
-                onPressed: () {
-                  if (widget.lead == null) {
-                    addLeadSubmission();
-                  } else {
-                    handleSubmission();
-                  }
-                },
-              ),
+                if (widget.lead == null)
+                  Container(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Contact Details",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        buildTextField(
+                          controller: contactNameController,
+                          hint: "Contact Name",
+                        ),
+                        buildDropdown(
+                          value: source,
+                          hint: "--Select Source--",
+                          items: [
+                            "Internet",
+                            "Newspaper",
+                            "Website",
+                            "Refrence",
+                            "Bulk excel",
+                          ],
+                          onChanged: (value) {
+                            source = value;
+                            setState(() {});
+                          },
+                        ),
+                        buildTextField(
+                          controller: descriptionController,
+                          hint: "Description",
+                        ),
+                      ],
+                    ),
+                  ),
 
-              const SizedBox(height: 20),
-              const Text(
-                'fetching Recording file ...Please Wait',
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 20),
-            ],
+                SizedBox(height: 20),
+
+                /// Submit Button
+                CustomButton(
+                  text: "SUBMIT",
+                  onPressed: () {
+                    if (widget.lead == null) {
+                      addLeadSubmission();
+                    } else {
+                      handleSubmission();
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 20),
+                const Text(
+                  'fetching Recording file ...Please Wait',
+                  style: TextStyle(color: Colors.black54),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

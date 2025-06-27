@@ -38,92 +38,94 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Row with Copy Icon and Display
-          Row(
-            children: [
-              IconButton(icon: Icon(Icons.copy), onPressed: onCopy),
-              Expanded(
-                child: Text(
-                  input,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(icon: Icon(Icons.backspace), onPressed: onDelete),
-            ],
-          ),
-          SizedBox(height: 10),
-          // Number Pad
-          Container(
-            height: MediaQuery.of(context).size.height / 3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Row with Copy Icon and Display
+            Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildButton("1"),
-                    _buildButton("2"),
-                    _buildButton("3"),
-                  ],
+                IconButton(icon: Icon(Icons.copy), onPressed: onCopy),
+                Expanded(
+                  child: Text(
+                    input,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildButton("4"),
-                    _buildButton("5"),
-                    _buildButton("6"),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildButton("7"),
-                    _buildButton("8"),
-                    _buildButton("9"),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildButton("*"),
-                    _buildButton("0"),
-                    _buildButton("#"),
-                  ],
-                ),
+                IconButton(icon: Icon(Icons.backspace), onPressed: onDelete),
               ],
             ),
-          ),
-          SizedBox(height: 10),
-          // Call Buttons
-          ElevatedButton.icon(
-            onPressed: () {
-              makeDirectCall(input);
-            },
-            icon: Icon(Icons.call),
-            label: Text("Call"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              // shape: RoundedRectangleBorder(
-              //   borderRadius: BorderRadius.only(
-              //     topLeft: Radius.circular(20),
-              //     bottomLeft: Radius.circular(20),
-              //   ),
-              // ),
+            SizedBox(height: 10),
+            // Number Pad
+            Container(
+              height: MediaQuery.of(context).size.height / 3,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildButton("1"),
+                      _buildButton("2"),
+                      _buildButton("3"),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildButton("4"),
+                      _buildButton("5"),
+                      _buildButton("6"),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildButton("7"),
+                      _buildButton("8"),
+                      _buildButton("9"),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildButton("*"),
+                      _buildButton("0"),
+                      _buildButton("#"),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 10),
+            // Call Buttons
+            ElevatedButton.icon(
+              onPressed: () {
+                makeDirectCall(input);
+              },
+              icon: Icon(Icons.call),
+              label: Text("Call"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                // shape: RoundedRectangleBorder(
+                //   borderRadius: BorderRadius.only(
+                //     topLeft: Radius.circular(20),
+                //     bottomLeft: Radius.circular(20),
+                //   ),
+                // ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
