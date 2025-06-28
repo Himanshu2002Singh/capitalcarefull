@@ -4,6 +4,7 @@ import 'package:capital_care/views/screens/attendance_screen.dart';
 import 'package:capital_care/views/screens/auto_call_dashboard_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
+import 'package:capital_care/views/screens/leads/fresh_leads.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:capital_care/views/screens/my_attendance_screen.dart';
@@ -126,6 +127,16 @@ class AppScaffold extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => LeadsScreen()),
+                );
+              },
+            ),
+            _drawerItem(
+              Icons.man_3,
+              "Fresh Leads",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FreshLeads()),
                 );
               },
             ),

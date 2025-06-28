@@ -53,28 +53,32 @@ class _LeadCardState extends State<LeadCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.lead.name ?? "",
+                  widget.lead.name.length > 12
+                      ? (widget.lead.name).substring(0, 12) + "..."
+                      : widget.lead.name ?? "",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.phone, color: Colors.blue),
+                    _buildSmallIconButton(
+                      icon: Icons.phone,
+                      color: Colors.blue,
                       onPressed: () {
                         makeDirectCall(widget.lead.number ?? "");
                       },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.sms, color: Colors.orange),
+                    _buildSmallIconButton(
+                      icon: Icons.sms,
+                      color: Colors.orange,
                       onPressed: () {
                         sendSMS(widget.lead.number ?? "", "");
                       },
                     ),
-                    IconButton(
-                      icon: const FaIcon(
-                        FontAwesomeIcons.whatsapp,
-                        color: Colors.green,
-                      ),
+                    _buildSmallIconButton(
+                      icon: FontAwesomeIcons.whatsapp,
+                      color: Colors.green,
+                      isFaIcon: true,
                       onPressed: () {
                         openWhatsApp(
                           widget.lead.number ?? "",
@@ -82,16 +86,14 @@ class _LeadCardState extends State<LeadCard> {
                         );
                       },
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.transform_outlined,
-                        color: Colors.blueAccent,
-                      ),
+                    _buildSmallIconButton(
+                      icon: Icons.transform_outlined,
+                      color: Colors.blueAccent,
                       onPressed: () {
                         leadAssignAlert();
                       },
                     ),
-                    CircleAvatar(radius: 15, child: Text('2')),
+                    const CircleAvatar(radius: 15, child: Text('2')),
                   ],
                 ),
               ],
@@ -476,4 +478,25 @@ class _LeadCardState extends State<LeadCard> {
       },
     );
   }
+}
+
+Widget _buildSmallIconButton({
+  required dynamic icon,
+  required Color color,
+  required VoidCallback onPressed,
+  bool isFaIcon = false,
+}) {
+  return SizedBox(
+    width: 35,
+    height: 35,
+    child: IconButton(
+      padding: EdgeInsets.zero,
+      iconSize: 25,
+      icon:
+          isFaIcon
+              ? FaIcon(icon, color: color, size: 18)
+              : Icon(icon, color: color, size: 20),
+      onPressed: onPressed,
+    ),
+  );
 }

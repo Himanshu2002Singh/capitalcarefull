@@ -79,11 +79,17 @@ class _LeadsScreenState extends State<LeadsScreen> {
         leads.where((lead) {
           final matchesLoan =
               loanSelectedItem == "All" || lead.loanType == loanSelectedItem;
+
           final matchesStatus =
-              selectedStatusItem == "All" || lead.status == selectedStatusItem;
+              selectedStatusItem == "All"
+                  ? lead.status !=
+                      "Fresh Lead" // 🟢 All selected → skip Fresh
+                  : lead.status == selectedStatusItem;
+
           final matchesSearch =
               searchQuery.isEmpty ||
               lead.name.toLowerCase().contains(searchQuery.toLowerCase());
+
           return matchesLoan && matchesStatus && matchesSearch;
         }).toList();
 
