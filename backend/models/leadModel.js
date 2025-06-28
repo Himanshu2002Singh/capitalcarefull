@@ -85,6 +85,9 @@ const Lead = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    salary:{
+      type: DataTypes.STRING,
+    }
   },
   {
     tableName: "leads",

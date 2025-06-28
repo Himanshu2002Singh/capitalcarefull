@@ -187,8 +187,11 @@ const downloadexcel = () => {
           <p><strong>Status:</strong> {lead.status}</p>
           <p><strong>Source:</strong> {lead.source}</p>
           <p><strong>Priority:</strong> {lead.priority}</p>
-          <p><strong>Next Meeting:</strong> {new Date(lead.next_meeting).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</p>
-          <p><strong>Loan Type:</strong> {lead.loan_type}</p>
+<p><strong>Next Meeting:</strong> 
+  {lead.next_meeting
+    ? new Date(lead.next_meeting).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+    : "Not Scheduled"}
+</p>          <p><strong>Loan Type:</strong> {lead.loan_type}</p>
           <p><strong>Estimated Budget:</strong> {lead.est_budget}</p>
           <p><strong>Refrence:</strong> {lead.refrence}</p>
           <p><strong>Remark:</strong> {lead.remark}</p>

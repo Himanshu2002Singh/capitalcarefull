@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const leadController = require('../controllers/leadController');
+const upload = require('../middlewares/upload');
 
 router.post('/submit-lead', leadController.addLead);
 router.get('/leads', leadController.getLeads);
@@ -10,5 +11,10 @@ router.delete('/delete-lead/:id', leadController.deleteLead);
 router.get('/getLead/:id', leadController.getLeadDetails);
 router.get('/getLeadsByDate', leadController.leadsByDate);
 router.get('/getLeadsByEmpIdAndDate/:emp_id', leadController.leadsByEmpIdAndDate);
+router.post(
+  '/addLeadsFromExcel',
+  upload.single('file'),
+  leadController.importLeadsFromExcel
+);
 
 module.exports = router;

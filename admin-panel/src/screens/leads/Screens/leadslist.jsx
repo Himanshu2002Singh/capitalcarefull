@@ -169,6 +169,8 @@ const handleDownloadExcel = () => {
           <div className=" p-6 rounded w-1/3">
             <AddLead
               handleCloseaddcallformModal={handleCloseaddcallformModal}
+              employees={employees}
+
             />
           </div>
         </div>
