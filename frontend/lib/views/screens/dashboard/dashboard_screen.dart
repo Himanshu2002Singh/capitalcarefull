@@ -1,5 +1,7 @@
 import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/models/leads_model.dart';
+import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/leads_count_screen.dart';
@@ -47,55 +49,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
     "Total Calls",
     "Today Calls",
   ];
+  List<Leads> leadsForGraph = [];
+  int selectedDays = 7;
+  List<int> dayOptions = [7, 15, 30, 60];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getLeadsForGraph();
+  }
+
+  Future<void> getLeadsForGraph() async {
+    final startDate = DateTime.now().subtract(Duration(days: selectedDays));
+    final endDate = DateTime.now().add(const Duration(days: 1));
+    leadsForGraph = await ApiService.fetchLeads(startDate, endDate);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final leadProvider = Provider.of<LeadProvider>(context, listen: true);
     final callProvider = Provider.of<CallsProvider>(context, listen: true);
-    final leads = leadProvider.allLeads;
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    final calls = callProvider.calls;
-    final todayCalls = callProvider.todayCalls;
+    final calls = callProvider.totalCallsCount;
+    final todayCalls = callProvider.todayCallsCount;
 
-    final tomorrowLeads =
-        leads.where((lead) {
-          if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
-            return false;
-          }
-          final leadDate = DateTime.parse(lead.next_meeting);
-          return leadDate.year == tomorrow.year &&
-              leadDate.month == tomorrow.month &&
-              leadDate.day == tomorrow.day;
-        }).toList();
+    final tomorrowLeads = leadProvider.tomorrowLeads;
 
-    final todayLeads =
-        leads.where((lead) {
-          if (lead.next_meeting == null || lead.next_meeting.isEmpty) {
-            return false;
-          }
-          final leadDate = DateTime.parse(lead.next_meeting);
-          return leadDate.year == now.year &&
-              leadDate.month == now.month &&
-              leadDate.day == now.day;
-        }).toList();
+    final todayLeads = leadProvider.todayLeads;
+    final totalLeads = leadProvider.totalLeadsCount;
 
-    final fileLoginLeads =
-        leads.where((leads) {
-          if (leads.status == "File Login") {
-            return true;
-          } else {
-            return false;
-          }
-        }).toList();
+    final fileLoginLeads = leadProvider.fileLoginLeads;
 
     final boxCountList = [
       fileLoginLeads.length,
       tomorrowLeads.length,
       todayLeads.length,
-      leads.length,
-      calls.length,
-      todayCalls.length,
+      totalLeads,
+      calls,
+      todayCalls,
     ];
     return AppScaffold(
       isFloatingActionButton: true,
@@ -137,18 +128,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       return LeadsScreen();
                                     } else if (index == 0) {
                                       return LeadsCountScreen(
-                                        title: "File Login",
-                                        leads: fileLoginLeads,
+                                        title: "File Login Leads",
+                                        // leads: fileLoginLeads,
                                       );
                                     } else if (index == 1) {
                                       return LeadsCountScreen(
-                                        title: "Tomorrow Leads",
-                                        leads: tomorrowLeads,
+                                        title: "Tomorrow Followups",
+                                        // leads: tomorrowLeads,
                                       );
                                     } else if (index == 2) {
                                       return LeadsCountScreen(
-                                        title: "Today Leads",
-                                        leads: todayLeads,
+                                        title: "Today Followups",
+                                        // leads: todayLeads,
                                       );
                                     } else if (index == 4) {
                                       return CallLogsScreen();
@@ -201,14 +192,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
 
                     const SizedBox(height: 20),
-                    const Text(
-                      "Lead Status",
-                      style: TextStyle(color: Colors.blue, fontSize: 17),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Lead Status",
+                          style: TextStyle(color: Colors.blue, fontSize: 17),
+                        ),
+                        DropdownButton<int>(
+                          value: selectedDays,
+                          items:
+                              dayOptions.map((days) {
+                                return DropdownMenuItem<int>(
+                                  value: days,
+                                  child: Text("Last $days days"),
+                                );
+                              }).toList(),
+                          onChanged: (newValue) {
+                            if (newValue != null) {
+                              setState(() {
+                                selectedDays = newValue;
+                                getLeadsForGraph(); // fetch new leads on change
+                              });
+                            }
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
 
                     // Bar chart
-                    DynamicBarChart(),
+                    DynamicBarChart(leads: leadsForGraph),
                     const SizedBox(height: 20),
                     const Text(
                       "Lead By Source",
@@ -216,7 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     //pie chart
-                    DynamicPieChart(),
+                    DynamicPieChart(leads: leadsForGraph),
                   ],
                 ),
               );

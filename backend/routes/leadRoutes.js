@@ -16,5 +16,7 @@ router.post(
   upload.single('file'),
   leadController.importLeadsFromExcel
 );
+router.get('/getCountsByEmpId/:emp_id', leadController.getLeadCountByEmpId);
+router.get('/getFreshLeadsByEmpId/:emp_id', leadController.getFreshLeadsByEmpId);
 
 module.exports = router;

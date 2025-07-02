@@ -1,9 +1,12 @@
-import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/models/leads_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class DynamicPieChart extends StatelessWidget {
+  final List<Leads> leads;
+
+  DynamicPieChart({Key? key, required this.leads}) : super(key: key);
+
   final List<String> sources = [
     "Internet",
     "Newspaper",
@@ -22,9 +25,6 @@ class DynamicPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leadProvider = Provider.of<LeadProvider>(context);
-    final leads = leadProvider.allLeads;
-
     // Count leads per source
     Map<String, int> sourceCounts = {for (var s in sources) s: 0};
     for (var lead in leads) {

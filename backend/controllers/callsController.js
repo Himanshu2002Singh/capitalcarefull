@@ -1,5 +1,7 @@
-Calls = require("../models/callsModel");
+// Calls = require("../models/callsModel");
 const { Op } = require("sequelize");
+const Calls = require("../models/callsModel");
+const Leads = require("../models/leadModel");
 
 exports.addCalls = async (req, res) => {
   const { emp_id } = req.body;
@@ -114,3 +116,91 @@ exports.getCallsByEmpIdAndDates = async (req, res) => {
     }
 };
 
+exports.getTotalCallsCountByEmployeeId = async (req, res) => {
+  const { emp_id } = req.params;
+
+  if (!emp_id) {
+    return res.status(400).json({ message: 'Employee ID is required' });
+  }
+
+  try {
+    const totalCount = await Calls.count({
+      where: { emp_id: emp_id },  // ✅ Make sure 'emp_id' exists in Call model
+    });
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // ✅ Count today's calls for employee
+    const todayCount = await Calls.count({
+      where: {
+        emp_id: emp_id,
+        createdAt: {
+          [Op.between]: [startOfToday, endOfToday],
+        },
+      },
+    });
+
+
+    res.status(200).json({ total: totalCount, today: todayCount });
+  } catch (error) {
+    console.error('Error getting total call count:', error);
+    res.status(500).json({ message: 'Database error', error });
+  }
+};
+
+exports.filterCalls = async (req, res) => {
+  try {
+    const { startDate, endDate, status, loanType } = req.query;
+    const { emp_id } = req.params; // 🔥 emp_id from route params
+
+    if (!emp_id) {
+      return res.status(400).json({ message: "emp_id is required" });
+    }
+
+    const whereClause = {
+      emp_id, // ✅ Filter by emp_id
+    };
+
+    if (startDate && endDate) {
+      whereClause.createdAt = {
+        [Op.between]: [new Date(startDate), new Date(endDate)],
+      };
+    }
+
+    // 1. Fetch all calls for this emp_id and date range
+    const allCalls = await Calls.findAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']],
+    });
+
+    // 2. Filter by lead's status and loanType
+    const filteredCalls = [];
+
+    for (const call of allCalls) {
+      if (!call.lead_id) continue;
+
+      const lead = await Leads.findOne({ where: { lead_id: call.lead_id } });
+      if (!lead) continue;
+
+      if (status && status !== 'All' && lead.status !== status) continue;
+      if (loanType && loanType !== 'All' && lead.loan_type !== loanType) continue;
+
+      filteredCalls.push({
+        ...call.toJSON(),
+        lead: {
+          status: lead.status,
+          loan_type: lead.loan_type,
+        },
+      });
+    }
+
+    res.json(filteredCalls);
+  } catch (error) {
+    console.error("Error filtering calls:", error);
+    res.status(500).json({ message: "Error filtering calls", error });
+  }
+};

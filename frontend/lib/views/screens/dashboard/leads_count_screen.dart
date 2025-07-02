@@ -1,4 +1,5 @@
 import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
@@ -15,14 +16,15 @@ import 'package:provider/provider.dart';
 
 class LeadsCountScreen extends StatefulWidget {
   final title;
-  final leads;
-  LeadsCountScreen({super.key, required this.title, required this.leads});
+  // final leads;
+  LeadsCountScreen({super.key, required this.title});
 
   @override
   State<LeadsCountScreen> createState() => _LeadsCountScreenState();
 }
 
 class _LeadsCountScreenState extends State<LeadsCountScreen> {
+  var leads = [];
   Future<void> makeDirectCall(String number, dynamic lead) async {
     var status = await Permission.phone.status;
     if (!status.isGranted) {
@@ -64,11 +66,18 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final leadProvider = Provider.of<LeadProvider>(context, listen: true);
+    leads =
+        widget.title == "File Login Leads"
+            ? leadProvider.fileLoginLeads
+            : widget.title == "Tomorrow Followups"
+            ? leadProvider.tomorrowLeads
+            : leadProvider.todayLeads;
     return AppScaffold(
       isFloatingActionButton: false,
       appBar: CustomAppbar(
         title: widget.title,
-        action: const [Icon(Icons.search), SizedBox(width: 16)],
+        // action: const [Icon(Icons.search), SizedBox(width: 16)],
       ),
       body: SafeArea(
         child: Column(
@@ -79,16 +88,19 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
             Padding(
               padding: const EdgeInsets.all(10),
               child: Text(
-                'Total FollowUps - ${widget.leads.length}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                'Total FollowUps - ${leads.length}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: widget.leads.length,
+                itemCount: leads.length,
                 itemBuilder: (context, index) {
-                  final f = widget.leads[index];
+                  final f = leads[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -105,7 +117,7 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
                           Container(
                             height: 160,
                             width: 100,
-        
+
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(
                               color: AppColors.primaryColor,
@@ -151,7 +163,9 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
                                             MaterialPageRoute(
                                               builder:
                                                   (context) =>
-                                                      LeadDetailsScreen(lead: f),
+                                                      LeadDetailsScreen(
+                                                        lead: f,
+                                                      ),
                                             ),
                                           );
                                         },
@@ -189,7 +203,10 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      const Icon(Icons.call, color: Colors.blue),
+                                      const Icon(
+                                        Icons.call,
+                                        color: Colors.blue,
+                                      ),
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: GestureDetector(

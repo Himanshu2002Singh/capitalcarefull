@@ -1,4 +1,5 @@
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/views/screens/leads/lead_details_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
 import 'package:capital_care/views/widgets/custom_appbar.dart';
@@ -14,36 +15,43 @@ class FreshLeads extends StatefulWidget {
 }
 
 class _FreshLeadsState extends State<FreshLeads> {
-
   @override
   Widget build(BuildContext context) {
-    final leadProvider = Provider.of<LeadProvider>(context, listen: true);
-    final leads = leadProvider.freshLeads;
+    final leadProvider = Provider.of<LeadProvider>(context, listen: false);
 
     return AppScaffold(
       appBar: CustomAppbar(title: "Fresh Leads"),
-      body:
-          leadProvider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : leads.isEmpty
-              ? const Center(child: Text("No fresh leads available."))
-              : ListView.builder(
-                itemCount: leads.length,
-                itemBuilder: (context, index) {
-                  final lead = leads[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LeadDetailsScreen(lead: lead),
-                        ),
-                      );
-                    },
-                    child: LeadCard(lead: lead),
+      body: FutureBuilder<List<Leads>>(
+        future: leadProvider.freshLeads, // async getter
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No fresh leads available."));
+          }
+
+          final leads = snapshot.data!;
+          return ListView.builder(
+            itemCount: leads.length,
+            itemBuilder: (context, index) {
+              final lead = leads[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LeadDetailsScreen(lead: lead),
+                    ),
                   );
                 },
-              ),
+                child: LeadCard(lead: lead),
+              );
+            },
+          );
+        },
+      ),
       isFloatingActionButton: false,
     );
   }

@@ -264,3 +264,91 @@ exports.leadsByEmpIdAndDate = async (req, res) => {
     res.status(500).json({ message: 'Database error', error });
   }
 }
+
+exports.getLeadCountByEmpId = async (req, res) => {
+  const { emp_id } = req.params;
+
+  if (!emp_id) {
+    return res.status(400).json({ message: 'Employee ID is required' });
+  }
+
+  try {
+    // Total leads by emp_id
+    const leadsCount = await Lead.count({
+      where: {
+        person_id: emp_id
+      }
+    });
+
+    // File Login status count (specific to this employee)
+    const fileLoginLeads = await Lead.findAll({
+      where: {
+        person_id: emp_id,
+        status: 'File Login'
+      }
+    });
+
+    // Today’s date range
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Tomorrow’s date range
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const endOfTomorrow = new Date(endOfToday);
+    endOfTomorrow.setDate(endOfTomorrow.getDate() + 1);
+
+    // Today meeting count
+    const todayLeads = await Lead.findAll({
+      where: {
+        person_id: emp_id,
+        next_meeting: {
+          [Op.between]: [startOfToday, endOfToday]
+        }
+      }
+    });
+
+    // Tomorrow meeting count
+    const tomorrowLeads = await Lead.findAll({
+      where: {
+        person_id: emp_id,
+        next_meeting: {
+          [Op.between]: [startOfTomorrow, endOfTomorrow]
+        }
+      }
+    });
+
+    return res.status(200).json({
+      totalLeads: leadsCount,
+      fileLoginCount : fileLoginLeads,
+      todayFollowups: todayLeads,
+      tomorrowFollowups: tomorrowLeads,
+    });
+
+  } catch (error) {
+    console.error("Error fetching leads:", error);
+    res.status(500).json({ message: "Database error", error });
+  }
+};
+exports.getFreshLeadsByEmpId = async (req, res) =>{
+  const { emp_id } = req.params;
+  if(!emp_id){
+    return res.status(400).json({ message: "Employee ID is required" });
+  }
+  try {
+    const leads = await Lead.findAll({
+      where : {
+        person_id : emp_id,
+        status : "Fresh Lead"
+      }
+    });
+    return res.status(200).json(leads);
+  }catch(error){
+    console.error("Error fetching fresh leads:", error);
+    res.status(500).json({ message: "Database error", error });
+  }
+}

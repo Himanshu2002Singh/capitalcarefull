@@ -52,10 +52,10 @@ class _SplashScreenState extends State<SplashScreen> {
         context,
         listen: false,
       ).fetchTotalCalls();
-      await Provider.of<CallsProvider>(
-        context,
-        listen: false,
-      ).fetchTodayCalls();
+      // await Provider.of<CallsProvider>(
+      //   context,
+      //   listen: false,
+      // ).fetchTodayCalls();
 
       Navigator.pushReplacement(
         context,

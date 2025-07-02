@@ -78,23 +78,16 @@ class ApiService {
   }
 
   static Future<List<Leads>> fetchLeads(
-    DateTime? startDate,
-    DateTime? endDate,
+    DateTime startDate,
+    DateTime endDate,
   ) async {
     final emp_id = await secureStorage.read(key: "userId");
 
     // Set default values if dates are null
-    final today = DateTime.now();
-    final DateTime start = startDate ?? DateTime(2025, 5, 1);
-    final DateTime end =
-        endDate != null
-            ? DateTime(endDate.year, endDate.month, endDate.day + 1)
-            : DateTime(today.year, today.month, today.day + 1);
-
     final url = Uri.parse("$baseUrl/getLeadsByEmpIdAndDate/$emp_id").replace(
       queryParameters: {
-        'startDate': DateFormat('yyyy-MM-dd').format(start),
-        'endDate': DateFormat('yyyy-MM-dd').format(end),
+        'startDate': DateFormat('yyyy-MM-dd').format(startDate),
+        'endDate': DateFormat('yyyy-MM-dd').format(endDate),
       },
     );
 
@@ -148,6 +141,61 @@ class ApiService {
         "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
       );
       return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getLeadsCount() async {
+    final emp_id = await secureStorage.read(key: "userId");
+    final url = Uri.parse("$baseUrl/getCountsByEmpId/$emp_id");
+
+    final response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      // print("=============================>>${jsonData['fileLoginCount']}");
+      // Ensure all keys are present and values are int
+      return {
+        'totalLeads': jsonData['totalLeads'] ?? 0,
+        'fileLoginCount': jsonData['fileLoginCount'],
+        'todayLeadCount': jsonData['todayFollowups'] ?? [],
+        'tomorrowLeadCount': jsonData['tomorrowFollowups'] ?? [],
+      };
+    } else {
+      throw Exception("Failed to fetch leads count");
+    }
+  }
+
+  static Future<List<Leads>> getFreshLeads() async {
+    final emp_id = await secureStorage.read(key: "userId");
+    final url = Uri.parse("$baseUrl/getFreshLeadsByEmpId/$emp_id");
+    final response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+    if (response.statusCode == 200) {
+      final List jsonData = jsonDecode(response.body);
+      return jsonData.map((json) => Leads.fromJson(json)).toList();
+    } else {
+      print("${response.statusCode} error fetching fresh leads");
+      return [];
+    }
+  }
+
+  static Future<Leads> getLeadByLeadId(var leadId) async {
+    final url = Uri.parse("$baseUrl/getLead/$leadId");
+    final response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      return Leads.fromJson(jsonData);
+    } else {
+      print("${response.statusCode} error fetching lead");
+      return Leads();
     }
   }
 
@@ -218,25 +266,18 @@ class ApiService {
     }
   }
 
-  static Future<List<Calls>> getCallsByDates({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
-    final empId = await secureStorage.read(key: "userId");
-
-    // If dates are not passed, use today's date and tomorrow as default
-    final now = DateTime.now();
-    final defaultStart = startDate ?? DateTime(now.year, now.month, now.day);
-    final defaultEnd =
-        endDate != null
-            ? endDate.add(const Duration(days: 1))
-            : defaultStart.add(const Duration(days: 1));
-
+  static Future<List<Calls>> getCallsByDates(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final emp_id = await secureStorage.read(key: "userId");
     final formattedStart =
-        "${defaultStart.year}-${defaultStart.month.toString().padLeft(2, '0')}-${defaultStart.day.toString().padLeft(2, '0')}";
-    final formattedEnd = defaultEnd.toIso8601String();
+        "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
 
-    final url = Uri.parse("$baseUrl/callsByEmpIdAndDate/$empId").replace(
+    final formattedEnd =
+        "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
+
+    final url = Uri.parse("$baseUrl/callsByEmpIdAndDate/$emp_id").replace(
       queryParameters: {'startDate': formattedStart, 'endDate': formattedEnd},
     );
 
@@ -268,6 +309,58 @@ class ApiService {
         "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
       );
       return false;
+    }
+  }
+
+  static Future<Map<String, int>> getTotalCallsCount() async {
+    final emp_id = await secureStorage.read(key: "userId");
+    print(emp_id);
+    final url = Uri.parse("$baseUrl/totalCallsCountByEmployee/$emp_id");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print("================================>>>$data");
+      return {'total': data['total'] ?? 0, 'today': data['today'] ?? 0};
+    } else {
+      print("Failed to get total calls count. Status: ${response.statusCode}");
+      return {'total': 0, 'today': 0};
+    }
+  }
+
+  static Future<List<Calls>> filterCalls({
+    required DateTime startDate,
+    required DateTime endDate,
+    String? status,
+    String? loanType,
+  }) async {
+    final emp_id = await secureStorage.read(key: "userId");
+    try {
+      final queryParameters = {
+        "startDate": startDate.toIso8601String(),
+        "endDate": endDate.toIso8601String(),
+        if (status != null && status != "All") "status": status,
+        if (loanType != null && loanType != "All") "loanType": loanType,
+      };
+
+      final uri = Uri.parse(
+        "$baseUrl/filterCalls/${emp_id}",
+      ).replace(queryParameters: queryParameters);
+
+      final response = await http.get(
+        uri,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        return jsonData.map((e) => Calls.fromJson(e)).toList();
+      } else {
+        throw Exception("Failed to load filtered calls");
+      }
+    } catch (e) {
+      print("Error in filterCalls API: $e");
+      return [];
     }
   }
 

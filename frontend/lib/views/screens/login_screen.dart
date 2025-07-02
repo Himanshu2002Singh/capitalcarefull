@@ -41,10 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         listen: false,
       ).fetchTotalCalls();
-      await Provider.of<CallsProvider>(
-        context,
-        listen: false,
-      ).fetchTodayCalls();
+      // await Provider.of<CallsProvider>(
+      //   context,
+      //   listen: false,
+      // ).fetchTodayCalls();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Welcome ${user.ename}!')));

@@ -24,7 +24,9 @@ class _LeadsScreenState extends State<LeadsScreen> {
   bool showSearchBar = false;
 
   DateTime today = DateTime.now();
-  DateTime? startDate = DateTime(2025, 5, 1); // Changed to reasonable default
+  DateTime? startDate = DateTime.now().subtract(
+    Duration(days: 30),
+  ); // Changed to reasonable default
   DateTime? endDate = DateTime.now();
 
   final List<String> loanTypeOptions = [
@@ -64,7 +66,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
       Provider.of<LeadProvider>(
         context,
         listen: false,
-      ).fetchLeads(startDate: startDate, endDate: endDate);
+      ).fetchLeads(start: startDate, end: endDate);
     });
   }
 
@@ -279,7 +281,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
                     () => Provider.of<LeadProvider>(
                       context,
                       listen: false,
-                    ).fetchLeads(startDate: startDate, endDate: endDate),
+                    ).fetchLeads(start: startDate, end: endDate),
                 child:
                     isLoading
                         ? const Center(child: CircularProgressIndicator())
@@ -338,7 +340,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
       Provider.of<LeadProvider>(
         context,
         listen: false,
-      ).fetchLeads(startDate: startDate, endDate: endDate);
+      ).fetchLeads(start: startDate, end: endDate);
     }
   }
 
@@ -354,7 +356,7 @@ class _LeadsScreenState extends State<LeadsScreen> {
       Provider.of<LeadProvider>(
         context,
         listen: false,
-      ).fetchLeads(startDate: startDate, endDate: endDate);
+      ).fetchLeads(start: startDate, end: endDate);
     }
   }
 }
