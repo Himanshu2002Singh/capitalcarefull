@@ -1,3 +1,5 @@
+import 'package:capital_care/controllers/providers/calls_provider.dart';
+import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
@@ -5,7 +7,9 @@ import 'package:capital_care/views/screens/call_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 class DialPadBottomSheet extends StatefulWidget {
   @override
@@ -199,16 +203,40 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
     }
 
     if (await Permission.phone.isGranted && number.isNotEmpty) {
+      Leads lead = await ApiService.getLeadByNumber(number);
       await FlutterPhoneDirectCaller.callNumber(number);
-      // Leads lead = ApiService().getLeadWithNumber(number);
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CallDetailsScreen(number: number),
-          ),
-        );
+        if (lead.lead_id != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CallDetailsScreen(lead: lead),
+            ),
+          );
+          submitCall(lead);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CallDetailsScreen(number: number),
+            ),
+          );
+        }
       });
+    } else {
+      print("CALL_PHONE permission denied");
     }
+  }
+
+  void submitCall(lead) async {
+    final storage = FlutterSecureStorage();
+    final userId = await storage.read(key: "userId") ?? "";
+    Calls call = Calls(
+      lead_id: lead.lead_id ?? "",
+      emp_id: userId,
+      name: lead.name ?? "",
+      number: lead.number ?? "",
+    );
+    Provider.of<CallsProvider>(context, listen: false).addCall(call);
   }
 }

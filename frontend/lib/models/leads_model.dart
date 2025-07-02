@@ -78,7 +78,7 @@ class Leads {
       source: json['source'] ?? "",
       createdAt: json['createdAt'] ?? "",
       priority: json['priority'] ?? "",
-      status: json['status'] ?? "Fresh lead",
+      status: json['status'] ?? "",
       description: json['description'] ?? "",
       next_meeting: json['next_meeting'] ?? "",
       est_budget: json['est_budget'] ?? "",
@@ -87,9 +87,9 @@ class Leads {
       refrence: json['refrence'] ?? "",
       loanType: json['loan_type'] ?? "",
       remark: json['remark'] ?? "",
-      dob: json['dob']??"",
-      employment_type: json['employment_type']??"",
-      loan_term : json['loan_term']??"",
+      dob: json['dob'] ?? "",
+      employment_type: json['employment_type'] ?? "",
+      loan_term: json['loan_term'] ?? "",
     );
   }
 }

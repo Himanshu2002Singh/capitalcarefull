@@ -199,6 +199,22 @@ class ApiService {
     }
   }
 
+  static Future<Leads> getLeadByNumber(var number) async {
+    final url = Uri.parse("$baseUrl/getLeadByNumber/$number");
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      if (response.body == "null") {
+        return Leads();
+      } else {
+        final jsonData = jsonDecode(response.body);
+        return Leads.fromJson(jsonData);
+      }
+    } else {
+      print("${response.statusCode} error fetching lead by number");
+      return Leads();
+    }
+  }
+
   static Future<bool> addHistory(History history) async {
     final url = Uri.parse("$baseUrl/histories");
     final response = await http.post(

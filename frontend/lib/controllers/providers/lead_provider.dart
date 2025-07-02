@@ -89,34 +89,47 @@ class LeadProvider with ChangeNotifier {
   Future<int> addLead(Leads newLead) async {
     try {
       int newId = await ApiService.addLead(newLead);
-      // print("==================>>$id");
-      // int newId = int.parse(id);
+
       if (newId != -1) {
         DateTime now = DateTime.now();
         if (now.isAfter(_lastStartDate) && now.isBefore(_lastEndDate)) {
-          // your code here
           _leads.add(newLead);
         }
+
         _totalLeadsCount++;
+
         if (newLead.status == "File Login") {
           _fileLoginLeads.insert(0, newLead);
         }
+
         DateTime today = DateTime(now.year, now.month, now.day);
         DateTime tomorrow = today.add(Duration(days: 1));
 
-        DateTime nextMeeting = DateTime(
-          newLead.next_meeting.year,
-          newLead.next_meeting.month,
-          newLead.next_meeting.day,
-        );
-
-        if (nextMeeting == today) {
-          _todayLeads.insert(0, newLead);
+        // 🔁 Convert next_meeting to DateTime (date-only)
+        DateTime? nextMeeting;
+        try {
+          if (newLead.next_meeting is String) {
+            final parsed = DateTime.parse(newLead.next_meeting);
+            nextMeeting = DateTime(parsed.year, parsed.month, parsed.day);
+          } else if (newLead.next_meeting is DateTime) {
+            nextMeeting = DateTime(
+              newLead.next_meeting.year,
+              newLead.next_meeting.month,
+              newLead.next_meeting.day,
+            );
+          }
+        } catch (e) {
+          print("Invalid next_meeting format: $e");
         }
 
-        if (nextMeeting == tomorrow) {
-          _tomorrowLeads.insert(0, newLead);
+        if (nextMeeting != null) {
+          if (nextMeeting == today) {
+            _todayLeads.insert(0, newLead);
+          } else if (nextMeeting == tomorrow) {
+            _tomorrowLeads.insert(0, newLead);
+          }
         }
+
         notifyListeners();
         return newId;
       }

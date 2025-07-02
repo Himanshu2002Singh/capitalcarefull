@@ -111,7 +111,4 @@ class CallsProvider with ChangeNotifier {
     }
   }
 
-  // void clearFilteredCalls() {
-  //   _filteredCalls = [];
-  // }
 }

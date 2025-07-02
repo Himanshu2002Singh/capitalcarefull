@@ -352,3 +352,17 @@ exports.getFreshLeadsByEmpId = async (req, res) =>{
     res.status(500).json({ message: "Database error", error });
   }
 }
+
+exports.getLeadByNumber = async (req, res) =>{
+  const { lead_number } = req.params;
+  try {
+    const lead = await Lead.findOne({
+      where: {
+        number: lead_number
+      }});
+      return res.status(200).json(lead);
+  }catch(error){
+    console.error("Error fetching lead by number:", error);
+    return res.status(500).json({message: "Database error", error});
+  }
+}
