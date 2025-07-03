@@ -41,3 +41,47 @@ exports.getTasksByLeadId = async(req, res)=>{
         res.status(500).json({message: "Database error", error});
     }
 }
+
+exports.updateTask = async (req, res) => {
+  const { taskId } = req.params;
+  const updates = req.body;
+
+  try {
+    const task = await Tasks.findByPk(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Dynamically update only the passed fields
+    Object.keys(updates).forEach(key => {
+      if (task[key] !== undefined) {
+        task[key] = updates[key];
+      }
+    });
+
+    await task.save();
+
+    return res.status(200).json({ message: "Task updated successfully", task });
+  } catch (error) {
+    console.error("Error updating task:", error);
+    return res.status(500).json({ message: "Database error", error });
+  }
+};
+
+exports.deleteTask = async (req, res) => {
+  const { taskId } = req.params;
+
+  try {
+    const task = await Tasks.findByPk(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    await task.destroy();
+
+    return res.status(200).json({ message: "Task deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return res.status(500).json({ message: "Database error", error });
+  }
+};

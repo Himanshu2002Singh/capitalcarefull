@@ -1,9 +1,11 @@
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/controllers/providers/task_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/models/task_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
@@ -12,18 +14,19 @@ import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:capital_care/views/widgets/custom_button.dart';
 
 class AddTaskScreen extends StatefulWidget {
+  final lead;
+
+  const AddTaskScreen({super.key, this.lead});
   @override
   _AddTaskScreenState createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
-  Leads? selectedLead;
+  // Leads? selectedLead;
   String? priority;
 
   DateTime? startDate;
   DateTime? endDate;
-
-  bool isActive = false;
 
   final descriptionController = TextEditingController();
   final nameController = TextEditingController();
@@ -39,43 +42,60 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     Task newTask = Task(
       emp_id: Provider.of<UserProvider>(context, listen: false).user?.empId,
       title: nameController.text,
-      choose_lead: selectedLead?.name,
-      lead_id: selectedLead?.lead_id,
+      choose_lead: widget.lead != null ? widget.lead.name : null,
+      lead_id: widget.lead != null ? widget.lead.lead_id : null,
       start_date: startDate?.toIso8601String(),
       end_date: endDate?.toIso8601String(),
       priority: priority,
-      is_active: isActive,
       description: descriptionController.text,
+      status: "Initial",
+      assigned_by_id:
+          Provider.of<UserProvider>(context, listen: false).user?.empId,
+      assigned_by_name:
+          Provider.of<UserProvider>(context, listen: false).user?.ename,
     );
 
-    bool success = await ApiService.addTask(newTask);
-    print(
-      "==============================================>>>>>>>>>>submit called after",
-    );
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(success ? "Success" : "Error")));
-    if (success) {
-      Navigator.pop(context);
-    }
+    Provider.of<TaskProvider>(context, listen: false).addTask(newTask);
+    Navigator.pop(context);
+    // ScaffoldMessenger.of(
+    //   context,
+    // ).showSnackBar(SnackBar(content: Text(success ? "Success" : "Error")));
+    // if (success) {
+    //   Navigator.pop(context);
+    // }
   }
 
   Future<void> _selectDateTime(BuildContext context, bool isStart) async {
-    final picked = await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2023),
       lastDate: DateTime(2030),
     );
 
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startDate = picked;
-        } else {
-          endDate = picked;
-        }
-      });
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        final DateTime fullDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+
+        setState(() {
+          if (isStart) {
+            startDate = fullDateTime;
+          } else {
+            endDate = fullDateTime;
+          }
+        });
+      }
     }
   }
 
@@ -94,8 +114,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allLeads = Provider.of<LeadProvider>(context, listen: false).leads;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppbar(title: "Add Task", leading: const BackButton()),
@@ -114,77 +132,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-
-              const SizedBox(height: 16),
-              const Text("Choose Lead"),
-              DropdownSearch<Leads>(
-                selectedItem: selectedLead,
-                items: allLeads,
-                onChanged: (Leads? lead) => setState(() => selectedLead = lead),
-                dropdownBuilder: (BuildContext context, Leads? selectedItem) {
-                  return Text(
-                    selectedItem?.name ?? 'Lead Name',
-                    style: const TextStyle(fontSize: 16),
-                  );
-                },
-                itemAsString: (Leads l) => l.name,
-                compareFn: (Leads a, Leads b) => a.lead_id == b.lead_id,
-                popupProps: PopupProps.menu(
-                  showSearchBox: true,
-                  searchFieldProps: const TextFieldProps(
-                    decoration: InputDecoration(
-                      hintText: 'Search lead...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  fit: FlexFit.loose,
-                  constraints: const BoxConstraints(maxHeight: 300),
-                  menuProps: MenuProps(
-                    backgroundColor: Colors.white,
-                    elevation: 6,
-                    borderRadius: BorderRadius.circular(10),
-                    shadowColor: Colors.black26,
-                    // padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  itemBuilder: (context, Leads item, bool isSelected) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? AppColors.primaryColor.withOpacity(0.1)
-                                : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        item.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color:
-                              isSelected
-                                  ? AppColors.primaryColor
-                                  : Colors.black87,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    // labelText: 'Choose Lead',
-                    hintText: "Lead Name",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 16),
               const Text("Task Start Date"),
               GestureDetector(
@@ -194,8 +141,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     decoration: InputDecoration(
                       hintText:
                           startDate != null
-                              ? "${startDate!.toLocal()}".split(' ')[0]
-                              : 'Select date',
+                              ? DateFormat(
+                                'dd-MM-yyyy hh:mm a',
+                              ).format(startDate!)
+                              : 'Select date & time',
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -211,8 +160,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     decoration: InputDecoration(
                       hintText:
                           endDate != null
-                              ? "${endDate!.toLocal()}".split(' ')[0]
-                              : 'Select date',
+                              ? DateFormat(
+                                'dd-MM-yyyy hh:mm a',
+                              ).format(startDate!)
+                              : 'Select date & time',
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -225,19 +176,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               buildDropdown(
                 value: priority,
                 hint: 'Select Priority',
-                items: ['High', 'Mid', 'Low', 'Important'],
+                items: ['High', 'Mid', 'Low'],
                 onChanged: (val) => setState(() => priority = val),
-              ),
-
-              Row(
-                children: [
-                  Checkbox(
-                    value: isActive,
-                    onChanged:
-                        (value) => setState(() => isActive = value ?? false),
-                  ),
-                  const Text("Active Task"),
-                ],
               ),
 
               const Text("Description"),

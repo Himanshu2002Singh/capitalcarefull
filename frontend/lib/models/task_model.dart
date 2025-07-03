@@ -1,4 +1,5 @@
 class Task {
+  final task_id;
   final emp_id;
   final title;
   final choose_lead;
@@ -6,10 +7,14 @@ class Task {
   final start_date;
   final end_date;
   final priority;
-  final is_active;
   final description;
+  final assigned_by_name;
+  final assigned_by_id;
+  var status;
+  final createdAt;
 
   Task({
+    this.task_id,
     this.emp_id,
     this.title,
     this.choose_lead,
@@ -17,8 +22,11 @@ class Task {
     this.start_date,
     this.end_date,
     this.priority,
-    this.is_active,
     this.description,
+    this.assigned_by_name,
+    this.assigned_by_id,
+    this.status,
+    this.createdAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -30,14 +38,17 @@ class Task {
     if (start_date != null) json["start_date"] = start_date;
     if (end_date != null) json["end_date"] = end_date;
     if (priority != null) json["priority"] = priority;
-    if (is_active != null) json["is_active"] = is_active;
     if (description != null) json["description"] = description;
-
+    if (assigned_by_name != null) json["assigned_by_name"] = assigned_by_name;
+    if (assigned_by_id != null) json["assigned_by_id"] = assigned_by_id;
+    if (status != null) json["status"] = status;
+    if (createdAt != null) json["createdAt"] = createdAt;
     return json;
   }
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
+      task_id: json["task_id"] ?? "",
       emp_id: json["emp_id"] ?? "",
       title: json["title"] ?? "",
       choose_lead: json["choose_lead"] ?? "",
@@ -45,8 +56,11 @@ class Task {
       start_date: json["start_date"] ?? "",
       end_date: json["end_date"] ?? "",
       priority: json["priority"] ?? "",
-      is_active: json["is_active"] ?? "",
       description: json["description"] ?? "",
+      assigned_by_name: json["assigned_by_name"] ?? "",
+      assigned_by_id: json["assigned_by_id"] ?? "",
+      status: json["status"] ?? "",
+      createdAt: json["createdAt"] ?? "",
     );
   }
 }

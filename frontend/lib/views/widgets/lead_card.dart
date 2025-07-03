@@ -53,8 +53,8 @@ class _LeadCardState extends State<LeadCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.lead.name.length > 12
-                      ? (widget.lead.name).substring(0, 12) + "..."
+                  widget.lead.name.length > 15
+                      ? (widget.lead.name).substring(0, 15) + "..."
                       : widget.lead.name ?? "",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -86,14 +86,14 @@ class _LeadCardState extends State<LeadCard> {
                         );
                       },
                     ),
-                    _buildSmallIconButton(
-                      icon: Icons.transform_outlined,
-                      color: Colors.blueAccent,
-                      onPressed: () {
-                        leadAssignAlert();
-                      },
-                    ),
-                    const CircleAvatar(radius: 15, child: Text('2')),
+                    // _buildSmallIconButton(
+                    //   icon: Icons.transform_outlined,
+                    //   color: Colors.blueAccent,
+                    //   onPressed: () {
+                    //     leadAssignAlert();
+                    //   },
+                    // ),
+                    // const CircleAvatar(radius: 15, child: Text('2')),
                   ],
                 ),
               ],
@@ -137,7 +137,7 @@ class _LeadCardState extends State<LeadCard> {
                         ),
                       ],
                     ),
-                    Icon(Icons.forum),
+                    // Icon(Icons.forum),
                     Row(
                       children: [
                         const Icon(Icons.stairs),
@@ -231,8 +231,16 @@ class _LeadCardState extends State<LeadCard> {
                         ),
                       ],
                     ),
-                    Icon(Icons.forum),
-                    Icon(Icons.forum),
+                    // Icon(Icons.forum),
+                    Row(
+                      children: [
+                        const Icon(Icons.money_rounded),
+                        const SizedBox(width: 5),
+                        Text(
+                          "${widget.lead.salary != null && widget.lead.salary != "" ? widget.lead.salary : ""}",
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -487,15 +495,15 @@ Widget _buildSmallIconButton({
   bool isFaIcon = false,
 }) {
   return SizedBox(
-    width: 35,
+    width: 40,
     height: 35,
     child: IconButton(
       padding: EdgeInsets.zero,
       iconSize: 25,
       icon:
           isFaIcon
-              ? FaIcon(icon, color: color, size: 18)
-              : Icon(icon, color: color, size: 20),
+              ? FaIcon(icon, color: color, size: 25)
+              : Icon(icon, color: color, size: 25),
       onPressed: onPressed,
     ),
   );

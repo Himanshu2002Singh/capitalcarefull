@@ -1,6 +1,7 @@
 import 'package:capital_care/controllers/providers/calls_provider.dart';
 import 'package:capital_care/controllers/providers/history_provider.dart';
 import 'package:capital_care/controllers/providers/lead_provider.dart';
+import 'package:capital_care/controllers/providers/task_provider.dart';
 import 'package:capital_care/controllers/providers/userprovider.dart';
 import 'package:capital_care/views/screens/login_screen.dart';
 import 'package:capital_care/views/screens/splash_screen.dart';
@@ -17,6 +18,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CallsProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
       ],
       child: const MyApp(),
     ),

@@ -161,13 +161,31 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         loan_term: LoanTermController.text,
         est_budget: loanAmountController.text,
       );
+      Leads oldLead = await ApiService.getLeadByNumber(
+        contactNumberController.text,
+      );
       if (widget.title == "Add Lead") {
+        if (oldLead.lead_id != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Lead with this number already exists")),
+          );
+          return;
+        }
+        print("==============================>${oldLead.lead_id}");
         int newLeadId = await Provider.of<LeadProvider>(
           context,
           listen: false,
         ).addLead(lead);
         idOfLead = newLeadId;
       } else {
+        if (oldLead.lead_id != widget.lead_id) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("You cannot assign this number to this lead"),
+            ),
+          );
+          return;
+        }
         Provider.of<LeadProvider>(
           context,
           listen: false,

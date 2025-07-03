@@ -36,10 +36,19 @@ const Task = sequelize.define(
         priority: {
             type : DataTypes.STRING,
         },
-        is_active: {
-            type: DataTypes.BOOLEAN
-        },
+        // is_active: {
+        //     type: DataTypes.BOOLEAN
+        // },
         description: {
+            type : DataTypes.STRING,
+        },
+        assigned_by_name: {
+            type: DataTypes.STRING,
+        },
+        assigned_by_id: {
+            type: DataTypes.STRING,
+        },
+        status: {
             type : DataTypes.STRING,
         }
     },

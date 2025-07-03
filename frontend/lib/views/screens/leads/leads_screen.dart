@@ -90,7 +90,8 @@ class _LeadsScreenState extends State<LeadsScreen> {
 
           final matchesSearch =
               searchQuery.isEmpty ||
-              lead.name.toLowerCase().contains(searchQuery.toLowerCase());
+              lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.number.contains(searchQuery);
 
           return matchesLoan && matchesStatus && matchesSearch;
         }).toList();

@@ -1,6 +1,5 @@
-import 'package:capital_care/controllers/providers/userprovider.dart';
+import 'package:capital_care/controllers/providers/task_provider.dart';
 import 'package:capital_care/models/task_model.dart';
-import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/task/add_task_screen.dart';
 import 'package:capital_care/views/widgets/app_scaffold.dart';
@@ -8,9 +7,10 @@ import 'package:capital_care/views/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:capital_care/views/widgets/text_editing_dialog_for_task.dart';
 
 class TasksAssignedByMeScreen extends StatefulWidget {
-  TasksAssignedByMeScreen({super.key});
+  const TasksAssignedByMeScreen({super.key});
 
   @override
   State<TasksAssignedByMeScreen> createState() =>
@@ -18,31 +18,37 @@ class TasksAssignedByMeScreen extends StatefulWidget {
 }
 
 class _TasksAssignedByMeScreenState extends State<TasksAssignedByMeScreen> {
-  List<Task> originalTasks = [];
   List<Task> filteredTasks = [];
+  bool is_adminSelected = false;
 
   @override
   void initState() {
     super.initState();
-    fetchTasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<TaskProvider>(context, listen: false);
+      provider.fetchTasks().then((_) {
+        setState(() {
+          filteredTasks = provider.tasks;
+        });
+      });
+    });
   }
 
-  void fetchTasks() async {
-    String? userId =
-        Provider.of<UserProvider>(context, listen: false).user?.empId;
-    if (userId != null) {
-      originalTasks = await ApiService.getTasks(userId);
-      filteredTasks = List.from(originalTasks);
-      setState(() {});
-    }
-  }
+  // @override
+  // void dispose() {
+  //   _titleController.dispose();
+  //   _descriptionController.dispose();
+  //   _priorityController.dispose();
+  //   super.dispose();
+  // }
 
   void filterTasks(String query) {
+    final provider = Provider.of<TaskProvider>(context, listen: false);
     if (query.isEmpty) {
-      filteredTasks = List.from(originalTasks);
+      filteredTasks = provider.tasks;
     } else {
       filteredTasks =
-          originalTasks
+          provider.tasks
               .where(
                 (task) =>
                     task.title.toLowerCase().contains(query.toLowerCase()),
@@ -54,16 +60,20 @@ class _TasksAssignedByMeScreenState extends State<TasksAssignedByMeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final taskProvider = Provider.of<TaskProvider>(context);
+
     return AppScaffold(
       isFloatingActionButton: true,
       floatingActionButtonIcon: const Icon(Icons.add),
       floatingActionButtonOnTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AddTaskScreen()),
+          MaterialPageRoute(
+            builder: (context) => AddTaskScreen(),
+          ),
         );
       },
-      appBar: CustomAppbar(title: "Tasks Assigned By Me"),
+      appBar: CustomAppbar(title: "Tasks"),
       body: SafeArea(
         child: Column(
           children: [
@@ -72,7 +82,7 @@ class _TasksAssignedByMeScreenState extends State<TasksAssignedByMeScreen> {
               color: AppColors.primaryColor,
               child: SearchBar(
                 constraints: const BoxConstraints(minHeight: 40),
-                hintText: "Search by Task Name",
+                hintText: "Search by Task Title",
                 hintStyle: MaterialStateProperty.all(
                   const TextStyle(color: Colors.grey),
                 ),
@@ -84,190 +94,278 @@ class _TasksAssignedByMeScreenState extends State<TasksAssignedByMeScreen> {
             Expanded(
               child:
                   filteredTasks.isEmpty
-                      ? const Center(child: Text("No matching tasks found."))
+                      ? const Center(child: Text("No tasks found."))
                       : ListView.builder(
                         padding: const EdgeInsets.all(10),
                         itemCount: filteredTasks.length,
                         itemBuilder: (context, index) {
                           final t = filteredTasks[index];
                           return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
                             elevation: 2,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 120,
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryColor,
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(10),
-                                      bottomLeft: Radius.circular(10),
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: Center(
-                                    child: Text(
-                                      formatDateTime(t.start_date),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          t.title,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () {
+                                          showEditTaskDialog(t, context);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          // Delete logic
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) {
+                                              return AlertDialog(
+                                                backgroundColor: Colors.white,
+                                                title: Text(t.title),
+                                                content: Text(
+                                                  "Are you shure want to delete?",
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("Cancel"),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      taskProvider.deleteTask(
+                                                        t.task_id,
+                                                      );
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("Yes"),
+                                                    style:
+                                                        ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                        ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                t.title,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(
-                                                Icons.edit_rounded,
-                                                size: 20,
-                                                color: AppColors.primaryColor,
-                                              ),
-                                            ),
-                                          ],
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          "Assigned by: ${t.assigned_by_name ?? "Unknown"}",
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
                                         ),
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.person,
-                                              color: Colors.grey,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              t.choose_lead,
-                                              style: const TextStyle(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          "${formatDateTime(t.start_date)} - ${formatDateTime(t.end_date)}",
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
                                         ),
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Icon(
-                                              Icons.timer_outlined,
-                                              color: Colors.grey,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Expanded(
-                                              child: Text(
-                                                "${formatDateTime(t.start_date)} to ${formatDateTime(t.end_date)}",
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.flag,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text("Priority: ${t.priority ?? "-"}"),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.description,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          t.description,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Icon(
-                                              Icons.assignment,
-                                              color: Colors.grey,
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: Text(
-                                                t.description,
-                                                style: const TextStyle(
-                                                  color: Colors.grey,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      const Text(
+                                        "Status: ",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
                                         ),
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          color:
+                                              t.status == "Initial"
+                                                  ? Colors.orangeAccent
+                                                  : t.status == "On Going"
+                                                  ? Colors.blue
+                                                  : Colors.green,
+                                        ),
+                                        child: DropdownButton<String>(
+                                          value: t.status,
+                                          items:
+                                              [
+                                                    "Initial",
+                                                    "On Going",
+                                                    "Completed",
+                                                  ]
+                                                  .map(
+                                                    (status) =>
+                                                        DropdownMenuItem(
+                                                          value: status,
+                                                          child: Text(status),
+                                                        ),
+                                                  )
+                                                  .toList(),
+                                          onChanged: (newStatus) {
+                                            if (newStatus != null) {
+                                              if (newStatus != t.status) {
                                                 showDialog(
                                                   context: context,
-                                                  builder:
-                                                      (context) => AlertDialog(
-                                                        title: const Text(
-                                                          "Task Description!",
+                                                  builder: (_) {
+                                                    return AlertDialog(
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              16,
+                                                            ),
+                                                      ),
+                                                      title: const Text(
+                                                        'Change Status',
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
-                                                        content: Text(
-                                                          t.description,
+                                                      ),
+                                                      content: Text(
+                                                        'Do you want to change the status of "${t.title}" from "${t.status}" to "$newStatus"?',
+                                                        style: const TextStyle(
+                                                          fontSize: 16,
                                                         ),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed:
-                                                                () =>
-                                                                    Navigator.pop(
-                                                                      context,
-                                                                    ),
-                                                            child: Text(
-                                                              "Ok",
-                                                              style: TextStyle(
-                                                                color:
-                                                                    AppColors
-                                                                        .primaryColor,
-                                                              ),
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                              context,
+                                                            );
+                                                          },
+                                                          child: const Text(
+                                                            'No',
+                                                            style: TextStyle(
+                                                              color: Colors.red,
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
+                                                        ),
+                                                        ElevatedButton(
+                                                          onPressed: () {
+                                                            taskProvider
+                                                                .updateTask(
+                                                                  t.task_id,
+                                                                  {
+                                                                    "status":
+                                                                        newStatus,
+                                                                  },
+                                                                );
+                                                            Navigator.pop(
+                                                              context,
+                                                            );
+                                                          },
+                                                          style:
+                                                              ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .green,
+                                                              ),
+                                                          child: const Text(
+                                                            'Yes',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
                                                 );
-                                              },
-                                              child: Text(
-                                                "(see more...)",
-                                                style: TextStyle(
-                                                  color: AppColors.primaryColor,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            InkWell(
-                                              onTap: () {},
-                                              child: const Icon(
-                                                Icons.delete_rounded,
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ],
+                                              }
+                                            }
+                                          },
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -281,10 +379,7 @@ class _TasksAssignedByMeScreenState extends State<TasksAssignedByMeScreen> {
 }
 
 String formatDateTime(String dateTimeString) {
-  if (dateTimeString.isEmpty) {
-    return "";
-  }
+  if (dateTimeString.isEmpty) return "";
   final dateTime = DateTime.parse(dateTimeString);
-  final formatter = DateFormat('d-MMM-yyyy hh:mm a');
-  return formatter.format(dateTime);
+  return DateFormat('d MMM, yyyy hh:mm a').format(dateTime);
 }

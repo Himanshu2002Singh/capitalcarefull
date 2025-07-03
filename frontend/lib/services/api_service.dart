@@ -380,25 +380,32 @@ class ApiService {
     }
   }
 
-  static Future<bool> addTask(Task task) async {
+  static Future<Task?> addTask(Task task) async {
     final url = Uri.parse("$baseUrl/add_task");
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(task.toJson()),
     );
+
     if (response.statusCode == 200) {
-      print("Task added successfull: ${response.body}");
-      return true;
+      final jsonData = jsonDecode(response.body);
+      print("Task added successfully: ${jsonData}");
+
+      if (jsonData['task'] != null) {
+        return Task.fromJson(jsonData['task']);
+      } else {
+        print("No 'task' key found in response");
+        return null;
+      }
     } else {
-      print(
-        "Update failed =================================================>>>>>>>>>>>>>>>: ${response.body}",
-      );
-      return false;
+      print("Task add failed: ${response.statusCode} - ${response.body}");
+      return null;
     }
   }
 
-  static Future<List<Task>> getTasks(String emp_id) async {
+  static Future<List<Task>> getTasks() async {
+    final emp_id = await secureStorage.read(key: "userId");
     final url = Uri.parse("$baseUrl/task/$emp_id");
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -420,6 +427,49 @@ class ApiService {
       return taskList.map((e) => Task.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load Tasks");
+    }
+  }
+
+  static Future<Task> updateTask(
+    String taskId,
+    Map<String, dynamic> updatedFields,
+  ) async {
+    final url = Uri.parse("$baseUrl/update_task/$taskId");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(updatedFields),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return Task.fromJson(data["task"]);
+    } else {
+      print("Update failed: ${response.body}");
+      return Task(); // empty Task
+    }
+  }
+
+  static Future<bool> deleteTask(String taskId) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/deleteTask/$taskId',
+      ); // ✅ Adjust your route
+      final response = await http.delete(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print("Failed to delete task: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error deleting task: $e");
+      return false;
     }
   }
 }
