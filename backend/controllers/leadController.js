@@ -151,6 +151,71 @@ exports.updateLead = async (req, res) => {
     }
 };
 
+exports.getLeadsForAdminPanel = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const fromDate = req.query.fromDate; 
+    const toDate = req.query.toDate;     
+
+    const offset = (page - 1) * limit;
+
+    // 🛡️ Search condition (name or phone)
+    const searchCondition = search
+      ? {
+          [Op.or]: [
+            { name: { [Op.like]: `%${search}%` } },
+            { number: { [Op.like]: `%${search}%` } },
+          ],
+        }
+      : {};
+      console.log(searchCondition);
+
+    // 📅 Date filter condition
+    const dateCondition =
+      fromDate && toDate
+        ? {
+            createdAt: {
+              [Op.between]: [new Date(fromDate), new Date(toDate)],
+            },
+          }
+        : {};
+
+    // 🛡️ Final where clause
+    const whereCondition = {
+      ...searchCondition,
+      ...dateCondition,
+    };
+
+    // 🔍 Find leads with filters + pagination
+    const { rows: leads, count: totalCount } = await Lead.findAndCountAll({
+      where: whereCondition,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: leads,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching leads:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching leads",
+    });
+  }
+};
+
+
 exports.getLeads = async (req, res)=>{
     try{
          const lead = await Lead.findAll();

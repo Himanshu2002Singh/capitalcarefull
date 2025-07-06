@@ -19,7 +19,7 @@ const LeadsList = () => {
   const [employees, setEmployees] = useState([]);
   // const [fromDate, setFromDate] = useState("");
   // const [toDate, setToDate] = useState("");
-  const itemsPerPage = 50;
+  const itemsPerPage = 20;
   const navigate = useNavigate();
 
   const getTodayRange = () => {
@@ -41,21 +41,28 @@ const LeadsList = () => {
   const [fromDate, setFromDate] = useState(from);
   const [toDate, setToDate] = useState(to);
 
-  const fetchUsers = async (page, search = "", startDate, endDate) => {
-  setIsLoading(true);
-  try {
-    const response = await axios.get(`${API_URL}/getLeadsByDate`, {
-      params: {startDate, endDate}
-    });
-    if (response.status === 200) {
-      const leads = response.data;
+  const fetchUsers = async (page) => {
+    console.log("================> ye func call hua")
+    console.log(`${currentPage} ${itemsPerPage} ${fromDate} ${toDate} ${searchTerm}`);
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/getLeadsForAdminPanel`, {
+        params: {
+          page: page || currentPage,
+          limit: itemsPerPage,
+          search: searchTerm || "",
+          fromDate: fromDate || "", 
+          toDate: toDate || "",
+        },
+      });
 
-      // Set leads
-      setUsers(leads);
+      if (response.status === 200) {
+        const leads = response.data.data; // assuming response.data.data contains leads list
+        const pagination = response.data.pagination;
 
-      // Total pages (if pagination is available)
-      setTotalPages(leads.pagination?.totalPages || 0);
-    }
+        setUsers(leads);
+        setTotalPages(pagination?.totalPages || 0);
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -96,7 +103,7 @@ const handleAssignPerson = async (leadId, value) => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchUsers(currentPage, searchTerm, fromDate, toDate);
+      fetchUsers(currentPage);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
@@ -158,6 +165,8 @@ const handleDownloadExcel = () => {
   const handleCloseaddcallExcelModal = () => {
     setIsExcelModalOpen(false);
   };
+
+  
 
   return (
     <div>
@@ -221,7 +230,7 @@ const handleDownloadExcel = () => {
 
     {/* ✅ GO button */}
     <button
-      onClick={() => fetchUsers(currentPage, searchTerm, fromDate, toDate)}
+      onClick={() => fetchUsers(currentPage)}
       className="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-900"
     >
       GO
@@ -357,7 +366,11 @@ const handleDownloadExcel = () => {
       )}
       <div className="flex justify-center mt-4 gap-2">
         <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onClick={
+            ()=> {setCurrentPage(currentPage-1);
+              fetchUsers(currentPage-1);
+            }
+          }
           disabled={currentPage === 1}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
@@ -367,7 +380,9 @@ const handleDownloadExcel = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          onClick={() => setCurrentPage((prev) => prev + 1)}
+          onClick={() => {setCurrentPage(currentPage + 1);
+            fetchUsers(currentPage+1);
+          }}
           disabled={currentPage === totalPages}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >

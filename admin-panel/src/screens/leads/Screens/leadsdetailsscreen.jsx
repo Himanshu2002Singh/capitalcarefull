@@ -306,7 +306,7 @@ const downloadexcel = () => {
                   <th className="border px-4 py-2">Start Date</th>
                   <th className="border px-4 py-2">End Date</th>
                   <th className="border px-4 py-2">Priority</th>
-                  <th className="border px-4 py-2">Active</th>
+                  <th className="border px-4 py-2">Status</th>
                   <th className="border px-4 py-2">Description</th>
                 </tr>
               </thead>
@@ -319,8 +319,30 @@ const downloadexcel = () => {
                     <td className="border px-4 py-2">{item.start_date ? new Date(item.start_date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "--"}</td>
                     <td className="border px-4 py-2">{item.end_date ? new Date(item.end_date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "--"}</td>
                     <td className="border px-4 py-2">{item.priority || "--"}</td>
-                    <td className="border px-4 py-2">{item.is_active == 1?"true":"false"}</td>
-                    <td className="border px-4 py-2">{item.description}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={`font-medium ${
+                            item.status === "Completed"
+                              ? "text-green-600"
+                              : item.status === "On Going"
+                              ? "text-blue-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="border px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        <span
+                          title={item.description} // Tooltip on hover
+                          className="cursor-pointer hover:text-blue-600"
+                          // onClick={() => openDescriptionModal(task.description)}
+                        >
+                          {item.description.length > 30
+                            ? `${item.description.slice(0, 30)}...`
+                            : item.description}
+                        </span>
+                      </td>
                   </tr>
                 ))}
               </tbody>
