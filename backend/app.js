@@ -27,7 +27,7 @@ app.use("/api", historyRoutes);
 app.use("/api", callsRoutes);
 app.use("/api", attendanceRoutes);
 app.use("/api", taskRoutes);
-app.use('/api', templateRoutes);
+app.use("/api", templateRoutes);
 
 app.get("/", (req, res) => {
   res.json("testing hello from backned");

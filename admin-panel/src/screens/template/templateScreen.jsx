@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import API_URL from '../../config';
+
 
 function TemplateScreen() {
   const [addTemplateModal, showAddTemplateModal] = useState(false);
@@ -9,53 +12,50 @@ function TemplateScreen() {
   const [templates, setTemplates] = useState([]);
 
   // 🔍 Fetch Templates
-  const fetchTemplates = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/templates'); // Update your API URL
-      const data = await response.json();
-      setTemplates(data.data || []);
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-    }
-  };
+const fetchTemplates = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/get_templates`); // Axios GET request
+    setTemplates(response.data.data || []);
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+  }
+};
+
 
   useEffect(() => {
     fetchTemplates();
   }, []);
 
   // ✅ Submit Form
-  const handleSubmit = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('name', templateName);
-      formData.append('description', templateBody);
-      formData.append('fileType', selectedUploadType);
-      if (selectedUploadType !== 'none' && selectedFile) {
-        formData.append('file', selectedFile);
-      }
-
-      const response = await fetch('http://localhost:5000/template', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
-      if (result.success) {
-        alert('Template created successfully!');
-        fetchTemplates(); // 🔄 Refresh list
-        // Reset form
-        setTemplateName('');
-        setTemplateBody('');
-        setSelectedUploadType('none');
-        setSelectedFile(null);
-        showAddTemplateModal(false);
-      } else {
-        alert('Error creating template');
-      }
-    } catch (err) {
-      console.error('Error uploading template:', err);
-      alert('Something went wrong');
+const handleSubmit = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', templateName);
+    formData.append('description', templateBody);
+    formData.append('fileType', selectedUploadType);
+    if (selectedUploadType !== 'none' && selectedFile) {
+      formData.append('file', selectedFile);
     }
-  };
+
+    const response = await axios.post(`${API_URL}/create_template`, formData);
+    if (response.data.success) {
+      alert('Template created successfully!');
+      fetchTemplates(); // Refresh the template list
+      // Reset form
+      setTemplateName('');
+      setTemplateBody('');
+      setSelectedUploadType('none');
+      setSelectedFile(null);
+      showAddTemplateModal(false);
+    } else {
+      alert('Error creating template');
+    }
+  } catch (err) {
+    console.error('Error uploading template:', err);
+    alert('Something went wrong');
+  }
+};
+
 
   return (
     <div>

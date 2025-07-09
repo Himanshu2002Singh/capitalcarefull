@@ -14,6 +14,8 @@ import AttendanceScreen from "./screens/attendance/attendance_screen";
 import UserDetailScreen from "./screens/users/Screens/userdetailsscreen";
 import TaskScreen from "./screens/tasks/Screens/taskScreen";
 import TemplateScreen from "./screens/template/templateScreen";
+import Login from "./screens/login/login";
+import ProtectedRoute from "./protectedRoute";
 
 // Custom layout component that uses useLocation hook
 const Layout = () => {
@@ -31,7 +33,7 @@ const Layout = () => {
       >
         <Routes>
           <Route exact path="/" element={<Home />} />
-          <Route exact path="/leads" element={<LeadsList />} />
+          <Route exact path="/leads" element={<ProtectedRoute><LeadsList /></ProtectedRoute>} />
 
           <Route exact path="/add-users" element={<UserList />} />
           <Route exact path="/lead-details/:id" element = {<LeadDetailScreen/>}/>
@@ -39,6 +41,8 @@ const Layout = () => {
           <Route exact path ="/userdetail/:emp_id" element = {<UserDetailScreen/>}/>
           <Route exact path = "/tasks" element = {<TaskScreen/>}/>
           <Route exact path = "/template" element = {<TemplateScreen/>}/>
+          <Route exact path = "/login" element = {<Login/>}/>
+          
 
           {/* Add more routes as needed */}
         </Routes>
