@@ -10,14 +10,12 @@ const historyRoutes = require("./routes/historyRoutes");
 const callsRoutes = require("./routes/callsRoutes");
 const attendanceRoutes = require("./routes/attendance_routes");
 const taskRoutes = require("./routes/taskRoutes");
-// const { initDatabase } = require("./config/db");
-// initDatabase(() => {
-//   require("./migrations/createTableEmployee");
-//   require("./migrations/createTableLeads");
-// });
+const templateRoutes = require('./routes/template_route');
+const { createBucketIfNotExists } = require('./services/bucket_services');
 
 const app = express();
 app.use(cors());
+createBucketIfNotExists();
 
 const port = 5000 || process.env.PORT;
 
@@ -29,6 +27,7 @@ app.use("/api", historyRoutes);
 app.use("/api", callsRoutes);
 app.use("/api", attendanceRoutes);
 app.use("/api", taskRoutes);
+app.use('/api', templateRoutes);
 
 app.get("/", (req, res) => {
   res.json("testing hello from backned");
