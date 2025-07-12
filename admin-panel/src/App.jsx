@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import Home from "./screens/Home";
 import Sidebar from "./components/sidebar";
@@ -16,15 +17,15 @@ import TaskScreen from "./screens/tasks/Screens/taskScreen";
 import TemplateScreen from "./screens/template/templateScreen";
 import Login from "./screens/login/login";
 import ProtectedRoute from "./protectedRoute";
+import PerformanceScreen from "./screens/performance/performanceScreen";
+import LeadsReport from "./screens/leadReport/leadReportScreen";
 
-// Custom layout component that uses useLocation hook
 const Layout = () => {
   const location = useLocation();
   const noSidebarRoutes = ["/login", "/signup"];
 
   return (
     <div className="flex">
-      {/* Conditionally render Sidebar */}
       {!noSidebarRoutes.includes(location.pathname) && <Sidebar />}
       <div
         className={`flex-1 p-6 ${
@@ -32,19 +33,93 @@ const Layout = () => {
         }`}
       >
         <Routes>
-          <Route exact path="/" element={<Home />} />
-          <Route exact path="/leads" element={<ProtectedRoute><LeadsList /></ProtectedRoute>} />
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
 
-          <Route exact path="/add-users" element={<UserList />} />
-          <Route exact path="/lead-details/:id" element = {<LeadDetailScreen/>}/>
-          <Route exact path = "/attendance" element = {<AttendanceScreen/>}/>
-          <Route exact path ="/userdetail/:emp_id" element = {<UserDetailScreen/>}/>
-          <Route exact path = "/tasks" element = {<TaskScreen/>}/>
-          <Route exact path = "/template" element = {<TemplateScreen/>}/>
-          <Route exact path = "/login" element = {<Login/>}/>
-          
+          {/* Protected routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leads"
+            element={
+              <ProtectedRoute>
+                <LeadsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-users"
+            element={
+              <ProtectedRoute>
+                <UserList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lead-details/:id"
+            element={
+              <ProtectedRoute>
+                <LeadDetailScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendanceScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/userdetail/:emp_id"
+            element={
+              <ProtectedRoute>
+                <UserDetailScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <TaskScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/template"
+            element={
+              <ProtectedRoute>
+                <TemplateScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/performance"
+            element={
+              <ProtectedRoute>
+                <PerformanceScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lead_report"
+            element={
+              <ProtectedRoute>
+                <LeadsReport />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Add more routes as needed */}
+          {/* Redirect any unknown path to /login */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>
     </div>

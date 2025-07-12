@@ -15,10 +15,18 @@ const Template = sequelize.define('Template', {
   },
   fileUrl: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
 }, {
   tableName: 'templates',
+  timestamps: true
 });
+
+Template.sync({alter: false}).then(()=>{
+    console.log("Template table created");
+}).catch((error)=>{
+    console.error("Error creating Template table:", error);
+});
+
 
 module.exports = Template;

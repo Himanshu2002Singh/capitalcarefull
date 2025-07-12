@@ -8,5 +8,7 @@ router.post('/create_template', upload.single('file'), templateController.create
 
 // GET: get all templates
 router.get('/get_templates', templateController.getAllTemplates);
+router.delete('/delete_template/:id', templateController.deleteTemplate);
+
 
 module.exports = router;

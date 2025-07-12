@@ -258,18 +258,35 @@ const autoCloseAttendances = async () => {
 
 const getMonthlyAttendance = async (req, res) => {
   try {
-    const { month } = req.params; // Example: 2025-06
-    if (!month || !moment(month, "YYYY-MM", true).isValid()) {
-      return res.status(400).json({ message: "Invalid or missing month parameter." });
-    }
+    const { month } = req.params;      // Example: "2025-06"
+    const { startDate, endDate } = req.query;  // For custom date range
 
-    const startDate = moment(month, "YYYY-MM").startOf("month").format("YYYY-MM-DD");
-    const endDate = moment(month, "YYYY-MM").endOf("month").format("YYYY-MM-DD");
+    let start, end;
+
+    if (startDate && endDate) {
+      // ✅ Custom date range mode
+      start = moment(startDate, "YYYY-MM-DD", true);
+      end = moment(endDate, "YYYY-MM-DD", true);
+
+      if (!start.isValid() || !end.isValid()) {
+        return res.status(400).json({ message: "Invalid startDate or endDate." });
+      }
+    } else if (month) {
+      // ✅ Monthly mode (old working)
+      if (!moment(month, "YYYY-MM", true).isValid()) {
+        return res.status(400).json({ message: "Invalid month parameter." });
+      }
+
+      start = moment(month, "YYYY-MM").startOf("month");
+      end = moment(month, "YYYY-MM").endOf("month");
+    } else {
+      return res.status(400).json({ message: "Either month param or startDate & endDate required." });
+    }
 
     const attendanceRecords = await Attendance.findAll({
       where: {
         date: {
-          [Op.between]: [startDate, endDate],
+          [Op.between]: [start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD")],
         },
       },
       order: [["date", "ASC"]],
@@ -277,10 +294,11 @@ const getMonthlyAttendance = async (req, res) => {
 
     return res.status(200).json({ attendance: attendanceRecords });
   } catch (error) {
-    console.error("Error fetching monthly attendance:", error);
+    console.error("Error fetching attendance:", error);
     return res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 schedule.scheduleJob(

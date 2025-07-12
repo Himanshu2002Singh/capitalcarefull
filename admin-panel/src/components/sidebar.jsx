@@ -11,13 +11,11 @@ const Sidebar = () => {
     { path: "/leads", label: "Leads", icon: "document" },
     { path: "/add-users", label: "Add Employees", icon: "user-add" },
     { path: "/attendance", label: "Attendance", icon: "calendar" },
-    {path: "/tasks", label: "Tasks", icon: "task" },
-    {path: "/template", label: "Template", icon: "template" },
-    { path: "/menu", label: "Menu", icon: "menu" },
-    { path: "/settings", label: "Settings", icon: "settings" },
-    { path: "/help", label: "Help & Support", icon: "help" },
+    { path: "/tasks", label: "Tasks", icon: "task" },
+    { path: "/template", label: "Template", icon: "template" },
+    { path: "/performance", label: "Performance Report", icon: "performance" },
+    { path: "/lead_report", label: "Lead Report", icon: "lead_report" },
     { path: "/logout", label: "Logout", icon: "logout" },
-    
   ];
 
   const getIcon = (icon) => {
@@ -47,33 +45,12 @@ const Sidebar = () => {
           </svg>
         );
       case "task":
-        return (
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-12 8h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        );
       case "template":
+      case "performance":
+      case "lead_report":
         return (
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-12 8h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        );
-      case "menu":
-        return (
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        );
-      case "settings":
-        return (
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        );
-      case "help":
-        return (
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 14h.01M16 10h.01M12 18h.01M12 6h.01" />
           </svg>
         );
       case "logout":
@@ -86,6 +63,10 @@ const Sidebar = () => {
         return null;
     }
   };
+
+  // 👇 fetch from localStorage
+  const name = localStorage.getItem("name") || "Guest";
+  const email = localStorage.getItem("email") || "No email";
 
   return (
     <nav className="bg-[#1e293b] text-white h-screen fixed top-0 left-0 min-w-[250px] py-6 px-4 font-[sans-serif] shadow-lg z-40">
@@ -118,15 +99,17 @@ const Sidebar = () => {
           ))}
         </ul>
 
-        {/* Bottom profile section */}
+        {/* 👇 Bottom profile section (dynamic) */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-800">
           <div className="flex items-center space-x-3">
             <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-medium">AD</span>
+              <span className="text-white font-medium">
+                {name.slice(0, 2).toUpperCase()}
+              </span>
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Admin User</p>
-              <p className="text-xs text-blue-200">admin@example.com</p>
+              <p className="text-sm font-medium text-white">{name}</p>
+              <p className="text-xs text-blue-200">{email}</p>
             </div>
           </div>
         </div>

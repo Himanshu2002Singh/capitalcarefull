@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // to redirect
+import API_URL from '../../config';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
-    // Yahan API call ya authentication logic likh sakte ho
+
+    try {
+      const response = await axios.post(`${API_URL}/login`, {
+        username,
+        password,
+      });
+
+      const { ename, email } = response.data.employee; // ✅ based on your API response
+
+      // Save data to localStorage
+      localStorage.setItem("isLogin", "true");
+      localStorage.setItem("name", ename);
+      localStorage.setItem("email", email);
+
+      console.log("Login successful");
+      navigate("/"); // redirect to home or dashboard
+
+    } catch (error) {
+      console.error("Login failed", error);
+      alert("Invalid credentials");
+    }
   };
 
   return (
@@ -17,7 +39,6 @@ function Login() {
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">Login</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">Username</label>
             <input
@@ -26,6 +47,7 @@ function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
 
@@ -37,6 +59,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
 
@@ -46,7 +69,6 @@ function Login() {
           >
             Login
           </button>
-
         </form>
       </div>
     </div>

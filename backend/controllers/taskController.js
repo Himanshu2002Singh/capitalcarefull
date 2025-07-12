@@ -1,5 +1,6 @@
 const { json } = require("sequelize");
 const Tasks = require("../models/taskModel");
+const { Op } = require("sequelize");
 
 exports.addTask = async (req, res)=>{
     const {emp_id} = req.body;
@@ -16,19 +17,30 @@ exports.addTask = async (req, res)=>{
     }
 };
 
-exports.getTasks = async (req, res)=>{
-    const {id} = req.params;
-    try{
-        const task = await Tasks.findAll({
-            where: {emp_id : id},
+exports.getTasks = async (req, res) => {
+    const { id } = req.params;
+    const { startDate, endDate } = req.query; // ⭐️ date filter query se milega
+
+    try {
+        const whereClause = { emp_id: id };
+
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)],
+            };
+        }
+
+        const tasks = await Tasks.findAll({
+            where: whereClause,
+            order: [['createdAt', 'DESC']],
         });
-        res.status(200).json({tasks: task});
-    }catch(error){
+
+        res.status(200).json({ tasks: tasks });
+    } catch (error) {
         console.error("Error fetching tasks", error);
-        res.status(500).json({message : "Database error", error});
+        res.status(500).json({ message: "Database error", error });
     }
 };
-
 exports.getTasksByLeadId = async(req, res)=>{
     const {id} = req.params;
     try{

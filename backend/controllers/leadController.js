@@ -2,6 +2,7 @@ const Lead = require('../models/leadModel');
 const XLSX = require("xlsx");
 const { Op } = require('sequelize'); // Import Op for date queries
 const Employee = require("../models/employeesModel");
+const { startOfToday, endOfToday, startOfTomorrow, endOfTomorrow } = require('date-fns');
 
 exports.addLead = async (req, res) => {
   const { name, number } = req.body;
@@ -124,8 +125,6 @@ exports.importLeadsFromExcel = async (req, res) => {
     });
   }
 };
-
-
 
 exports.updateLead = async (req, res) => {
     const { id } = req.params;
@@ -431,3 +430,88 @@ exports.getLeadByNumber = async (req, res) =>{
     return res.status(500).json({message: "Database error", error});
   }
 }
+
+exports.getLeadsByNextMeeting = async (req, res) => {
+  try {
+    // Get today's date range
+    const todayStart = startOfToday();
+    const todayEnd = endOfToday();
+
+    // Get tomorrow's date range
+    const tomorrowStart = startOfTomorrow();
+    const tomorrowEnd = endOfTomorrow();
+
+    // Today's follow-ups
+    const todayFollowups = await Lead.findAll({
+      where: {
+        next_meeting: {
+          [Op.between]: [todayStart, todayEnd],
+        },
+      },
+    });
+
+    // Tomorrow's follow-ups
+    const tomorrowFollowups = await Lead.findAll({
+      where: {
+        next_meeting: {
+          [Op.between]: [tomorrowStart, tomorrowEnd],
+        },
+      },
+    });
+
+    // Pending follow-ups (next meeting after tomorrow)
+    const pendingFollowups = await Lead.findAll({
+      where: {
+        next_meeting: {
+          [Op.gt]: tomorrowEnd,
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        todayFollowups,
+        tomorrowFollowups,
+        pendingFollowups,
+        // freshLeads,
+      },
+    });
+  } catch (error) {
+    console.error('Error in getLeadsByNextMeeting:', error);
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+exports.getFilteredLeads = async (req, res) => {
+  try {
+    const { emp_id, startDate, endDate, status } = req.query;
+
+    const whereClause = {};
+
+    if (emp_id) {
+      whereClause.person_id = emp_id;
+    }
+
+    if (startDate && endDate) {
+      whereClause.createdAt = {
+        [Op.between]: [new Date(startDate), new Date(endDate)],
+      };
+    }
+
+    if (status && status !== "All") {
+      whereClause.status = status;
+    }
+
+    const leads = await Lead.findAll({
+      attributes: ['lead_id', 'name', 'number', 'person_id', 'status', 'loan_type', 'createdAt'], // Only required fields
+      where: whereClause,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({ leads });
+  } catch (error) {
+    console.error("Error fetching filtered leads", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
