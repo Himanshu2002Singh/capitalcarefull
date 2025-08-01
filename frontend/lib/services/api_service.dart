@@ -6,6 +6,7 @@ import 'package:capital_care/models/history_model.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/models/employee_model.dart';
 import 'package:capital_care/models/task_model.dart';
+import 'package:capital_care/models/template_model.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -470,6 +471,22 @@ class ApiService {
     } catch (e) {
       print("Error deleting task: $e");
       return false;
+    }
+  }
+
+  static Future<List<Template>> getTemplates() async {
+    final url = Uri.parse("$baseUrl/get_templates");
+    final response = await http.get(url);
+    print("template get krne ki koshish");
+    if (response.statusCode == 200) {
+      print("status code 200 h");
+      final jd = jsonDecode(response.body);
+      final List jsonData = jd['data'] as List<dynamic>;
+      print("===============>${jsonData}");
+      print(jsonData.length);
+      return jsonData.map((e) => Template.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load templates");
     }
   }
 }

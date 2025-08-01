@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.capital_care"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -45,7 +45,14 @@ android {
         }
     }
 }
-
+dependencies {
+    implementation("androidx.core:core-ktx:1.12.0") // Make sure core-ktx is present
+}
+// subprojects { subproject ->
+//     if (subproject.name.contains('flutter_plugin_android_lifecycle')) {
+//         subproject.tasks.matching { it.name.contains("test") }.all { it.enabled = false }
+//     }
+// }
 flutter {
     source = "../.."
 }

@@ -3,6 +3,7 @@ import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/attendance_screen.dart';
 import 'package:capital_care/views/screens/auto_call_dashboard_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
+import 'package:capital_care/views/screens/contacts_page.dart';
 import 'package:capital_care/views/screens/dashboard/dashboard_screen.dart';
 import 'package:capital_care/views/screens/leads/fresh_leads.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
@@ -201,6 +202,16 @@ class AppScaffold extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => EmployeeProfilePage(),
                   ),
+                );
+              },
+            ),
+            _drawerItem(
+              Icons.contacts,
+              "My Contacts",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ContactsPage()),
                 );
               },
             ),

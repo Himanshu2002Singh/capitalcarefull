@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
         token.isNotEmpty &&
         userId != null &&
         userId.isNotEmpty &&
-        diff < 7) {
+        diff < 30) {
       // Already logged in
 
       await Provider.of<UserProvider>(

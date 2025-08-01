@@ -30,6 +30,13 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
     });
   }
 
+  Future<void> _handlePaste() async {
+    final clipboardData = await Clipboard.getData('text/plain');
+    if (clipboardData != null && clipboardData.text != null) {
+      _controller.text = clipboardData.text!;
+    }
+  }
+
   void onKeyTap(String value) {
     final cursorPos = _controller.selection.baseOffset;
     final text = _controller.text;
@@ -96,14 +103,30 @@ class _DialPadBottomSheetState extends State<DialPadBottomSheet> {
                 IconButton(icon: Icon(Icons.copy), onPressed: onCopy),
                 Expanded(
                   child: TextField(
+                    magnifierConfiguration: TextMagnifierConfiguration.disabled,
                     controller: _controller,
                     focusNode: _focusNode,
-                    readOnly: true,
+                    readOnly: true, // Prevents keyboard from showing
                     showCursor: true,
-                    enableInteractiveSelection: true,
+                    enableInteractiveSelection: true, // Allows text selection
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     decoration: InputDecoration.collapsed(hintText: ''),
+                    contextMenuBuilder: (context, editableTextState) {
+                      return AdaptiveTextSelectionToolbar(
+                        anchors: editableTextState.contextMenuAnchors,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.paste),
+                            onPressed: () {
+                              _handlePaste(); // Your paste implementation
+                              editableTextState.hideToolbar();
+                            },
+                          ),
+                          // Include other options if needed
+                        ],
+                      );
+                    },
                   ),
                 ),
                 IconButton(

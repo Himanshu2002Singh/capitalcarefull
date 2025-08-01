@@ -404,6 +404,7 @@ class _AttendancescreenState extends State<Attendancescreen> {
       appBar: AppBar(
         title: Text('Attendance'),
         backgroundColor: AppColors.primaryColor,
+        foregroundColor: Colors.white,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),

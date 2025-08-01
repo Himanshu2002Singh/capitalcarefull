@@ -3,6 +3,7 @@ import 'package:capital_care/models/calls_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
 import 'package:capital_care/views/screens/call_details_screen.dart';
+import 'package:capital_care/views/widgets/template_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -80,10 +81,15 @@ class _LeadCardState extends State<LeadCard> {
                       color: Colors.green,
                       isFaIcon: true,
                       onPressed: () {
-                        openWhatsApp(
+                        TemplateDialog.show(
+                          context,
                           widget.lead.number ?? "",
-                          "message description",
+                          widget.lead.name ?? "",
                         );
+                        // openWhatsApp(
+                        //   widget.lead.number ?? "",
+                        //   "message description",
+                        // );
                       },
                     ),
                     // _buildSmallIconButton(

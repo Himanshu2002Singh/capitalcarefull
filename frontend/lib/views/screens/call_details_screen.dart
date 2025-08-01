@@ -245,10 +245,10 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                           widget.lead == null ? "" : widget.lead.name,
                           style: TextStyle(fontSize: 16, color: Colors.black54),
                         ),
-                        const Text(
-                          '01:31:46',
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
-                        ),
+                        // const Text(
+                        //   '01:31:46',
+                        //   style: TextStyle(fontSize: 16, color: Colors.black54),
+                        // ),
                       ],
                     ),
                   ],

@@ -3,6 +3,7 @@ import 'package:capital_care/controllers/providers/lead_provider.dart';
 import 'package:capital_care/models/leads_model.dart';
 import 'package:capital_care/services/api_service.dart';
 import 'package:capital_care/theme/appcolors.dart';
+import 'package:capital_care/views/screens/attendance_screen.dart';
 import 'package:capital_care/views/screens/call_logs_screen.dart';
 import 'package:capital_care/views/screens/dashboard/leads_count_screen.dart';
 import 'package:capital_care/views/screens/leads/leads_screen.dart';
@@ -24,27 +25,27 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final boxColorList = [
-    Colors.red,
-    Colors.blueGrey,
     Colors.greenAccent,
+    Colors.blueGrey,
+    Colors.red,
     Colors.lightBlue,
     Colors.orange,
     Colors.purple,
   ];
 
   final boxIconList = [
-    Icons.pending_actions,
-    Icons.event_available,
     Icons.calendar_month,
+    Icons.event_available,
+    Icons.pending_actions,
     Icons.man,
     Icons.call,
     Icons.call_received,
   ];
 
   final boxTextList = [
-    "File Login",
-    "Tomorrow FollowUps",
     "Today FollowUps",
+    "Tomorrow FollowUps",
+    "File Login Leads",
     "Total Leads",
     "Total Calls",
     "Today Calls",
@@ -81,9 +82,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final fileLoginLeads = leadProvider.fileLoginLeads;
 
     final boxCountList = [
-      fileLoginLeads.length,
-      tomorrowLeads.length,
       todayLeads.length,
+      tomorrowLeads.length,
+      fileLoginLeads.length,
       totalLeads,
       calls,
       todayCalls,
@@ -101,7 +102,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
           builder: (_) => DialPadBottomSheet(),
         );
       },
-      appBar: CustomAppbar(title: "DashBoard"),
+      appBar: CustomAppbar(
+        title: "DashBoard",
+        action: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Attendancescreen()),
+                );
+              },
+              child: Text(
+                "Check in/out",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: const Color.fromARGB(162, 255, 255, 255),
+                ), // This is the correct way
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                ), // Adjust this value (default is 16)
+                minimumSize: Size(0, 36), // Remove minimum width constraint
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -126,7 +158,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   builder: (context) {
                                     if (index == 3) {
                                       return LeadsScreen();
-                                    } else if (index == 0) {
+                                    } else if (index == 2) {
                                       return LeadsCountScreen(
                                         title: "File Login Leads",
                                         // leads: fileLoginLeads,
@@ -136,7 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         title: "Tomorrow Followups",
                                         // leads: tomorrowLeads,
                                       );
-                                    } else if (index == 2) {
+                                    } else if (index == 0) {
                                       return LeadsCountScreen(
                                         title: "Today Followups",
                                         // leads: todayLeads,

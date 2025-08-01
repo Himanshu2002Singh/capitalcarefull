@@ -201,26 +201,24 @@ class _LeadsCountScreenState extends State<LeadsCountScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.call,
-                                        color: Colors.blue,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            makeDirectCall(f.number, f);
-                                          },
+                                  GestureDetector(
+                                    onTap: () => makeDirectCall(f.number, f),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.call,
+                                          color: Colors.blue,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
                                           child: Text(
                                             "Last call:- ${f.status}",
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
